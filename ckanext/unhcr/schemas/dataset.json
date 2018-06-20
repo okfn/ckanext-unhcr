@@ -309,40 +309,9 @@
         },
         {
             "field_name": "unit_of_measurement",
-            "help_text": "Unit of measurement / observation for the dataset. Multiple values are allowed.",
+            "help_text": "Unit of measurement / observation for the dataset",
             "label": "Unit of measurement",
-            "preset": "multiple_select",
-            "required": true,
-            "choices": [
-                {
-                    "label": "Individual",
-                    "value": "individual"
-                },
-                {
-                    "label": "Household",
-                    "value": "household"
-                },
-                {
-                    "label": "Institution",
-                    "value": "institution"
-                },
-                {
-                    "label": "Community/Camp/Village",
-                    "value": "community_camp_village"
-                },
-                {
-                    "label": "PPG",
-                    "value": "ppg"
-                },
-                {
-                    "label": "Admin Level 2",
-                    "value": "admig_level_2"
-                },
-                {
-                    "label": "Other",
-                    "value": "other"
-                }
-            ]
+            "required": true
         },
         {
             "field_name": "operational_purpose_of_data",
