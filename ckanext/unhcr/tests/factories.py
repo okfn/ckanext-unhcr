@@ -6,7 +6,7 @@ class Dataset(factories.Dataset):
     unit_of_measurement = 'individual'
     keywords = ['shelter', 'health']
     archived = 'False'
-    source_organizations = ['acf']
+    data_collector = ['acf']
     data_collection_technique = 'interview'
     operational_purpose_of_data = 'idp_profiling'
 

@@ -72,9 +72,9 @@
         },
 
         {
-            "field_name": "source_organizations",
+            "field_name": "data_collector",
             "help_text": "Which organization owns / collected the data. Multiple values are allowed.",
-            "label": "Source organizations",
+            "label": "Data Collector",
             "preset": "multiple_select",
             "required": true,
             "choices": [
