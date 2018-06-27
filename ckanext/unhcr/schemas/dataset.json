@@ -524,6 +524,13 @@
             "form_placeholder": "Internal notes about how the dataset has been cleaned or transformed. These are stored but not indexed.",
             "form_snippet": "markdown.html",
             "label": "Admin Notes"
+        },
+        {
+            "field_name": "ddi",
+            "label": "DDI",
+            "help_text": "Determines if a dataset was imported from a DDI XML file",
+            "form_snippet": null,
+            "display_snippet": null
         }
     ],
     "resource_fields": [
