@@ -14,7 +14,9 @@
       </a>
      {% endif %}
   {% else %}
-    {{ super() }}
+      {% if h.check_access('package_create', {'owner_org': c.group_dict.id}) %}
+        {% snippet 'snippets/add_dataset_buttons.html', group=c.group_dict.id%}
+      {% endif %}
   {% endif %}
 {% endblock %}
 
