@@ -318,7 +318,6 @@
             "help_text": "Classification of the type of data contained in the file. Multiple values are allowed.",
             "label": "Operational purpose of data",
             "preset": "multiple_select",
-            "required": true,
             "choices": [
                 {
                     "label": "Participatory assessments",
