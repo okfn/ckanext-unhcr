@@ -44,16 +44,16 @@ def test_modify_package_process_status():
     package = _modify_package({
         'process_status': None,
         'resources': [
-            {'process_status': 'in_process'},
+            {'process_status': 'cleaned'},
             {'process_status': 'final'},
         ]
     })
-    assert package['process_status'] == 'in_process'
+    assert package['process_status'] == 'cleaned'
 
 
 def test_modify_package_process_status_resource_deletion():
     package = _modify_package({
-        'process_status': 'in_process',
+        'process_status': 'cleaned',
         'resources': [
             {'process_status': 'final'},
         ]
@@ -65,11 +65,11 @@ def test_modify_package_process_status_none():
     package = _modify_package({
         'process_status': None,
         'resources': [
-            {'process_status': 'in_process'},
+            {'process_status': 'cleaned'},
             {'process_status': 'final'},
         ]
     })
-    assert package['process_status'] == 'in_process'
+    assert package['process_status'] == 'cleaned'
 
 
 def test_modify_package_process_status_no_resources():

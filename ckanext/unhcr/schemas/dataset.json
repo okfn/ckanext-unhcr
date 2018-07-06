@@ -453,12 +453,12 @@
             "display_snippet": "select.html",
             "choices": [
                 {
-                    "label": "Raw",
+                    "label": "Raw-Uncleaned",
                     "value": "raw"
                 },
                 {
-                    "label": "In Process",
-                    "value": "in_process"
+                    "label": "Cleaned Only",
+                    "value": "cleaned"
                 },
                 {
                     "label": "Final",
@@ -748,12 +748,12 @@
             "required": true,
             "choices": [
                 {
-                    "label": "Raw",
+                    "label": "Raw-Uncleaned",
                     "value": "raw"
                 },
                 {
-                    "label": "In Process",
-                    "value": "in_process"
+                    "label": "Cleaned Only",
+                    "value": "cleaned"
                 },
                 {
                     "label": "Final",
