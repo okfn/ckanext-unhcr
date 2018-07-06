@@ -45,7 +45,7 @@ def test_modify_package_process_status():
         'process_status': None,
         'resources': [
             {'process_status': 'cleaned'},
-            {'process_status': 'anonymized'},
+            {'process_status': 'anonymized_public'},
         ]
     })
     assert package['process_status'] == 'cleaned'
@@ -55,10 +55,10 @@ def test_modify_package_process_status_resource_deletion():
     package = _modify_package({
         'process_status': 'cleaned',
         'resources': [
-            {'process_status': 'anonymized'},
+            {'process_status': 'anonymized_public'},
         ]
     })
-    assert package['process_status'] == 'anonymized'
+    assert package['process_status'] == 'anonymized_public'
 
 
 def test_modify_package_process_status_none():
@@ -66,7 +66,7 @@ def test_modify_package_process_status_none():
         'process_status': None,
         'resources': [
             {'process_status': 'cleaned'},
-            {'process_status': 'anonymized'},
+            {'process_status': 'anonymized_public'},
         ]
     })
     assert package['process_status'] == 'cleaned'
@@ -74,7 +74,7 @@ def test_modify_package_process_status_none():
 
 def test_modify_package_process_status_no_resources():
     package = _modify_package({
-        'process_status': 'anonymized',
+        'process_status': 'anonymized_public',
         'resources': [],
     })
     assert package['process_status'] == None
@@ -95,10 +95,10 @@ def test_modify_package_privacy():
         'identifiability': None,
         'private': False,
         'resources': [
-            {'identifiability': 'anonymized'},
+            {'identifiability': 'anonymized_public'},
         ]
     })
-    assert package['identifiability'] == 'anonymized'
+    assert package['identifiability'] == 'anonymized_public'
     assert package['private'] == False
 
 
@@ -107,19 +107,19 @@ def test_modify_package_privacy_private_false():
         'identifiability': None,
         'private': False,
         'resources': [
-            {'identifiability': 'anonymized'},
+            {'identifiability': 'anonymized_public'},
         ]
     })
-    assert package['identifiability'] == 'anonymized'
+    assert package['identifiability'] == 'anonymized_public'
     assert package['private'] == False
 
 
 def test_modify_package_privacy_resource_addition():
     package = _modify_package({
-        'identifiability': 'anonymized',
+        'identifiability': 'anonymized_public',
         'private': False,
         'resources': [
-            {'identifiability': 'anonymized'},
+            {'identifiability': 'anonymized_public'},
             {'identifiability': 'personally_identifiable'},
         ]
     })
