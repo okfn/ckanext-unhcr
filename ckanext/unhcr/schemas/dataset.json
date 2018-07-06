@@ -316,16 +316,16 @@
                     "value": "participatory_assessments"
                 },
                 {
-                    "label": "Other Needs assessments",
-                    "value": "other_needs_assessments"
+                    "label": "Baseline Household Survey",
+                    "value": "baseline_household_survey"
                 },
                 {
-                    "label": "IDP Profiling",
-                    "value": "idp_profiling"
+                    "label": "Rapid Needs Assessment",
+                    "value": "rapid_needs_assessment"
                 },
                 {
-                    "label": "Socio-economic survey",
-                    "value": "socio_economic_survey"
+                    "label": "Protection Monitoring",
+                    "value": "protection_monitoring"
                 },
                 {
                     "label": "Programme monitoring",
@@ -336,20 +336,8 @@
                     "value": "population_data"
                 },
                 {
-                    "label": "Protection data",
-                    "value": "protection_data"
-                },
-                {
-                    "label": "Shape files",
-                    "value": "shape_files"
-                },
-                {
-                    "label": "Case management",
-                    "value": "case_management"
-                },
-                {
-                    "label": "Coordination data",
-                    "value": "coordination_data"
+                    "label": "Cartography, Infrastructure & GIS",
+                    "value": "cartography"
                 }
             ]
         },
