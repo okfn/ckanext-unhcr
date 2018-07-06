@@ -12,8 +12,8 @@
         },
         {
             "field_name": "short_title",
-            "form_placeholder": "eg. Short title for the project",
-            "label": "Short title"
+            "label": "Short title",
+            "form_placeholder": "eg. Short title for the project"
         },
         {
             "field_name": "name",
@@ -391,6 +391,11 @@
                 }
             ]
 
+        },
+        {
+            "field_name": "geog_coverage",
+            "label": "Geographic Coverage",
+            "form_placeholder": "eg. National coverage, or name of the area, etc."
         },
         {
             "field_name": "data_collection_technique",
