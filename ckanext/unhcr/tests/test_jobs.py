@@ -45,7 +45,7 @@ def test_modify_package_process_status():
         'process_status': None,
         'resources': [
             {'process_status': 'cleaned'},
-            {'process_status': 'final'},
+            {'process_status': 'anonymized'},
         ]
     })
     assert package['process_status'] == 'cleaned'
@@ -55,10 +55,10 @@ def test_modify_package_process_status_resource_deletion():
     package = _modify_package({
         'process_status': 'cleaned',
         'resources': [
-            {'process_status': 'final'},
+            {'process_status': 'anonymized'},
         ]
     })
-    assert package['process_status'] == 'final'
+    assert package['process_status'] == 'anonymized'
 
 
 def test_modify_package_process_status_none():
@@ -66,7 +66,7 @@ def test_modify_package_process_status_none():
         'process_status': None,
         'resources': [
             {'process_status': 'cleaned'},
-            {'process_status': 'final'},
+            {'process_status': 'anonymized'},
         ]
     })
     assert package['process_status'] == 'cleaned'
@@ -74,7 +74,7 @@ def test_modify_package_process_status_none():
 
 def test_modify_package_process_status_no_resources():
     package = _modify_package({
-        'process_status': 'final',
+        'process_status': 'anonymized',
         'resources': [],
     })
     assert package['process_status'] == None

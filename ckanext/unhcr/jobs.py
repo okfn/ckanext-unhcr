@@ -59,7 +59,7 @@ def _modify_package(package):
     package = _modify_date_range(package, 'date_range_start', 'date_range_end')
 
     # process_status
-    weights = {'raw' : 3, 'cleaned': 2, 'final': 1}
+    weights = {'raw' : 3, 'cleaned': 2, 'anonymized': 1}
     package = _modify_weighted_field(package, 'process_status', weights)
 
     # identifiability

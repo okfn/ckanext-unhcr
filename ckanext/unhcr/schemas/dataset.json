@@ -461,8 +461,8 @@
                     "value": "cleaned"
                 },
                 {
-                    "label": "Final",
-                    "value": "final"
+                    "label": "Cleaned & Anonymized",
+                    "value": "anonymized"
                 }
             ]
 
@@ -756,8 +756,8 @@
                     "value": "cleaned"
                 },
                 {
-                    "label": "Final",
-                    "value": "final"
+                    "label": "Cleaned & Anonymized",
+                    "value": "anonymized"
                 }
             ]
         },
