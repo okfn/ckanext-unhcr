@@ -586,7 +586,43 @@
             "field_name": "admin_notes",
             "form_placeholder": "Internal notes about how the dataset has been cleaned or transformed. These are stored but not indexed.",
             "form_snippet": "markdown.html",
-            "label": "Admin Notes"
+            "label": "Admin Notes - General"
+        },
+        {
+            "field_name": "sampling_procedure_notes",
+            "form_placeholder": "Internal notes about how the Sampling Procedure has been defined. These are stored but not indexed.",
+            "form_snippet": "markdown.html",
+            "label": "Admin Notes - Sampling Procedure"
+        },
+        {
+            "field_name": "response_rate_notes",
+            "form_placeholder": "Internal notes about how the response rate for the survey. These are stored but not indexed.",
+            "form_snippet": "markdown.html",
+            "label": "Admin Notes - Response Rate"
+        },
+        {
+            "field_name": "data_collection_notes",
+            "form_placeholder": "Internal notes about how the data Collection process and supervision. These are stored but not indexed.",
+            "form_snippet": "markdown.html",
+            "label": "Admin Notes - Data Collection"
+        },
+        {
+            "field_name": "weight_notes",
+            "form_placeholder": "Internal notes on the Weighting. These are stored but not indexed.",
+            "form_snippet": "markdown.html",
+            "label": "Admin Notes - Weighting"
+        },
+        {
+            "field_name": "clean_ops_notes",
+            "form_placeholder": "Internal notes about how the dataset has been cleaned or transformed. These are stored but not indexed.",
+            "form_snippet": "markdown.html",
+            "label": "Admin Notes - Cleaning"
+        },
+        {
+            "field_name": "data_accs_notes",
+            "form_placeholder": "provide information about the restriction to access the dataset and the point of contact to access the dataset",
+            "form_snippet": "markdown.html",
+            "label": "Admin Notes - Access authority"
         },
         {
             "field_name": "ddi",

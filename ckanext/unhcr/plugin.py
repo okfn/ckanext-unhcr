@@ -69,8 +69,36 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation):
     # IPackageController
 
     def before_index(self, pkg_dict):
+        # Remove internal non-indexable fields
+
+        # admin_notes
         pkg_dict.pop('admin_notes', None)
         pkg_dict.pop('extras_admin_notes', None)
+
+        # sampling_procedure_notes
+        pkg_dict.pop('sampling_procedure_notes', None)
+        pkg_dict.pop('extras_sampling_procedure_notes', None)
+
+        # response_rate_notes
+        pkg_dict.pop('response_rate_notes', None)
+        pkg_dict.pop('extras_response_rate_notes', None)
+
+        # data_collection_notes
+        pkg_dict.pop('data_collection_notes', None)
+        pkg_dict.pop('extras_data_collection_notes', None)
+
+        # weight_notes
+        pkg_dict.pop('weight_notes', None)
+        pkg_dict.pop('extras_weight_notes', None)
+
+        # clean_ops_notes
+        pkg_dict.pop('clean_ops_notes', None)
+        pkg_dict.pop('extras_clean_ops_notes', None)
+
+        # data_accs_notes
+        pkg_dict.pop('data_accs_notes', None)
+        pkg_dict.pop('extras_data_accs_notes', None)
+
         return pkg_dict
 
     def after_create(self, context, data_dict):
