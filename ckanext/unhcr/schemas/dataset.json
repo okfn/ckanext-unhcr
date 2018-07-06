@@ -79,8 +79,16 @@
             "required": true,
             "choices": [
 				{
+					"label": "United Nations High Commissioner for Refugees",
+					"value": "unhcr"
+				},
+				{
 					"label": "Action contre la faim",
 					"value": "acf"
+				},
+				{
+					"label": "Impact - REACH",
+					"value": "reach"
 				},
 				{
 					"label": "Agency for Technical Cooperation and Development",
@@ -99,32 +107,12 @@
 					"value": "drc"
 				},
 				{
-					"label": "ECHO",
-					"value": "echo"
-				},
-				{
-					"label": "European Union (EU)",
-					"value": "eu"
-				},
-				{
-					"label": "Food and Agriculture Organization",
-					"value": "fao"
-				},
-				{
-					"label": "iMMAP",
-					"value": "immap"
-				},
-				{
 					"label": "INTERSOS",
 					"value": "intersos"
 				},
 				{
 					"label": "International Organization for Migration",
 					"value": "iom"
-				},
-				{
-					"label": "MapAction",
-					"value": "mapaction"
 				},
 				{
 					"label": "Mercy Corps",
@@ -135,16 +123,28 @@
 					"value": "nrc"
 				},
 				{
+					"label": "Save the Children International",
+					"value": "sci"
+				},
+				{
+					"label": "MapAction",
+					"value": "mapaction"
+				},
+				{
+					"label": "CartONG",
+					"value": "cartong"
+				},
+				{
+					"label": "iMMAP",
+					"value": "immap"
+				},
+				{
 					"label": "Office of the High Commissioner for Human Rights",
 					"value": "ohchr"
 				},
 				{
-					"label": "REACH",
-					"value": "reach"
-				},
-				{
-					"label": "Save the Children International",
-					"value": "sci"
+					"label": "Food and Agriculture Organization",
+					"value": "fao"
 				},
 				{
 					"label": "United Nations Assistance Mission for Iraq",
@@ -173,10 +173,6 @@
 				{
 					"label": "United Nations Humanitarian Air Service",
 					"value": "unhas"
-				},
-				{
-					"label": "United Nations High Commissioner for Refugees",
-					"value": "unhcr"
 				},
 				{
 					"label": "United Nations Children's Fund",
@@ -241,10 +237,6 @@
 				{
 					"label": "World Bank",
 					"value": "world-bank"
-				},
-				{
-					"label": "CartONG",
-					"value": "cartong"
 				}
             ]
         },
