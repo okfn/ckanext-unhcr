@@ -67,8 +67,8 @@ def _modify_package(package):
     package = _modify_weighted_field(package, 'identifiability', weights)
 
     # private
-    # TODO: clarify
-    if package['identifiability'] != 'anonymized_public':
+    # TODO: clarify what level of anonymization required
+    if package['identifiability'] == 'personally_identifiable':
         package['private'] = True
 
     return package
