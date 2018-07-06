@@ -570,8 +570,16 @@
                     "value": "questionnaire"
                 },
                 {
-                    "label": "Analytical product",
-                    "value": "analytical_product"
+                    "label": "Report",
+                    "value": "report"
+                },
+                {
+                    "label": "Sampling strategy & methodology Description",
+                    "value": "sampling_methodo"
+                },
+                {
+                    "label": "Infographics & Dashboard",
+                    "value": "infographics"
                 }
             ]
         },
