@@ -410,19 +410,11 @@
                     "value": "notspecified"
                 },
                 {
-                    "label": "Interview",
-                    "value": "interview"
-                },
-                {
-                    "label": "Face-to-face interview",
-                    "value": "face_to_face_interview"
-                },
-                {
-                    "label": "Face-to-face interview: CAPI/CAMI",
+                    "label": "Face-to-face interview: Computerised",
                     "value": "face_to_face_interview_capi_cami"
                 },
                 {
-                    "label": "Face-to-face interview: PAPI",
+                    "label": "Face-to-face interview: Paper-and-pencil",
                     "value": "face_to_face_interview_papi"
                 },
                 {
@@ -430,20 +422,16 @@
                     "value": "telephone_interview"
                 },
                 {
-                    "label": "Telephone interview: CATI",
-                    "value": "telephone_interview_cati"
-                },
-                {
                     "label": "E-mail interview",
                     "value": "e_mail_interview"
                 },
                 {
-                    "label": "Web-based interview",
+                    "label": "Web-based interview: audio-visual technology enabling the interviewer(s) and interviewee(s) to communicate in real time",
                     "value": "web_based_interview"
                 },
                 {
-                    "label": "Self-administered questionnaire",
-                    "value": "self_administered_questionnaire"
+                    "label": "Interview",
+                    "value": "interview"
                 },
                 {
                     "label": "Self-administered questionnaire: E-mail",
@@ -458,16 +446,8 @@
                     "value": "self_administered_questionnaire_sms_mms"
                 },
                 {
-                    "label": "Self-administered questionnaire: Web-based",
-                    "value": "self_administered_questionnaire_web_based"
-                },
-                {
-                    "label": "Self-administered questionnaire: Computer-assisted (CASI)",
+                    "label": "Self-administered questionnaire: Computer-assisted",
                     "value": "self_administered_questionnaire_computer_assisted_casi"
-                },
-                {
-                    "label": "Focus group",
-                    "value": "focus_group"
                 },
                 {
                     "label": "Face-to-face focus group",
