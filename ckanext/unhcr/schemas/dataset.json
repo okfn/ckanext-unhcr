@@ -11,6 +11,11 @@
             "preset": "title"
         },
         {
+            "field_name": "short_title",
+            "form_placeholder": "eg. Short title for the project",
+            "label": "Short title"
+        },
+        {
             "field_name": "name",
             "form_placeholder": "eg. my-dataset",
             "label": "URL",
