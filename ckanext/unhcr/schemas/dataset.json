@@ -315,7 +315,6 @@
             "help_text": "Unit of measurement / observation for the dataset. Multiple values are allowed.",
             "label": "Sampling Procedure",
             "preset": "multiple_select",
-            "required": true,
             "choices": [
                 {
                     "label": "Total universe/Complete enumeration",
