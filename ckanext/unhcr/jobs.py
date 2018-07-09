@@ -59,14 +59,15 @@ def _modify_package(package):
     package = _modify_date_range(package, 'date_range_start', 'date_range_end')
 
     # process_status
-    weights = {'raw' : 3, 'in_process': 2, 'final': 1}
+    weights = {'raw' : 3, 'cleaned': 2, 'anonymized': 1}
     package = _modify_weighted_field(package, 'process_status', weights)
 
     # identifiability
-    weights = {'personally_identifiable' : 2, 'anonymized': 1}
+    weights = {'personally_identifiable' : 4, 'anonymized_enclave': 3, 'anonymized_scientific': 2,  'anonymized_public': 1}
     package = _modify_weighted_field(package, 'identifiability', weights)
 
     # private
+    # TODO: clarify what level of anonymization required
     if package['identifiability'] == 'personally_identifiable':
         package['private'] = True
 

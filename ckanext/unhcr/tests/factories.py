@@ -8,7 +8,8 @@ class Dataset(factories.Dataset):
     archived = 'False'
     data_collector = ['acf']
     data_collection_technique = 'interview'
-    operational_purpose_of_data = 'idp_profiling'
+    sampling_procedure = 'nonprobability'
+    operational_purpose_of_data = 'cartography'
 
 
 class DataContainer(factories.Organization):

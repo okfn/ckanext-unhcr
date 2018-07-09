@@ -11,6 +11,11 @@
             "preset": "title"
         },
         {
+            "field_name": "short_title",
+            "label": "Short title",
+            "form_placeholder": "eg. Short title for the project"
+        },
+        {
             "field_name": "name",
             "form_placeholder": "eg. my-dataset",
             "label": "URL",
@@ -79,8 +84,16 @@
             "required": true,
             "choices": [
 				{
+					"label": "United Nations High Commissioner for Refugees",
+					"value": "unhcr"
+				},
+				{
 					"label": "Action contre la faim",
 					"value": "acf"
+				},
+				{
+					"label": "Impact - REACH",
+					"value": "reach"
 				},
 				{
 					"label": "Agency for Technical Cooperation and Development",
@@ -99,32 +112,12 @@
 					"value": "drc"
 				},
 				{
-					"label": "ECHO",
-					"value": "echo"
-				},
-				{
-					"label": "European Union (EU)",
-					"value": "eu"
-				},
-				{
-					"label": "Food and Agriculture Organization",
-					"value": "fao"
-				},
-				{
-					"label": "iMMAP",
-					"value": "immap"
-				},
-				{
 					"label": "INTERSOS",
 					"value": "intersos"
 				},
 				{
 					"label": "International Organization for Migration",
 					"value": "iom"
-				},
-				{
-					"label": "MapAction",
-					"value": "mapaction"
 				},
 				{
 					"label": "Mercy Corps",
@@ -135,16 +128,28 @@
 					"value": "nrc"
 				},
 				{
+					"label": "Save the Children International",
+					"value": "sci"
+				},
+				{
+					"label": "MapAction",
+					"value": "mapaction"
+				},
+				{
+					"label": "CartONG",
+					"value": "cartong"
+				},
+				{
+					"label": "iMMAP",
+					"value": "immap"
+				},
+				{
 					"label": "Office of the High Commissioner for Human Rights",
 					"value": "ohchr"
 				},
 				{
-					"label": "REACH",
-					"value": "reach"
-				},
-				{
-					"label": "Save the Children International",
-					"value": "sci"
+					"label": "Food and Agriculture Organization",
+					"value": "fao"
 				},
 				{
 					"label": "United Nations Assistance Mission for Iraq",
@@ -175,10 +180,6 @@
 					"value": "unhas"
 				},
 				{
-					"label": "United Nations High Commissioner for Refugees",
-					"value": "unhcr"
-				},
-				{
 					"label": "United Nations Children's Fund",
 					"value": "unicef"
 				},
@@ -188,7 +189,7 @@
 				},
 				{
 					"label": "UNITAR/UNOSAT",
-					"value": "unitar-unosat"
+					"value": "unitar_unosat"
 				},
 				{
 					"label": "United Nations Mine Action Coordination Centre",
@@ -240,11 +241,7 @@
 				},
 				{
 					"label": "World Bank",
-					"value": "world-bank"
-				},
-				{
-					"label": "CartONG",
-					"value": "cartong"
+					"value": "world_bank"
 				}
             ]
         },
@@ -266,12 +263,12 @@
             "required": true,
             "choices": [
                 {
-                    "label": "WASH",
-                    "value": "wash"
-                },
-                {
                     "label": "Protection",
                     "value": "protection"
+                },
+                {
+                    "label": "WASH",
+                    "value": "wash"
                 },
                 {
                     "label": "Shelter",
@@ -314,6 +311,99 @@
             "required": true
         },
         {
+            "field_name": "sampling_procedure",
+            "help_text": "Unit of measurement / observation for the dataset. Multiple values are allowed.",
+            "label": "Sampling Procedure",
+            "preset": "multiple_select",
+            "required": true,
+            "choices": [
+                {
+                    "label": "Total universe/Complete enumeration",
+                    "help_text": "All units (individuals, households, organizations, etc.) of a target population are included in the data collection.",
+                    "value": "total_universe_complete_enumeration"
+                },
+                {
+                    "label": "Probability: Simple random",
+                    "help_text": "All units of a target population have an equal probability of being included in the sample.",
+                    "value": "probability_simple_random"
+                },
+                {
+                    "label": "Probability: Systematic random",
+                    "help_text": "A fixed selection interval is determined by dividing the population size by the desired sample size (Interval sampling).",
+                    "value": "probability_systematic_random"
+                },
+                {
+                    "label": "Probability: Stratified",
+                    "help_text": "The target population is subdivided into separate and mutually exclusive segments (strata) that cover the entire population. Independent random samples are then drawn from each segment.",
+                    "value": "probability_stratified"
+                },
+                {
+                    "label": "Probability: Stratified: Proportional",
+                    "help_text": "The target population is subdivided into separate and mutually exclusive segments (strata) that cover the entire population. In proportional stratified sampling the number of elements chosen from each stratum is proportional to the population size of the stratum when viewed against the entire population.",
+                    "value": "probability_stratified_proportional"
+                },
+                {
+                    "label": "Probability: Stratified: Disproportional",
+                    "help_text": "The target population is subdivided into separate and mutually exclusive segments (strata) that cover the entire population. In disproportional sampling the number of units chosen from each stratum is not proportional to the population size of the stratum when viewed against the entire population. The number of sampled units from each stratum can be equal, optimal, or can reflect the purpose of the study, like oversampling of different subgroups of the population",
+                    "value": "probability_stratified_disproportional"
+                },
+                {
+                    "label": "Probability: Cluster",
+                    "help_text": "The target population is divided into naturally occurring segments (clusters) and a probability sample of the clusters is selected. Data are then collected from all units within each selected cluster. Sampling is often clustered by geography, or time period. Use this broader term if a more specific type of cluster sampling is not known or is difficult to identify.",
+                    "value": "probability_cluster"
+                },
+                {
+                    "label": "Probability: Cluster: Simple random ",
+                    "help_text": " The target population is divided into naturally occurring segments (clusters) and a simple random sample of the clusters is selected. Data are then collected from all units within each selected cluster. For example, for a sample of students in a city, a number of schools would be chosen using the random selection method, and then all of the students from every sampled school would be included.",
+                    "value": "probability_cluster_simple_random"
+                },
+                {
+                    "label": "Probability: Cluster: Stratified random",
+                    "help_text": "The target population is divided into naturally occurring segments (clusters); next, these are divided into mutually exclusive strata and a random sample of clusters is selected from each stratum. Data are then collected from all units within each selected cluster. For example, for a sample of students in a city, schools would be divided into two strata by school type (private vs. public); schools would be then randomly selected from each stratum, and all of the students from every sampled school would be included.",
+                    "value": "probability_cluster_stratified_random"
+                },
+                {
+                    "label": "Probability: Multistage",
+                    "help_text": "Sampling is carried out in stages using smaller and smaller units at each stage, and all stages involve a probability selection. The type of probability sampling procedure may be different at each stage. For example, for a sample of students in a city, schools are randomly selected in the first stage. A random sample of classes within each selected school is drawn in the second stage. Students are then randomly selected from each of these classes in the third stage.",
+                    "value": "probability_multistage"
+                },
+                {
+                    "label": "Non-probability ",
+                    "help_text": "The selection of units (individuals, households, organizations, etc.) from the target population is not based on random selection. It is not possible to determine the probability of each element to be sampled. Use this broader term if the specific type of non-probability is not known, difficult to identify, or if multiple non-probability methods are being employed.",
+                    "value": "nonprobability"
+                },
+                {
+                    "label": "Non-probability: Availability",
+                    "help_text": "The sample selection is based on the units' accessibility/relative ease of access. They may be easy to approach, or may themselves choose to participate in the study (self-selection). Researchers may have particular target groups in mind but they do not control the sample selection mechanism. For example, students leaving a particular building on campus may be approached, or individuals may volunteer to participate in response to invitations that do not target them specifically, but a larger group to which they may belong. Also called convenience or opportunity sampling.",
+                    "value": "nonprobability_availability"
+                },
+                {
+                    "label": "Non-probability: Purposive",
+                    "help_text": "Sample units are specifically identified, selected and contacted for the information they can provide on the researched topic. Selection is based on different characteristics of the independent and/or dependent variables under study, and relies on the researchers' judgement. The study authors, or persons authorized by them have control over the sample selection mechanism and the universe is defined in terms of the selection criteria. Also called judgement sampling. For example, a medical researcher may intentionally select individuals who are similar in most respects, except on the outcome of the research topic, which can be a specific disease.  Some types of purposive sampling are typical/deviant case, homogeneous/maximum variation, expert, or critical case sampling. ",
+                    "value": "nonprobability_purposive"
+                },
+                {
+                    "label": "Non-probability: Quota",
+                    "help_text": "The target population is subdivided into separate and mutually exclusive segments according to some predefined quotation criteria. The distribution of the quotation criteria (gender/age/ethnicity ratio, or other characteristics, like religion, education, etc.) is intended to reflect the real structure of the target population or the structure of the desired study population. Non-probability samples are then drawn from each segment until a specific number of units has been reached. For example, if the target population consists of 45 percent females and 55 percent males, a proportional quota sample will have the same gender percentages, while in a non-proportional quota sample the percentages will be different, based on some study-related consideration (for instance, the need to oversample for certain under-represented segments of the population).",
+                    "value": "nonprobability_quota"
+                },
+                {
+                    "label": "Non-probability: Respondent-assisted",
+                    "help_text": "Sample units are identified from a target population with the assistance of units already selected. A typical case is snowball sampling, in which the researcher identifies a group of units that matches a particular criterion of eligibility. The latter are asked to recruit other members of the same population that fulfil the same criterion of eligibility (sampling of specific populations like migrants, etc.).",
+                    "value": "nonprobability_respondentassisted"
+                },
+                {
+                    "label": "Mixed probability and non-probability",
+                    "help_text": "Sample design that combines probability and non-probability sampling within the same sampling process. Different types of sampling may be used at different stages of creating the sample. For example, for a sample of minority students in a city, schools are randomly selected in the first stage. Then, a quota sample of students is selected within each school in the second stage. If separate samples are drawn from the same target population using different sampling methods, the type of sampling procedure used for each sample should be classified separately.",
+                    "value": "mixed_probability_nonprobability"
+                },
+                {
+                    "label": "Use if the sampling procedure is known, but not found in the list..",
+                    "value": "other_other"
+                }
+            ]
+        },
+        {
             "field_name": "operational_purpose_of_data",
             "help_text": "Classification of the type of data contained in the file. Multiple values are allowed.",
             "label": "Operational purpose of data",
@@ -324,16 +414,16 @@
                     "value": "participatory_assessments"
                 },
                 {
-                    "label": "Other Needs assessments",
-                    "value": "other_needs_assessments"
+                    "label": "Baseline Household Survey",
+                    "value": "baseline_household_survey"
                 },
                 {
-                    "label": "IDP Profiling",
-                    "value": "idp_profiling"
+                    "label": "Rapid Needs Assessment",
+                    "value": "rapid_needs_assessment"
                 },
                 {
-                    "label": "Socio-economic survey",
-                    "value": "socio_economic_survey"
+                    "label": "Protection Monitoring",
+                    "value": "protection_monitoring"
                 },
                 {
                     "label": "Programme monitoring",
@@ -344,20 +434,8 @@
                     "value": "population_data"
                 },
                 {
-                    "label": "Protection data",
-                    "value": "protection_data"
-                },
-                {
-                    "label": "Shape files",
-                    "value": "shape_files"
-                },
-                {
-                    "label": "Case management",
-                    "value": "case_management"
-                },
-                {
-                    "label": "Coordination data",
-                    "value": "coordination_data"
+                    "label": "Cartography, Infrastructure & GIS",
+                    "value": "cartography"
                 }
             ]
         },
@@ -375,16 +453,16 @@
             "display_snippet": "select.html",
             "choices": [
                 {
-                    "label": "Raw",
+                    "label": "Raw-Uncleaned",
                     "value": "raw"
                 },
                 {
-                    "label": "In Process",
-                    "value": "in_process"
+                    "label": "Cleaned Only",
+                    "value": "cleaned"
                 },
                 {
-                    "label": "Final",
-                    "value": "final"
+                    "label": "Cleaned & Anonymized",
+                    "value": "anonymized"
                 }
             ]
 
@@ -408,6 +486,11 @@
 
         },
         {
+            "field_name": "geog_coverage",
+            "label": "Geographic Coverage",
+            "form_placeholder": "eg. National coverage, or name of the area, etc."
+        },
+        {
             "field_name": "data_collection_technique",
             "label": "Data collection technique",
             "preset": "select",
@@ -418,19 +501,11 @@
                     "value": "notspecified"
                 },
                 {
-                    "label": "Interview",
-                    "value": "interview"
-                },
-                {
-                    "label": "Face-to-face interview",
-                    "value": "face_to_face_interview"
-                },
-                {
-                    "label": "Face-to-face interview: CAPI/CAMI",
+                    "label": "Face-to-face interview: Computerised",
                     "value": "face_to_face_interview_capi_cami"
                 },
                 {
-                    "label": "Face-to-face interview: PAPI",
+                    "label": "Face-to-face interview: Paper-and-pencil",
                     "value": "face_to_face_interview_papi"
                 },
                 {
@@ -438,20 +513,16 @@
                     "value": "telephone_interview"
                 },
                 {
-                    "label": "Telephone interview: CATI",
-                    "value": "telephone_interview_cati"
-                },
-                {
                     "label": "E-mail interview",
                     "value": "e_mail_interview"
                 },
                 {
-                    "label": "Web-based interview",
+                    "label": "Web-based interview: audio-visual technology enabling the interviewer(s) and interviewee(s) to communicate in real time",
                     "value": "web_based_interview"
                 },
                 {
-                    "label": "Self-administered questionnaire",
-                    "value": "self_administered_questionnaire"
+                    "label": "Interview",
+                    "value": "interview"
                 },
                 {
                     "label": "Self-administered questionnaire: E-mail",
@@ -466,16 +537,8 @@
                     "value": "self_administered_questionnaire_sms_mms"
                 },
                 {
-                    "label": "Self-administered questionnaire: Web-based",
-                    "value": "self_administered_questionnaire_web_based"
-                },
-                {
-                    "label": "Self-administered questionnaire: Computer-assisted (CASI)",
+                    "label": "Self-administered questionnaire: Computer-assisted",
                     "value": "self_administered_questionnaire_computer_assisted_casi"
-                },
-                {
-                    "label": "Focus group",
-                    "value": "focus_group"
                 },
                 {
                     "label": "Face-to-face focus group",
@@ -523,7 +586,43 @@
             "field_name": "admin_notes",
             "form_placeholder": "Internal notes about how the dataset has been cleaned or transformed. These are stored but not indexed.",
             "form_snippet": "markdown.html",
-            "label": "Admin Notes"
+            "label": "Admin Notes - General"
+        },
+        {
+            "field_name": "sampling_procedure_notes",
+            "form_placeholder": "Internal notes about how the Sampling Procedure has been defined. These are stored but not indexed.",
+            "form_snippet": "markdown.html",
+            "label": "Admin Notes - Sampling Procedure"
+        },
+        {
+            "field_name": "response_rate_notes",
+            "form_placeholder": "Internal notes about how the response rate for the survey. These are stored but not indexed.",
+            "form_snippet": "markdown.html",
+            "label": "Admin Notes - Response Rate"
+        },
+        {
+            "field_name": "data_collection_notes",
+            "form_placeholder": "Internal notes about how the data Collection process and supervision. These are stored but not indexed.",
+            "form_snippet": "markdown.html",
+            "label": "Admin Notes - Data Collection"
+        },
+        {
+            "field_name": "weight_notes",
+            "form_placeholder": "Internal notes on the Weighting. These are stored but not indexed.",
+            "form_snippet": "markdown.html",
+            "label": "Admin Notes - Weighting"
+        },
+        {
+            "field_name": "clean_ops_notes",
+            "form_placeholder": "Internal notes about how the dataset has been cleaned or transformed. These are stored but not indexed.",
+            "form_snippet": "markdown.html",
+            "label": "Admin Notes - Cleaning"
+        },
+        {
+            "field_name": "data_accs_notes",
+            "form_placeholder": "provide information about the restriction to access the dataset and the point of contact to access the dataset",
+            "form_snippet": "markdown.html",
+            "label": "Admin Notes - Access authority"
         },
         {
             "field_name": "ddi",
@@ -610,8 +709,16 @@
                     "value": "questionnaire"
                 },
                 {
-                    "label": "Analytical product",
-                    "value": "analytical_product"
+                    "label": "Report",
+                    "value": "report"
+                },
+                {
+                    "label": "Sampling strategy & methodology Description",
+                    "value": "sampling_methodo"
+                },
+                {
+                    "label": "Infographics & Dashboard",
+                    "value": "infographics"
                 }
             ]
         },
@@ -641,16 +748,16 @@
             "required": true,
             "choices": [
                 {
-                    "label": "Raw",
+                    "label": "Raw-Uncleaned",
                     "value": "raw"
                 },
                 {
-                    "label": "In Process",
-                    "value": "in_process"
+                    "label": "Cleaned Only",
+                    "value": "cleaned"
                 },
                 {
-                    "label": "Final",
-                    "value": "final"
+                    "label": "Cleaned & Anonymized",
+                    "value": "anonymized"
                 }
             ]
         },
@@ -663,12 +770,20 @@
             "required": true,
             "choices": [
                 {
-                    "label": "Anonymized",
-                    "value": "anonymized"
-                },
-                {
                     "label": "Personally identifiable",
                     "value": "personally_identifiable"
+                },
+                {
+                    "label": "Anonymized 1st level: Data Enclave - only removed direct identifiers",
+                    "value": "anonymized_enclave"
+                },
+                {
+                    "label": "Anonymized 2st level: Scientific Use File (SUF)",
+                    "value": "anonymized_scientific"
+                },
+                {
+                    "label": "Anonymized 3st level: Public Use File (PUF)",
+                    "value": "anonymized_public"
                 }
             ]
         }
