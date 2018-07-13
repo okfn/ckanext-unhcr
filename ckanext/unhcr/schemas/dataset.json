@@ -497,63 +497,71 @@
             "choices": [
                 {
                     "label": "Not specified",
-                    "value": "notspecified"
+                    "value": "nf"
+                },
+                {
+                    "label": "Face-to-face interview",
+                    "value": "f2f"
                 },
                 {
                     "label": "Face-to-face interview: Computerised",
-                    "value": "face_to_face_interview_capi_cami"
+                    "value": "capi"
+                },
+                {
+                    "label": "Face-to-face interview: Mobile",
+                    "value": "cami"
                 },
                 {
                     "label": "Face-to-face interview: Paper-and-pencil",
-                    "value": "face_to_face_interview_papi"
+                    "value": "papi"
                 },
                 {
                     "label": "Telephone interview",
-                    "value": "telephone_interview"
+                    "value": "tri"
                 },
                 {
                     "label": "E-mail interview",
-                    "value": "e_mail_interview"
+                    "value": "eri"
                 },
                 {
                     "label": "Web-based interview: audio-visual technology enabling the interviewer(s) and interviewee(s) to communicate in real time",
-                    "value": "web_based_interview"
-                },
-                {
-                    "label": "Interview",
-                    "value": "interview"
+                    "value": "wri"
                 },
                 {
                     "label": "Self-administered questionnaire: E-mail",
-                    "value": "self_administered_questionnaire_e_mail"
+                    "value": "easi"
                 },
                 {
                     "label": "Self-administered questionnaire: Paper",
-                    "value": "self_administered_questionnaire_paper"
+                    "value": "pasi"
                 },
                 {
                     "label": "Self-administered questionnaire: SMS/MMS",
-                    "value": "self_administered_questionnaire_sms_mms"
+                    "value": "sasi"
                 },
                 {
                     "label": "Self-administered questionnaire: Computer-assisted",
-                    "value": "self_administered_questionnaire_computer_assisted_casi"
+                    "value": "casi"
+                },
+                {
+                    "label": "Self-administered questionnaire: Web-based",
+                    "value": "cawi"
                 },
                 {
                     "label": "Face-to-face focus group",
-                    "value": "face_to_face_focus_group"
+                    "value": "foc"
                 },
                 {
                     "label": "Telephone focus group",
-                    "value": "telephone_focus_group"
+                    "value": "tfoc"
                 },
                 {
                     "label": "Observation",
-                    "value": "observation"
+                    "value": "obs"
                 },
                 {
                     "label": "Other",
-                    "value": "other"
+                    "value": "oth"
                 }
             ]
         },
