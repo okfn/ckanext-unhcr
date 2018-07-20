@@ -474,15 +474,22 @@
             "display_snippet": "select.html",
             "choices": [
                 {
-                    "label": "Anonymized",
-                    "value": "anonymized"
-                },
-                {
                     "label": "Personally identifiable",
                     "value": "personally_identifiable"
+                },
+                {
+                    "label": "Anonymized 1st level: Data Enclave - only removed direct identifiers",
+                    "value": "anonymized_enclave"
+                },
+                {
+                    "label": "Anonymized 2st level: Scientific Use File (SUF)",
+                    "value": "anonymized_scientific"
+                },
+                {
+                    "label": "Anonymized 3st level: Public Use File (PUF)",
+                    "value": "anonymized_public"
                 }
             ]
-
         },
         {
             "field_name": "geog_coverage",

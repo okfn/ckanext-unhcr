@@ -1,10 +1,17 @@
+import json
 import logging
-from ckan import model
+
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan.lib.plugins import DefaultTranslation
+
 from ckanext.unhcr import actions, auth, helpers, jobs, validators
+
+from ckanext.scheming.helpers import scheming_get_dataset_schema
+
 log = logging.getLogger(__name__)
+
+_ = toolkit._
 
 
 class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation):
@@ -44,6 +51,17 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation):
     def _facets(self, facets_dict):
         if 'groups' in facets_dict:
             del facets_dict['groups']
+
+        facets_dict['vocab_data_collector'] = _('Data Collector')
+        facets_dict['vocab_keywords'] = _('Keywords')
+        facets_dict['vocab_sampling_procedure'] = _('Sampling Procedure')
+        facets_dict['vocab_operational_purpose_of_data'] = _(
+            'Operational purpose of data')
+        facets_dict['vocab_process_status'] = _('Process Status')
+        facets_dict['vocab_identifiability'] = _('Identifiability')
+        facets_dict['vocab_data_collection_technique'] = _(
+            'Data Collection Technique')
+
         return facets_dict
 
     def dataset_facets(self, facets_dict, package_type):
@@ -98,6 +116,30 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation):
         # data_accs_notes
         pkg_dict.pop('data_accs_notes', None)
         pkg_dict.pop('extras_data_accs_notes', None)
+
+        # Index labels on selected fields
+
+        schema = scheming_get_dataset_schema('dataset')
+        fields = ['data_collector', 'keywords', 'sampling_procedure',
+                  'operational_purpose_of_data',  'data_collection_technique',
+                  'process_status', 'identifiability']
+        for field in fields:
+            if pkg_dict.get(field):
+                value = pkg_dict[field]
+                try:
+                    values = json.loads(pkg_dict[field])
+                except ValueError:
+                    values = [value]
+
+                out = []
+
+                for schema_field in schema['dataset_fields']:
+                    if schema_field['field_name'] == field:
+                        for item in values:
+                            for choice in schema_field['choices']:
+                                if choice['value'] == item:
+                                    out.append(choice['label'])
+                pkg_dict['vocab_' + field] = out
 
         return pkg_dict
 
