@@ -1,4 +1,6 @@
 import logging
+import time
+
 from ckan import model
 from ckanext.unhcr import utils
 import ckan.plugins.toolkit as toolkit
@@ -8,6 +10,7 @@ log = logging.getLogger(__name__)
 # Module API
 
 def process_dataset_fields(package_id):
+    time.sleep(3)
 
     # Get package
     package_show = toolkit.get_action('package_show')
@@ -22,6 +25,8 @@ def process_dataset_fields(package_id):
 
 
 def process_dataset_links_on_create(package_id):
+    time.sleep(3)
+
     context = {'model': model, 'job': True}
 
     # Create back references
