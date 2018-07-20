@@ -1,9 +1,13 @@
 import logging
 from ckan.plugins import toolkit
-from ckan.plugins.toolkit import Invalid
+from ckan.plugins.toolkit import Invalid, missing, get_validator, _
+from ckanext.scheming.validation import scheming_validator
+from ckanext.scheming import helpers as sh
 from ckanext.unhcr.helpers import get_linked_datasets_for_form
 from ckanext.unhcr import utils
 log = logging.getLogger(__name__)
+
+OneOf = get_validator('OneOf')
 
 
 # Module API
@@ -27,6 +31,34 @@ def linked_datasets(value, context):
             raise Invalid('Invalid linked datasets')
 
     return value
+
+
+@scheming_validator
+def unhcr_choices(field, schema):
+    """
+    Require that one of the field choices values is passed.
+    """
+    def validator(value):
+        if value is missing or not value:
+            return value
+        choices = sh.scheming_field_choices(field)
+        for c in choices:
+            if value == c['value']:
+                return value
+        msg = '''
+Unexpected choice "{value}". It must be either the label or the code in
+brackets of one of the following: {allowed}. If you want to add another
+value please contact the site administrators.
+'''
+        raise Invalid(_(
+            msg.format(
+                value=value,
+                allowed=', '.join(
+                    [c['label'] + ' [' + c['value'] + ']' for c in choices]))
+            )
+        )
+
+    return validator
 
 
 # Internal

@@ -492,7 +492,9 @@
         {
             "field_name": "data_collection_technique",
             "label": "Data collection technique",
-            "preset": "select",
+            "form_snippet": "select.html",
+            "display_snippet": "select.html",
+            "validators": "scheming_required unhcr_choices",
             "required": true,
             "choices": [
                 {

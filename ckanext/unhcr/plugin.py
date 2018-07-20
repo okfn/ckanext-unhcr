@@ -134,4 +134,5 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation):
         return {
             'ignore_if_attachment': validators.ignore_if_attachment,
             'linked_datasets_validator': validators.linked_datasets,
+            'unhcr_choices': validators.unhcr_choices,
         }
