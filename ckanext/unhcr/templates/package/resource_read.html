@@ -5,7 +5,6 @@
 {% block resource_read_title %}
   <div class="heading dropdown">
       <a class="dropdown-toggle" data-toggle="dropdown"><h1>{{ h.resource_display_name(res) | truncate(50) }}</h1><span><b class="caret"></b></span></a>
-      <span>{{ h.get_validation_badge(res)|safe }}</span>
     <div class="dropdown-menu" role="menu">
       {% snippet "package/snippets/resources.html", pkg=pkg, active=res.id %}
     </div>
