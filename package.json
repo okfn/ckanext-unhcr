@@ -8,17 +8,22 @@
   },
   "devDependencies": {
     "autoprefixer": "^7.2.5",
+    "chromedriver": "^2.40.0",
+    "doctoc": "^1.4.0",
     "grunt": "^1.0.1",
     "grunt-contrib-concat": "^1.0.1",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-postcss": "^0.9.0",
+    "nightwatch": "^0.9.21",
     "postcss-calc": "^6.0.1",
     "postcss-color-function": "^4.0.1",
     "postcss-custom-media": "^6.0.0",
     "postcss-custom-properties": "^6.2.0",
     "postcss-import": "^11.0.0",
     "postcss-mixins": "^6.2.0",
-    "postcss-nesting": "^4.2.1"
+    "postcss-nesting": "^4.2.1",
+    "saucelabs": "^1.5.0",
+    "selenium-server": "3.141.5"
   },
   "license": "GNU GPLv3"
 }

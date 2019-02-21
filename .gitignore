@@ -43,5 +43,4 @@ docs/_build/
 
 # Extra
 .pytest_cache
-
-
+selenium-debug.log
