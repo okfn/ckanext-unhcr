@@ -20,7 +20,8 @@ CKAN extension for the UNHCR RIDL project
 - [Loging into container](#loging-into-container)
 - [Updating readme](#updating-readme)
 - [Managing docker](#managing-docker)
-- [Reseting docker](#reseting-docker)
+- [Generate deposited-dataset schema](#generate-deposited-dataset-schema)
+- [Create development users](#create-development-users)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

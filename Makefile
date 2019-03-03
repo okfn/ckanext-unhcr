@@ -1,4 +1,4 @@
-.PHONY: assets i18n_compile i18n_extract readme pull start shell test remove stop
+.PHONY: assets docker e2e i18n readme start shell test
 
 
 list:
