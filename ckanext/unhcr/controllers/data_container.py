@@ -8,7 +8,7 @@ from ckanext.unhcr.mailer import mail_data_container_update_to_user
 log = logging.getLogger(__name__)
 
 
-class DataContainer(toolkit.BaseController):
+class DataContainerController(toolkit.BaseController):
 
     def approve(self, id):
 

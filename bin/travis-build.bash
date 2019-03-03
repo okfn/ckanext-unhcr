@@ -18,6 +18,13 @@ else
     git checkout $CKAN_TAG
     echo "CKAN version: ${CKAN_TAG#ckan-}"
 fi
+echo "Patching CKAN core..."
+for d in $TRAVIS_BUILD_DIR/bin/patches/*; do \
+    for f in `ls $d/*.patch | sort -g`; do \
+	    echo "$0: Applying patch $f"; patch -p1 < "$f" ; \
+    done ; \
+done
+
 # Unpin CKAN's psycopg2 dependency get an important bugfix
 # https://stackoverflow.com/questions/47044854/error-installing-psycopg2-2-6-2
 sed -i '/psycopg2/c\psycopg2' requirements.txt

@@ -9,6 +9,7 @@ from ckan.tests import factories as core_factories
 from ckanext.unhcr.tests import factories
 
 
+# TODO: extract as a test base for all tests
 class AuthTestBase(helpers.FunctionalTestBase):
 
     @classmethod

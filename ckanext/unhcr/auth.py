@@ -1,7 +1,9 @@
 import logging
 from ckan.plugins import toolkit
 import ckan.logic.auth.create as auth_create_core
+import ckan.logic.auth.update as auth_update_core
 from ckan.logic.auth import get as core_get
+from ckanext.unhcr import helpers
 log = logging.getLogger(__name__)
 
 
@@ -47,6 +49,8 @@ def restrict_access_to_get_auth_functions():
     overriden_auth_functions['organization_list_for_user'] = \
         organization_list_for_user
     overriden_auth_functions['organization_create'] = organization_create
+    overriden_auth_functions['package_create'] = package_create
+    overriden_auth_functions['package_update'] = package_update
 
     return overriden_auth_functions
 
@@ -101,3 +105,36 @@ def organization_create(context, data_dict):
                     return {'success': True}
 
     return {'success': False, 'msg': 'Not allowed to create a data container'}
+
+
+def package_create(context, data_dict):
+
+    # For data deposit container
+    if data_dict:
+        depo = helpers.get_data_container_for_depositing()
+        if depo['id'] == data_dict.get('owner_org'):
+            return {'success': True}
+
+    # For normal container
+    return auth_create_core.package_create(context, data_dict)
+
+
+def package_update(context, data_dict):
+
+    # Get package id
+    package_id = None
+    if data_dict:
+        package_id = data_dict['id']
+    if context.get('package'):
+        package_id = context['package'].id
+
+    # For data deposit container
+    if package_id:
+        pack = toolkit.get_action('package_show')({}, {'id': package_id})
+        depo = helpers.get_data_container_for_depositing()
+        if (toolkit.c.userobj.id == pack.get('creator_user_id') and
+            depo['id'] == pack.get('owner_org')):
+                return {'success': True}
+
+    # For normal container
+    return auth_update_core.package_update(context, data_dict)

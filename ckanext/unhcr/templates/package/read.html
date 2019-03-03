@@ -1,5 +1,33 @@
 {% ckan_extends %}
-  {% block package_resources %}
-    {% snippet "package/snippets/resources_list.html", pkg=pkg, type='data' %}
-    {% snippet "package/snippets/resources_list.html", pkg=pkg, type='attachment' %}
-  {% endblock %}
+{% import 'macros/form.html' as form %}
+
+{% block page_primary_action %}
+  {% if pkg.type == 'deposited-dataset' %}
+    <div class="alert alert-warning" role="alert">
+      <p>{% trans %}This dataset is waiting for a curator approval{% endtrans %}</p>
+    </div>
+    {% set data_container_for_depositing = h.get_data_container_for_depositing() %}
+    {% if h.check_access('sysadmin') or h.user_in_org_or_group(data_container_for_depositing.id) %}
+      {% set validation_error = h.get_dataset_validation_error_or_none(pkg) %}
+      {% if not validation_error %}
+        <a href="/deposited-dataset/{{ pkg.id }}/approve" class="btn btn-primary">
+          {% trans %}Approve Dataset{% endtrans %}
+        </a>
+      {% else %}
+        {{ form.errors(validation_error.error_summary) }}
+        <a href="/deposited-dataset/edit/{{ pkg.id }}" class="btn btn-primary">
+          {% trans %}Modify Dataset{% endtrans %}
+        </a>
+      {% endif %}
+      <a href="/deposited-dataset/{{ pkg.id }}/reject" class="btn btn-danger">
+        {% trans %}Reject Dataset{% endtrans %}
+      </a>
+    {% endif %}
+  {% endif %}
+  {{ super() }}
+{% endblock %}
+
+{% block package_resources %}
+  {% snippet "package/snippets/resources_list.html", pkg=pkg, type='data' %}
+  {% snippet "package/snippets/resources_list.html", pkg=pkg, type='attachment' %}
+{% endblock %}

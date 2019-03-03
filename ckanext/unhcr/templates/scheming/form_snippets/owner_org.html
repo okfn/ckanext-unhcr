@@ -12,14 +12,19 @@
   {% endblock %}
 {% endmacro %}
 
-  <div data-module="dataset-visibility">
+<div data-module="dataset-visibility">
+
+  {% set data_container_for_depositing = h.get_data_container_for_depositing() %}
+
+  {% set organizations_available=h.organizations_available('create_dataset') | rejectattr('id', 'equalto', data_container_for_depositing.id) %}
+  {% set org_required=not h.check_config_permission('create_unowned_dataset') or h.scheming_field_required(field) %}
+
   {% snippet "scheming/form_snippets/_organization_select.html",
     field=field,
     data=data,
     errors=errors,
-    organizations_available=h.organizations_available('create_dataset'),
-    org_required=not h.check_config_permission('create_unowned_dataset')
-      or h.scheming_field_required(field),
+    organizations_available=organizations_available,
+    org_required=org_required,
     organization_option_tag=organization_option_tag %}
 
   {% block package_metadata_fields_visibility %}
@@ -35,4 +40,4 @@
     </div>
   {% endblock %}
 
-  </div>
+</div>

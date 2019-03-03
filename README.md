@@ -85,6 +85,10 @@ We write and store unit tests inside the `ckanext/unhcr/tests`. Prefer to name t
 $ make test
 ```
 
+To run only selected tests:
+- add `@nose.plugins.attrib.attr('only')` decorator to the selected test
+- run `$ make test ARGS='-a only'`
+
 ## Running E2E tests
 
 We write and store E2E tests inside the `tests` directory. Prefer to name test files after feature/bug names. To run the tests you should have the development server up and running:
@@ -144,14 +148,26 @@ $ docker ps -aq # list all containers
 $ docker stop $(docker ps -aq) # stop all containers
 $ docker rm $(docker ps -aq) # remove all containers
 $ docker rmi $(docker images -q) # remove all images
+$ docker system prune -a --volumes # CAUTION: it will purge all docker projects
+$ docker volume rm dockerckan<project>_ckan_storage dockerckan<project>_pg_data # remove project volumes
 ```
 
-## Reseting docker
+## Generate deposited-dataset schema
 
-> It will destroy all your projects inside docker!!!
-
-If you want to start everything from scratch there is a way to prune your docker environment:
+It will be generated based on the `dataset` schema (re-writing existent `deposited-dataset` schema).
 
 ```
-$ docker system prune -a --volumes
+$ python scripts/generate_deposited_dataset_schema.py
 ```
+
+## Create development users
+
+To test curation workflow we need users with different roles:
+
+```
+$ docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_curator email=curator@example.com password=test -c /srv/app/production.ini
+$ docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_user1 email=user1@example.com password=test -c /srv/app/production.ini
+$ docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_user2 email=user2@example.com password=test -c /srv/app/production.ini
+```
+
+Then go to the http://ckan-dev:5000/data-container/members/data-deposit and make `ckan_curator` an editor of the organization.

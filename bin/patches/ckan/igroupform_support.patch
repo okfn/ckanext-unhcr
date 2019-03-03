@@ -1,0 +1,735 @@
+From 7fb118e7cef7ad3e9d6ba6967f97735f86d4bab2 Mon Sep 17 00:00:00 2001
+From: amercader <amercadero@gmail.com>
+Date: Thu, 22 Feb 2018 14:01:57 +0100
+Subject: [PATCH 1/9] [#4031] Add names to organization routes so they can be
+ referenced in templates
+
+---
+ ckan/config/routing.py | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/ckan/config/routing.py b/ckan/config/routing.py
+index 1e01114ea1..5791c9b154 100644
+--- a/ckan/config/routing.py
++++ b/ckan/config/routing.py
+@@ -319,16 +319,16 @@ def make_map():
+     # organizations these basically end up being the same as groups
+     with SubMapper(map, controller='organization') as m:
+         m.connect('organizations_index', '/organization', action='index')
+-        m.connect('/organization/list', action='list')
+-        m.connect('/organization/new', action='new')
+-        m.connect('/organization/{action}/{id}',
+-                  requirements=dict(action='|'.join([
+-                      'delete',
+-                      'admins',
+-                      'member_new',
+-                      'member_delete',
+-                      'history'
+-                  ])))
++        m.connect('organization_index', '/organization', action='index')
++        m.connect('organization_new', '/organization/new', action='new')
++        for action in [
++          'delete',
++          'admins',
++          'member_new',
++          'member_delete',
++          'history']:
++            m.connect('organization_' + action, '/organization/' + action + '/{id}', action=action)
++
+         m.connect('organization_activity', '/organization/activity/{id}/{offset}',
+                   action='activity', ckan_icon='clock-o')
+         m.connect('organization_read', '/organization/{id}', action='read')
+
+From d988c6be0c53b5f1b90cdfe803ed35d6fc75cb7d Mon Sep 17 00:00:00 2001
+From: amercader <amercadero@gmail.com>
+Date: Thu, 22 Feb 2018 14:03:02 +0100
+Subject: [PATCH 2/9] [#4031] Pass group_type to plugins so they can choose
+ what to do
+
+For instance when rendering the form for a new group/org there is not
+way of telling if it's a group, org or custom type. The existing method
+for the plugin interface just accepts context and data_dict, so to
+maintain backwards compatibility I'm adding the group_type to
+data_dict['type'], which is consistent with what they would get on an
+update operation.
+---
+ ckan/controllers/group.py | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/ckan/controllers/group.py b/ckan/controllers/group.py
+index 3fe386c684..50e023e9f7 100644
+--- a/ckan/controllers/group.py
++++ b/ckan/controllers/group.py
+@@ -53,6 +53,8 @@ def _db_to_form_schema(self, group_type=None):
+         return lookup_group_plugin(group_type).db_to_form_schema()
+ 
+     def _setup_template_variables(self, context, data_dict, group_type=None):
++        if 'type' not in data_dict:
++            data_dict['type'] = group_type
+         return lookup_group_plugin(group_type).\
+             setup_template_variables(context, data_dict)
+ 
+
+From 8da2e48de047bfce0a45f8711f5479fbbfd41d4b Mon Sep 17 00:00:00 2001
+From: amercader <amercadero@gmail.com>
+Date: Thu, 22 Feb 2018 14:17:10 +0100
+Subject: [PATCH 3/9] [#4031] Remove _guess_group_type methods from org
+ controller
+
+It had "organization" hardcoded so it prevented custom organization
+types to work properly. The parent implementation in the group
+controller should work fine for orgs as well as it just uses the URL.
+---
+ ckan/controllers/organization.py | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/ckan/controllers/organization.py b/ckan/controllers/organization.py
+index 1b53d1f01e..292b8af4f9 100644
+--- a/ckan/controllers/organization.py
++++ b/ckan/controllers/organization.py
+@@ -20,9 +20,6 @@ class OrganizationController(group.GroupController):
+ 
+     group_types = ['organization']
+ 
+-    def _guess_group_type(self, expecting_name=False):
+-        return 'organization'
+-
+     def _replace_group_org(self, string):
+         ''' substitute organization for group if this is an org'''
+         return re.sub('^group', 'organization', string)
+
+From 102f096acb25d8f4df6999ebdf6a6ebb1e6a86c8 Mon Sep 17 00:00:00 2001
+From: amercader <amercadero@gmail.com>
+Date: Thu, 22 Feb 2018 14:20:18 +0100
+Subject: [PATCH 4/9] [#4031] Remove methods that prevented custom types URLs
+
+These two methods had hardcoded calls to the group or org routes defined
+in core, so custom types were ignored. Replace them with calls to
+`redirect_to` or `url_for` that take the group type into account.
+---
+ ckan/controllers/group.py | 28 ++++++++--------------------
+ 1 file changed, 8 insertions(+), 20 deletions(-)
+
+diff --git a/ckan/controllers/group.py b/ckan/controllers/group.py
+index 50e023e9f7..42b48817fb 100644
+--- a/ckan/controllers/group.py
++++ b/ckan/controllers/group.py
+@@ -103,18 +103,6 @@ def _render_template(self, template_name, group_type):
+         return render(self._replace_group_org(template_name),
+                       extra_vars={'group_type': group_type})
+ 
+-    def _redirect_to_this_controller(self, *args, **kw):
+-        ''' wrapper around redirect_to but it adds in this request's controller
+-        (so that it works for Organization or other derived controllers)'''
+-        kw['controller'] = request.environ['pylons.routes_dict']['controller']
+-        return h.redirect_to(*args, **kw)
+-
+-    def _url_for_this_controller(self, *args, **kw):
+-        ''' wrapper around url_for but it adds in this request's controller
+-        (so that it works for Organization or other derived controllers)'''
+-        kw['controller'] = request.environ['pylons.routes_dict']['controller']
+-        return h.url_for(*args, **kw)
+-
+     def _guess_group_type(self, expecting_name=False):
+         """
+             Guess the type of group from the URL.
+@@ -452,7 +440,7 @@ def bulk_process(self, id):
+             get_action(action_functions[action])(context, data_dict)
+         except NotAuthorized:
+             abort(403, _('Not authorized to perform bulk update'))
+-        self._redirect_to_this_controller(action='bulk_process', id=id)
++        h.redirect_to(group_type + '_bulk_process', id=id)
+ 
+     def new(self, data=None, errors=None, error_summary=None):
+         if data and 'type' in data:
+@@ -615,7 +603,7 @@ def delete(self, id):
+         group_type = self._ensure_controller_matches_group_type(id)
+ 
+         if 'cancel' in request.params:
+-            self._redirect_to_this_controller(action='edit', id=id)
++            h.redirect_to(group_type + '_edit', id=id)
+ 
+         context = {'model': model, 'session': model.Session,
+                    'user': c.user}
+@@ -635,7 +623,7 @@ def delete(self, id):
+                 else:
+                     h.flash_notice(_('%s has been deleted.')
+                                    % _(group_type.capitalize()))
+-                self._redirect_to_this_controller(action='index')
++                h.redirect_to(group_type + '_index')
+             c.group_dict = self._action('group_show')(context, {'id': id})
+         except NotAuthorized:
+             abort(403, _('Unauthorized to delete group %s') % '')
+@@ -706,7 +694,7 @@ def member_new(self, id):
+                 c.group_dict = self._action('group_member_create')(
+                     context, data_dict)
+ 
+-                self._redirect_to_this_controller(action='members', id=id)
++                h.redirect_to(group_type + '_members', id=id)
+             else:
+                 user = request.params.get('user')
+                 if user:
+@@ -728,7 +716,7 @@ def member_delete(self, id):
+         group_type = self._ensure_controller_matches_group_type(id)
+ 
+         if 'cancel' in request.params:
+-            self._redirect_to_this_controller(action='members', id=id)
++            h.redirect_to(group_type + '_members', id=id)
+ 
+         context = {'model': model, 'session': model.Session,
+                    'user': c.user}
+@@ -744,7 +732,7 @@ def member_delete(self, id):
+                 self._action('group_member_delete')(
+                     context, {'id': id, 'user_id': user_id})
+                 h.flash_notice(_('Group member has been deleted.'))
+-                self._redirect_to_this_controller(action='members', id=id)
++                h.redirect_to(group_type + '_members', id=id)
+             c.user_dict = self._action('user_show')(context, {'id': user_id})
+             c.user_id = user_id
+             c.group_id = id
+@@ -792,8 +780,8 @@ def history(self, id):
+             from webhelpers.feedgenerator import Atom1Feed
+             feed = Atom1Feed(
+                 title=_(u'CKAN Group Revision History'),
+-                link=self._url_for_this_controller(
+-                    action='read',
++                link=h.url_for(
++                    group_type + '_read',
+                     id=c.group_dict['name']),
+                 description=_(u'Recent changes to CKAN Group: ') +
+                 c.group_dict['display_name'],
+
+From 17c4c428e3296bceec16576f98b809df253d9dc5 Mon Sep 17 00:00:00 2001
+From: amercader <amercadero@gmail.com>
+Date: Thu, 22 Feb 2018 14:24:14 +0100
+Subject: [PATCH 5/9] [#4031] Improve search in group read and bulk page
+
+---
+ ckan/controllers/group.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/ckan/controllers/group.py b/ckan/controllers/group.py
+index 42b48817fb..162955ff77 100644
+--- a/ckan/controllers/group.py
++++ b/ckan/controllers/group.py
+@@ -238,9 +238,9 @@ def _read(self, id, limit, group_type):
+         q = c.q = request.params.get('q', '')
+         # Search within group
+         if c.group_dict.get('is_organization'):
+-            q += ' owner_org:"%s"' % c.group_dict.get('id')
++            fq = 'owner_org:"%s"' % c.group_dict.get('id')
+         else:
+-            q += ' groups:"%s"' % c.group_dict.get('name')
++            fq = 'groups:"%s"' % c.group_dict.get('name')
+ 
+         c.description_formatted = \
+             h.render_markdown(c.group_dict.get('description'))
+@@ -321,7 +321,7 @@ def pager_url(q=None, page=None):
+ 
+             data_dict = {
+                 'q': q,
+-                'fq': '',
++                'fq': fq,
+                 'include_private': True,
+                 'facet.field': facets.keys(),
+                 'rows': limit,
+
+From 3569e09638bab263c660fe4bc7192783e9c740f8 Mon Sep 17 00:00:00 2001
+From: amercader <amercadero@gmail.com>
+Date: Thu, 22 Feb 2018 14:37:30 +0100
+Subject: [PATCH 6/9] [#4031] Add missing routes in group plugins
+
+---
+ ckan/lib/plugins.py | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/ckan/lib/plugins.py b/ckan/lib/plugins.py
+index c3bec355ed..0827e3bc00 100644
+--- a/ckan/lib/plugins.py
++++ b/ckan/lib/plugins.py
+@@ -190,6 +190,14 @@ def register_group_plugins(map):
+                         controller=group_controller,
+                         action='members',
+                         ckan_icon='users')
++            map.connect('%s_member_new' % group_type,
++                        '/%s/member_new/{id}' % group_type,
++                        controller=group_controller,
++                        action='member_new')
++            map.connect('%s_member_delete' % group_type,
++                        '/%s/member_delete/{id}' % group_type,
++                        controller=group_controller,
++                        action='member_delete')
+             map.connect('%s_activity' % group_type,
+                         '/%s/activity/{id}/{offset}' % group_type,
+                         controller=group_controller,
+
+From 8ec960bcc0b5940bd497bbabb65cdcff1546db0f Mon Sep 17 00:00:00 2001
+From: amercader <amercadero@gmail.com>
+Date: Thu, 22 Feb 2018 14:37:39 +0100
+Subject: [PATCH 7/9] [#4031] Allow registering of fallback org plugins
+
+Right now if an organization plugin implementing `IGroupForm` set
+is_fallback to True, the plugin was added as the default *group* plugin,
+not the organization one.
+---
+ ckan/lib/plugins.py | 36 ++++++++++++++++++++++++++++--------
+ 1 file changed, 28 insertions(+), 8 deletions(-)
+
+diff --git a/ckan/lib/plugins.py b/ckan/lib/plugins.py
+index 0827e3bc00..63000224ba 100644
+--- a/ckan/lib/plugins.py
++++ b/ckan/lib/plugins.py
+@@ -23,6 +23,7 @@
+ _group_plugins = {}
+ # The fallback behaviour
+ _default_group_plugin = None
++_default_organization_plugin = None
+ # Mapping from group-type strings to controllers
+ _group_controllers = {}
+ 
+@@ -34,6 +35,8 @@ def reset_package_plugins():
+     _package_plugins = {}
+     global _default_group_plugin
+     _default_group_plugin = None
++    global _default_organization_plugin
++    _default_organization_plugin = None
+     global _group_plugins
+     _group_plugins = {}
+     global _group_controllers
+@@ -133,22 +136,21 @@ def register_group_plugins(map):
+     This method will setup the mappings between group types and the
+     registered IGroupForm instances. If it's called more than once an
+     exception will be raised.
++
++    It will register IGroupForm instances for both groups and organizations
+     """
+     global _default_group_plugin
++    global _default_organization_plugin
+ 
+     # This function should have not effect if called more than once.
+     # This should not occur in normal deployment, but it may happen when
+     # running unit tests.
+-    if _default_group_plugin is not None:
++    if (_default_group_plugin is not None or
++            _default_organization_plugin is not None):
+         return
+ 
+     # Create the mappings and register the fallback behaviour if one is found.
+     for plugin in plugins.PluginImplementations(plugins.IGroupForm):
+-        if plugin.is_fallback():
+-            if _default_group_plugin is not None:
+-                raise ValueError("More than one fallback IGroupForm has been "
+-                                 "registered")
+-            _default_group_plugin = plugin
+ 
+         # Get group_controller from plugin if there is one,
+         # otherwise use 'group'
+@@ -157,6 +159,24 @@ def register_group_plugins(map):
+         except AttributeError:
+             group_controller = 'group'
+ 
++        if plugin.is_fallback():
++            if hasattr(plugin, 'is_organization'):
++                is_organization = plugin.is_organization
++            else:
++                is_organization = group_controller == 'organization'
++
++            if is_organization:
++                if _default_organization_plugin is not None:
++                    raise ValueError("More than one fallback IGroupForm for "
++                                     "organizations has been registered")
++                _default_organization_plugin = plugin
++
++            else:
++                if _default_group_plugin is not None:
++                    raise ValueError("More than one fallback IGroupForm for "
++                                     "groups has been registered")
++                _default_group_plugin = plugin
++
+         for group_type in plugin.group_types():
+             # Create the routes based on group_type here, this will
+             # allow us to have top level objects that are actually
+@@ -231,6 +251,8 @@ def register_group_plugins(map):
+     # Setup the fallback behaviour if one hasn't been defined.
+     if _default_group_plugin is None:
+         _default_group_plugin = DefaultGroupForm()
++    if _default_organization_plugin is None:
++        _default_organization_plugin = DefaultOrganizationForm()
+     if 'group' not in _group_controllers:
+         _group_controllers['group'] = 'group'
+     if 'organization' not in _group_controllers:
+@@ -549,8 +571,6 @@ def edit_template(self):
+     def activity_template(self):
+         return 'organization/activity_stream.html'
+ 
+-_default_organization_plugin = DefaultOrganizationForm()
+-
+ 
+ class DefaultTranslation(object):
+     def i18n_directory(self):
+
+From 1876c3c15237a5404c7caa766d1bbb9977cd49d5 Mon Sep 17 00:00:00 2001
+From: amercader <amercadero@gmail.com>
+Date: Thu, 22 Feb 2018 15:38:14 +0100
+Subject: [PATCH 8/9] [#4031] Add names to group routes as well
+
+---
+ ckan/config/routing.py | 34 ++++++++++++++++++++--------------
+ 1 file changed, 20 insertions(+), 14 deletions(-)
+
+diff --git a/ckan/config/routing.py b/ckan/config/routing.py
+index 5791c9b154..7d635bc122 100644
+--- a/ckan/config/routing.py
++++ b/ckan/config/routing.py
+@@ -292,19 +292,23 @@ def make_map():
+                   highlight_actions='index search')
+         m.connect('group_list', '/group/list', action='list')
+         m.connect('group_new', '/group/new', action='new')
+-        m.connect('group_action', '/group/{action}/{id}',
+-                  requirements=dict(action='|'.join([
+-                      'edit',
+-                      'delete',
+-                      'member_new',
+-                      'member_delete',
+-                      'history',
+-                      'followers',
+-                      'follow',
+-                      'unfollow',
+-                      'admins',
+-                      'activity',
+-                  ])))
++
++        for action in [
++              'edit',
++              'delete',
++              'member_new',
++              'member_delete',
++              'history',
++              'followers',
++              'follow',
++              'unfollow',
++              'admins',
++              'activity',
++          ]:
++            m.connect('group_' + action,
++                      '/group/' + action + '/{id}',
++                      action=action)
++
+         m.connect('group_about', '/group/about/{id}', action='about',
+                   ckan_icon='info-circle'),
+         m.connect('group_edit', '/group/edit/{id}', action='edit',
+@@ -327,7 +331,9 @@ def make_map():
+           'member_new',
+           'member_delete',
+           'history']:
+-            m.connect('organization_' + action, '/organization/' + action + '/{id}', action=action)
++            m.connect('organization_' + action,
++                      '/organization/' + action + '/{id}',
++                      action=action)
+ 
+         m.connect('organization_activity', '/organization/activity/{id}/{offset}',
+                   action='activity', ckan_icon='clock-o')
+
+From da399995840f66a665cd19a8efc6cdc6417bf26c Mon Sep 17 00:00:00 2001
+From: amercader <amercadero@gmail.com>
+Date: Fri, 23 Feb 2018 12:07:13 +0100
+Subject: [PATCH 9/9] [#4031] Use group type when building URLs in templates
+
+---
+ ckan/templates/group/edit_base.html         | 12 ++++++------
+ ckan/templates/group/index.html             |  4 ++--
+ ckan/templates/group/member_new.html        |  4 ++--
+ ckan/templates/group/members.html           |  6 +++---
+ ckan/templates/group/read_base.html         | 12 ++++++------
+ ckan/templates/organization/edit_base.html  | 14 +++++++-------
+ ckan/templates/organization/index.html      |  4 ++--
+ ckan/templates/organization/member_new.html |  4 ++--
+ ckan/templates/organization/members.html    |  6 +++---
+ ckan/templates/organization/read_base.html  | 14 +++++++-------
+ ckan/templates/snippets/organization.html   |  2 +-
+ 11 files changed, 41 insertions(+), 41 deletions(-)
+
+diff --git a/ckan/templates/group/edit_base.html b/ckan/templates/group/edit_base.html
+index 2bd2bd29de..2ebd55d414 100644
+--- a/ckan/templates/group/edit_base.html
++++ b/ckan/templates/group/edit_base.html
+@@ -7,20 +7,20 @@
+ {% set group = c.group_dict %}
+ 
+ {% block breadcrumb_content %}
+-  <li>{% link_for _('Groups'), controller='group', action='index' %}</li>
++  <li>{% link_for _('Groups'), controller='group', action='index', named_route=group_type + '_index' %}</li>
+   {% block breadcrumb_content_inner %}
+-    <li>{% link_for h.get_translated(group, 'title') or group.display_name |truncate(35), controller='group', action='read', id=group.name %}</li>
+-    <li class="active">{% link_for _('Manage'), controller='group', action='edit', id=group.name %}</li>
++    <li>{% link_for h.get_translated(group, 'title') or group.display_name |truncate(35), controller='group', action='read', id=group.name, named_route=group_type + '_read' %}</li>
++    <li class="active">{% link_for _('Manage'), controller='group', action='edit', id=group.name, named_route=group_type + '_edit' %}</li>
+   {% endblock %}
+ {% endblock %}
+ 
+ {% block content_action %}
+-  {% link_for _('View'), controller='group', action='read', id=c.group_dict.name, class_='btn', icon='eye' %}
++  {% link_for _('View'), controller='group', action='read', id=c.group_dict.name, class_='btn', icon='eye', named_route=group_type + '_read' %}
+ {% endblock %}
+ 
+ {% block content_primary_nav %}
+-  {{ h.build_nav_icon('group_edit', _('Edit'), id=c.group_dict.name) }}
+-  {{ h.build_nav_icon('group_members', _('Members'), id=c.group_dict.name) }}
++  {{ h.build_nav_icon(group_type + '_edit', _('Edit'), id=c.group_dict.name) }}
++  {{ h.build_nav_icon(group_type + '_members', _('Members'), id=c.group_dict.name) }}
+ {% endblock %}
+ 
+ {% block secondary_content %}
+diff --git a/ckan/templates/group/index.html b/ckan/templates/group/index.html
+index bcd5a54daa..e03fef5b71 100644
+--- a/ckan/templates/group/index.html
++++ b/ckan/templates/group/index.html
+@@ -3,14 +3,14 @@
+ {% block subtitle %}{{ _('Groups') }}{% endblock %}
+ 
+ {% block breadcrumb_content %}
+-  <li class="active">{% link_for _('Groups'), controller='group', action='index' %}</li>
++  <li class="active">{% link_for _('Groups'), controller='group', action='index', named_route=group_type + '_index' %}</li>
+ {% endblock %}
+ 
+ {% block page_header %}{% endblock %}
+ 
+ {% block page_primary_action %}
+   {% if h.check_access('group_create') %}
+-    {% link_for _('Add Group'), controller='group', action='new', class_='btn btn-primary', icon='plus-square' %}
++    {% link_for _('Add Group'), controller='group', action='new', class_='btn btn-primary', icon='plus-square', named_route=group_type + '_new' %}
+   {% endif %}
+ {% endblock %}
+ 
+diff --git a/ckan/templates/group/member_new.html b/ckan/templates/group/member_new.html
+index 71968e33db..c2a5518369 100644
+--- a/ckan/templates/group/member_new.html
++++ b/ckan/templates/group/member_new.html
+@@ -5,7 +5,7 @@
+ {% set user = c.user_dict %}
+ 
+ {% block primary_content_inner %}
+-  {% link_for _('Back to all members'), controller='group', action='members', id=group.name, class_='btn pull-right', icon='arrow-left' %}
++  {% link_for _('Back to all members'), controller='group', action='members', id=group.name, class_='btn pull-right', icon='arrow-left', named_route=group_type + '_members' %}
+   <h1 class="page-heading">
+     {% block page_heading %}{{ _('Edit Member') if user else _('Add Member') }}{% endblock %}
+   </h1>
+@@ -55,7 +55,7 @@ <h1 class="page-heading">
+     {{ form.select('role', label=_('Role'), options=c.roles, selected=c.user_role, error='', attrs=format_attrs) }}
+     <div class="form-actions">
+       {% if user %}
+-        <a href="{% url_for controller='group', action='member_delete', id=c.group_dict.id, user=user.id %}" class="btn btn-danger pull-left" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to delete this member?') }}">{{ _('Delete') }}</a>
++        <a href="{{ h.url_for(group_type + '_member_delete', id=c.group_dict.id, user=user_id) }}" class="btn btn-danger pull-left" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to delete this member?') }}">{{ _('Delete') }}</a>
+         <button class="btn btn-primary" type="submit" name="submit" >
+           {{ _('Save') }}
+         </button>
+diff --git a/ckan/templates/group/members.html b/ckan/templates/group/members.html
+index 4cec329a58..3a7967ce94 100644
+--- a/ckan/templates/group/members.html
++++ b/ckan/templates/group/members.html
+@@ -3,7 +3,7 @@
+ {% block subtitle %}{{ _('Members') }} - {{ c.group_dict.display_name }} - {{ _('Groups') }}{% endblock %}
+ 
+ {% block page_primary_action %}
+-  {% link_for _('Add Member'), controller='group', action='member_new', id=c.group_dict.id, class_='btn btn-primary', icon='plus-square' %}
++  {% link_for _('Add Member'), controller='group', action='member_new', id=c.group_dict.id, class_='btn btn-primary', icon='plus-square', named_route=group_type + '_member_new' %}
+ {% endblock %}
+ 
+ {% block primary_content_inner %}
+@@ -25,10 +25,10 @@ <h3 class="page-heading">{{ _('{0} members'.format(c.members|length)) }}</h3>
+         <td>{{ role }}</td>
+         <td>
+           <div class="btn-group pull-right">
+-            <a class="btn btn-small" href="{% url_for controller='group', action='member_new', id=c.group_dict.id, user=user_id %}" title="{{ _('Edit') }}">
++            <a class="btn btn-small" href="{% url_for controller='group', action='member_delete', id=c.group_dict.id, user=user_id %}" title="{{ _('Edit') }}">
+               <i class="fa fa-wrench"></i>
+             </a>
+-            <a class="btn btn-danger btn-small" href="{% url_for controller='group', action='member_delete', id=c.group_dict.id, user=user_id %}" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to delete this member?') }}" title="{{ _('Delete') }}">{% block delete_button_text %}<i class="fa fa-times"></i>{% endblock %}</a>
++            <a class="btn btn-danger btn-small" href="{{ h.url_for(group_type + '_member_delete', id=c.group_dict.id, user=user_id) }}" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to delete this member?') }}" title="{{ _('Delete') }}">{% block delete_button_text %}<i class="fa fa-times"></i>{% endblock %}</a>
+           </div>
+         </td>
+       </tr>
+diff --git a/ckan/templates/group/read_base.html b/ckan/templates/group/read_base.html
+index 56b9559b1a..6d967c3a77 100644
+--- a/ckan/templates/group/read_base.html
++++ b/ckan/templates/group/read_base.html
+@@ -3,20 +3,20 @@
+ {% block subtitle %}{{ h.get_translated(c.group_dict, 'title') or c.group_dict.display_name }} - {{ _('Groups') }}{% endblock %}
+ 
+ {% block breadcrumb_content %}
+-  <li>{% link_for _('Groups'), controller='group', action='index' %}</li>
+-  <li class="active">{% link_for h.get_translated(c.group_dict, 'title') or c.group_dict.display_name |truncate(35), controller='group', action='read', id=c.group_dict.name %}</li>
++  <li>{% link_for _('Groups'), controller='group', action='index', named_route=group_type + '_index' %}</li>
++  <li class="active">{% link_for h.get_translated(c.group_dict, 'title') or c.group_dict.display_name |truncate(35), controller='group', action='read', id=c.group_dict.name, named_route=group_type + '_read' %}</li>
+ {% endblock %}
+ 
+ {% block content_action %}
+   {% if h.check_access('group_update', {'id': c.group_dict.id}) %}
+-    {% link_for _('Manage'), controller='group', action='edit', id=c.group_dict.name, class_='btn', icon='wrench' %}
++    {% link_for _('Manage'), controller='group', action='edit', id=c.group_dict.name, class_='btn', icon='wrench', named_route=group_type + '_edit' %}
+   {% endif %}
+ {% endblock %}
+ 
+ {% block content_primary_nav %}
+-  {{ h.build_nav_icon('group_read', _('Datasets'), id=c.group_dict.name) }}
+-  {{ h.build_nav_icon('group_activity', _('Activity Stream'), id=c.group_dict.name, offset=0) }}
+-  {{ h.build_nav_icon('group_about', _('About'), id=c.group_dict.name) }}
++  {{ h.build_nav_icon(group_type + '_read', _('Datasets'), id=c.group_dict.name) }}
++  {{ h.build_nav_icon(group_type + '_activity', _('Activity Stream'), id=c.group_dict.name, offset=0) }}
++  {{ h.build_nav_icon(group_type + '_about', _('About'), id=c.group_dict.name) }}
+ {% endblock %}
+ 
+ {% block secondary_content %}
+diff --git a/ckan/templates/organization/edit_base.html b/ckan/templates/organization/edit_base.html
+index de0094042a..5460e8bcbd 100644
+--- a/ckan/templates/organization/edit_base.html
++++ b/ckan/templates/organization/edit_base.html
+@@ -5,23 +5,23 @@
+ {% block subtitle %}{{ c.group_dict.display_name }} - {{ _('Organizations') }}{% endblock %}
+ 
+ {% block breadcrumb_content %}
+-  <li>{% link_for _('Organizations'), controller='organization', action='index' %}</li>
++  <li>{% link_for _('Organizations'), controller='organization', action='index', named_route=group_type + '_index' %}</li>
+   {% block breadcrumb_content_inner %}
+-    <li>{% link_for organization.display_name|truncate(35), controller='organization', action='read', id=organization.name %}</li>
+-    <li class="active">{% link_for _('Manage'), controller='organization', action='edit', id=organization.name %}</li>
++    <li>{% link_for organization.display_name|truncate(35), controller='organization', action='read', id=organization.name, named_route=group_type + '_read' %}</li>
++    <li class="active">{% link_for _('Manage'), controller='organization', action='edit', id=organization.name, named_route=group_type + '_edit' %}</li>
+   {% endblock %}
+ {% endblock %}
+ 
+ {% block content_action %}
+   {% if organization and h.check_access('organization_update', {'id': organization.id}) %}
+-    {% link_for _('View'), controller='organization', action='read', id=organization.name, class_='btn', icon='eye' %}
++    {% link_for _('View'), controller='organization', action='read', id=organization.name, class_='btn', icon='eye', named_route=group_type + '_read' %}
+   {% endif %}
+ {% endblock %}
+ 
+ {% block content_primary_nav %}
+-  {{ h.build_nav_icon('organization_edit', _('Edit'), id=c.group_dict.name) }}
+-  {{ h.build_nav_icon('organization_bulk_process', _('Datasets'), id=c.group_dict.name) }}
+-  {{ h.build_nav_icon('organization_members', _('Members'), id=c.group_dict.name) }}
++  {{ h.build_nav_icon(group_type + '_edit', _('Edit'), id=c.group_dict.name) }}
++  {{ h.build_nav_icon(group_type + '_bulk_process', _('Datasets'), id=c.group_dict.name) }}
++  {{ h.build_nav_icon(group_type + '_members', _('Members'), id=c.group_dict.name) }}
+ {% endblock %}
+ 
+ {% block secondary_content %}
+diff --git a/ckan/templates/organization/index.html b/ckan/templates/organization/index.html
+index 4214ce6b16..c252f1cd5a 100644
+--- a/ckan/templates/organization/index.html
++++ b/ckan/templates/organization/index.html
+@@ -3,14 +3,14 @@
+ {% block subtitle %}{{ _('Organizations') }}{% endblock %}
+ 
+ {% block breadcrumb_content %}
+-  <li class="active">{% link_for _('Organizations'), controller='organization', action='index' %}</li>
++  <li class="active">{% link_for _('Organizations'), controller='organization', action='index', named_route=group_type + '_index' %}</li>
+ {% endblock %}
+ 
+ {% block page_header %}{% endblock %}
+ 
+ {% block page_primary_action %}
+   {% if h.check_access('organization_create') %}
+-    {% link_for _('Add Organization'), controller='organization', action='new', class_='btn btn-primary', icon='plus-square' %}
++    {% link_for _('Add Organization'), controller='organization', action='new', class_='btn btn-primary', icon='plus-square', named_route=group_type + '_new' %}
+   {% endif %}
+ {% endblock %}
+ 
+diff --git a/ckan/templates/organization/member_new.html b/ckan/templates/organization/member_new.html
+index 9da94a46ab..f0638c3ed7 100644
+--- a/ckan/templates/organization/member_new.html
++++ b/ckan/templates/organization/member_new.html
+@@ -7,7 +7,7 @@
+ {% block subtitle %}{{ _('Edit Member') if user else _('Add Member') }} - {{ super() }}{% endblock %}
+ 
+ {% block primary_content_inner %}
+-  {% link_for _('Back to all members'), controller='organization', action='members', id=organization.name, class_='btn pull-right', icon='arrow-left' %}
++  {% link_for _('Back to all members'), controller='organization', action='members', id=organization.name, class_='btn pull-right', icon='arrow-left', named_route=group_type + '_members' %}
+   <h1 class="page-heading">
+     {% block page_heading %}{{ _('Edit Member') if user else _('Add Member') }}{% endblock %}
+   </h1>
+@@ -56,7 +56,7 @@ <h1 class="page-heading">
+     {{ form.select('role', label=_('Role'), options=c.roles, selected=c.user_role, error='', attrs=format_attrs) }}
+     <div class="form-actions">
+       {% if user %}
+-        <a href="{% url_for controller='organization', action='member_delete', id=c.group_dict.id, user=user.id %}" class="btn btn-danger pull-left" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to delete this member?') }}">{{ _('Delete') }}</a>
++        <a href="{{ h.url_for(group_type + '_member_delete', id=c.group_dict.id, user=user_id) }}" class="btn btn-danger pull-left" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to delete this member?') }}">{{ _('Delete') }}</a>
+         <button class="btn btn-primary" type="submit" name="submit" >
+           {{ _('Update Member') }}
+         </button>
+diff --git a/ckan/templates/organization/members.html b/ckan/templates/organization/members.html
+index 2f2e8130f4..2805357cde 100644
+--- a/ckan/templates/organization/members.html
++++ b/ckan/templates/organization/members.html
+@@ -5,7 +5,7 @@
+ {% block page_primary_action %}
+   {% if h.check_access('organization_update', {'id': organization.id}) %}
+ 
+-    {% link_for _('Add Member'), controller='organization', action='member_new', id=c.group_dict.id, class_='btn btn-primary', icon='plus-square' %}
++    {% link_for _('Add Member'), controller='organization', action='member_new', id=c.group_dict.id, class_='btn btn-primary', icon='plus-square', named_route=group_type + '_member_new' %}
+   {% endif %}
+ {% endblock %}
+ 
+@@ -30,10 +30,10 @@ <h3 class="page-heading">{{ members_count }}</h3>
+           <td>{{ role }}</td>
+           <td>
+             <div class="btn-group pull-right">
+-              <a class="btn btn-small" href="{% url_for controller='organization', action='member_new', id=c.group_dict.id, user=user_id %}" title="{{ _('Edit') }}">
++              <a class="btn btn-small" href="{{ h.url_for(group_type + '_member_new', id=c.group_dict.id, user=user_id) }}" title="{{ _('Edit') }}">
+                 <i class="fa fa-wrench"></i>
+               </a>
+-              <a class="btn btn-danger btn-small" href="{% url_for controller='organization', action='member_delete', id=c.group_dict.id, user=user_id %}" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to delete this member?') }}" title="{{ _('Delete') }}">{% block delete_button_text %}<i class="fa fa-times"></i>{% endblock %}</a>
++              <a class="btn btn-danger btn-small" href="{{ h.url_for(group_type + '_member_delete', id=c.group_dict.id, user=user_id) }}" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to delete this member?') }}" title="{{ _('Delete') }}">{% block delete_button_text %}<i class="fa fa-times"></i>{% endblock %}</a>
+             </div>
+           </td>
+         </tr>
+diff --git a/ckan/templates/organization/read_base.html b/ckan/templates/organization/read_base.html
+index 866debf7b8..5a0338752a 100644
+--- a/ckan/templates/organization/read_base.html
++++ b/ckan/templates/organization/read_base.html
+@@ -3,24 +3,24 @@
+ {% block subtitle %}{{ c.group_dict.display_name }} - {{ _('Organizations') }}{% endblock %}
+ 
+ {% block breadcrumb_content %}
+-  <li>{% link_for _('Organizations'), controller='organization', action='index' %}</li>
+-  <li class="active">{% link_for c.group_dict.display_name|truncate(35), controller='organization', action='read', id=c.group_dict.name %}</li>
++  <li>{% link_for _('Organizations'), controller='organization', action='index', named_route=group_type + '_index' %}</li>
++  <li class="active">{% link_for c.group_dict.display_name|truncate(35), controller='organization', action='read', id=c.group_dict.name, named_route=group_type + '_read' %}</li>
+ {% endblock %}
+ 
+ {% block content_action %}
+   {% if h.check_access('organization_update', {'id': c.group_dict.id}) %}
+-    {% link_for _('Manage'), controller='organization', action='edit', id=c.group_dict.name, class_='btn', icon='wrench' %}
++    {% link_for _('Manage'), controller='organization', action='edit', id=c.group_dict.name, class_='btn', icon='wrench', named_route=group_type + '_edit' %}
+   {% endif %}
+ {% endblock %}
+ 
+ {% block content_primary_nav %}
+-  {{ h.build_nav_icon('organization_read', _('Datasets'), id=c.group_dict.name) }}
+-  {{ h.build_nav_icon('organization_activity', _('Activity Stream'), id=c.group_dict.name, offset=0) }}
+-  {{ h.build_nav_icon('organization_about', _('About'), id=c.group_dict.name) }}
++  {{ h.build_nav_icon(group_type + '_read', _('Datasets'), id=c.group_dict.name) }}
++  {{ h.build_nav_icon(group_type + '_activity', _('Activity Stream'), id=c.group_dict.name, offset=0) }}
++  {{ h.build_nav_icon(group_type + '_about', _('About'), id=c.group_dict.name) }}
+ {% endblock %}
+ 
+ {% block secondary_content %}
+-  {% snippet 'snippets/organization.html', organization=c.group_dict, show_nums=true %}
++  {% snippet 'snippets/organization.html', organization=c.group_dict, show_nums=true, group_type=group_type %}
+   {% block organization_facets %}{% endblock %}
+ {% endblock %}
+ 
+diff --git a/ckan/templates/snippets/organization.html b/ckan/templates/snippets/organization.html
+index 2d99bce31c..518a905c2e 100644
+--- a/ckan/templates/snippets/organization.html
++++ b/ckan/templates/snippets/organization.html
+@@ -15,7 +15,7 @@
+ #}
+ 
+ {% set truncate = truncate or 0 %}
+-{% set url = h.url_for(controller='organization', action='read', id=organization.name) %}
++{% set url = h.url_for(organization.type + '_read', id=organization.name, ) %}
+ 
+   {% block info %}
+   <div class="module module-narrow module-shallow context-info">
