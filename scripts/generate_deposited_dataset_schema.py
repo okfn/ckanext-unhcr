@@ -46,6 +46,23 @@ def generate_deposited_dataset_schema():
                 'required': True,
             })
 
+            # curation_state
+            schema['dataset_fields'].insert(index + 1, {
+                'field_name': 'curation_state',
+                'form_snippet': 'hidden.html',
+                'display_snippet': None,
+                'validators': 'deposited_dataset_curation_state',
+                'required': True,
+            })
+
+            # curator_id
+            schema['dataset_fields'].insert(index + 1, {
+                'field_name': 'curator_id',
+                'form_snippet': 'hidden.html',
+                'display_snippet': None,
+                'validators': 'ignore_missing deposited_dataset_curator_id',
+            })
+
     # Write `deposited-dataset` schema tweaking order
     with open(OUTPUT_JSON, 'w') as file:
         schema['dataset_fields'] = schema.pop('dataset_fields')

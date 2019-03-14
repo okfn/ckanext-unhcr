@@ -51,8 +51,13 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
 
         # deposited dataset
         controller = 'ckanext.unhcr.controllers.deposited_dataset:DepositedDatasetController'
-        _map.connect('/deposited-dataset/{id}/approve', controller=controller, action='approve')
-        _map.connect('/deposited-dataset/{id}/reject', controller=controller, action='reject')
+        _map.connect('/deposited-dataset/{dataset_id}/approve', controller=controller, action='approve')
+        _map.connect('/deposited-dataset/{dataset_id}/assign', controller=controller, action='assign')
+        _map.connect('/deposited-dataset/{dataset_id}/request_changes', controller=controller, action='request_changes')
+        _map.connect('/deposited-dataset/{dataset_id}/request_review', controller=controller, action='request_review')
+        _map.connect('/deposited-dataset/{dataset_id}/reject', controller=controller, action='reject')
+        _map.connect('/deposited-dataset/{dataset_id}/submit', controller=controller, action='submit')
+        _map.connect('/deposited-dataset/{dataset_id}/withdraw', controller=controller, action='withdraw')
 
         return _map
 
@@ -88,14 +93,20 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
 
     def get_helpers(self):
         return {
+            # General
+            'get_data_container': helpers.get_data_container,
+            'get_all_data_containers': helpers.get_all_data_containers,
+            # Hierarchy
             'render_tree': helpers.render_tree,
+            # Access restriction
             'page_authorized': helpers.page_authorized,
+            # Lined datasets
             'get_linked_datasets_for_form': helpers.get_linked_datasets_for_form,
             'get_linked_datasets_for_display': helpers.get_linked_datasets_for_display,
-            'get_data_container': helpers.get_data_container,
-            'get_data_container_for_depositing': helpers.get_data_container_for_depositing,
-            'get_dataset_validation_error_or_none': helpers.get_dataset_validation_error_or_none,
-            'get_all_data_containers': helpers.get_all_data_containers,
+            # Deposited datasets
+            'get_data_deposit': helpers.get_data_deposit,
+            'get_data_curation_users': helpers.get_data_curation_users,
+            'get_deposited_dataset_user_curation_status': helpers.get_deposited_dataset_user_curation_status,
         }
 
     # IPackageController
@@ -193,6 +204,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'unhcr_choices': validators.unhcr_choices,
             'deposited_dataset_owner_org': validators.deposited_dataset_owner_org,
             'deposited_dataset_owner_org_dest': validators.deposited_dataset_owner_org_dest,
+            'deposited_dataset_curation_state': validators.deposited_dataset_curation_state,
+            'deposited_dataset_curator_id': validators.deposited_dataset_curator_id,
         }
 
     def get_dataset_labels(self, dataset_obj):
@@ -200,7 +213,6 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
 
         # For deposited datasets
         if dataset_obj.type == 'deposited-dataset':
-            log.debug(dataset_obj.owner_org)
             labels = [
                 'deposited-dataset',
                 'creator-%s' % dataset_obj.creator_user_id,
@@ -223,10 +235,10 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         # Adding "deposited-dataset" label for data curators
         if user_obj:
             context = {u'user': user_obj.id}
-            depo = helpers.get_data_container_for_depositing()
+            deposit = helpers.get_data_deposit()
             orgs = toolkit.get_action('organization_list_for_user')(context, {})
             for org in orgs:
-                if depo['id'] == org['id']:
+                if deposit['id'] == org['id']:
                     labels.extend(['deposited-dataset'])
 
         return labels

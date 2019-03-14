@@ -9,4 +9,7 @@
        )
     }}
   {% endif %}
+  {% if g.debug %}
+    <small>Debug: {{ c.user }}</small>
+  {% endif %}
 {% endblock %}

@@ -1,5 +1,6 @@
 import logging
 from ckan import model
+from operator import itemgetter
 from ckan.logic import ValidationError
 from ckan.plugins import toolkit
 import ckan.lib.plugins as lib_plugins
@@ -37,8 +38,8 @@ def render_tree(top_nodes=None):
 
     # Remove data deposit
     # TODO: https://github.com/okfn/ckanext-unhcr/issues/78
-    depo = get_data_container_for_depositing()
-    top_nodes = filter(lambda node: node['id'] != depo['id'], top_nodes)
+    deposit = get_data_deposit()
+    top_nodes = filter(lambda node: node['id'] != deposit['id'], top_nodes)
 
     return _render_tree(top_nodes)
 
@@ -144,31 +145,141 @@ def get_linked_datasets_for_display(value, context=None):
 
 # Deposited datasets
 
-def get_data_container_for_depositing():
-    NAME = 'data-deposit'
-    context = {'model': model, 'ignore_auth': True}
+def get_data_deposit():
     try:
-        return toolkit.get_action('organization_show')(context, {'id': NAME})
+        context = {'model': model, 'ignore_auth': True}
+        return toolkit.get_action('organization_show')(context, {'id': 'data-deposit'})
     except toolkit.ObjectNotFound:
         log.error('Data Deposit is not created')
         return {'id': 'data-deposit'}
 
 
+def get_data_curation_users(context=None):
+    context = context or {'model': model, 'user': toolkit.c.user}
+    deposit = get_data_deposit()
+
+    # Get depadmins
+    depadmins = toolkit.get_action('member_list')(context, {
+        'id': deposit['id'],
+        'capacity': 'admin',
+        'object_type': 'user',
+    })
+
+    # Get curators
+    curators = toolkit.get_action('member_list')(context, {
+        'id': deposit['id'],
+        'capacity': 'editor',
+        'object_type': 'user',
+    })
+
+    # Get users
+    users = []
+    for item in depadmins + curators:
+        user = toolkit.get_action('user_show')(context, {'id': item[0]})
+        users.append(user)
+
+    # Sort users
+    users = list(sorted(users,
+        key=itemgetter('display_name')))
+
+    return users
+
+
+def get_deposited_dataset_user_curation_status(dataset, user_id):
+    deposit = get_data_deposit()
+
+    # General
+    status = {}
+    status['error'] = get_dataset_validation_error_or_none(dataset)
+    status['role'] = get_deposited_dataset_user_curation_role(user_id)
+    status['state'] = dataset['curation_state']
+
+    # is_creator/curator
+    status['is_creator'] = dataset.get('creator_user_id') == user_id
+    status['is_curator'] = dataset.get('curator_id') == user_id
+
+    # actions
+    status['actions'] = get_deposited_dataset_user_curation_actions(status)
+
+    return status
+
+
+def get_deposited_dataset_user_curation_role(user_id):
+    action = toolkit.get_action('organization_list_for_user')
+    context = {'model': model, 'user': user_id}
+    deposit = get_data_deposit()
+
+    # Admin
+    orgs = action(context, {'permission': 'admin'})
+    if deposit['id'] in [org['id'] for org in orgs]:
+        return 'admin'
+
+    # Curator
+    orgs = action(context, {'permission': 'create_dataset'})
+    if deposit['id'] in [org['id'] for org in orgs]:
+        return 'curator'
+
+    # Depositor
+    return 'depositor'
+
+
+def get_deposited_dataset_user_curation_actions(status):
+    actions = []
+
+    # Draft
+    if status['state'] == 'draft':
+        if status['is_creator']:
+            actions.extend(['edit', 'submit', 'withdraw'])
+
+    # Submitted
+    if status['state'] == 'submitted':
+        if status['role'] in ['admin', 'curator']:
+            actions.extend(['edit', 'reject'])
+            if status['role'] == 'admin':
+                actions.extend(['assign'])
+            if status['error']:
+                actions.extend(['request_changes'])
+            else:
+                actions.extend(['request_review'])
+                actions.extend(['approve'])
+
+    # Review
+    if status['state'] == 'review':
+        if status['is_creator']:
+            actions.extend(['request_changes'])
+            if not status['error']:
+                actions.extend(['approve'])
+
+    return actions
+
+
 def get_dataset_validation_error_or_none(pkg_dict, context=None):
     context = context or {'model': model, 'session': model.Session, 'user': toolkit.c.user}
+
+    # Convert dataset
     if pkg_dict.get('type') == 'deposited-dataset':
         pkg_dict = convert_deposited_dataset_to_regular_dataset(pkg_dict)
+
+    # Validate dataset
     package_plugin = lib_plugins.lookup_package_plugin('dataset')
     schema = package_plugin.update_package_schema()
     data, errors = lib_plugins.plugin_validate(
         package_plugin, context, pkg_dict, schema, 'package_update')
     errors.pop('owner_org', None)
+
     return ValidationError(errors) if errors else None
 
 
 def convert_deposited_dataset_to_regular_dataset(pkg_dict):
     pkg_dict = pkg_dict.copy()
+
+    # Update fields
     pkg_dict['type'] = 'dataset'
     pkg_dict['owner_org'] = pkg_dict['owner_org_dest']
-    del pkg_dict['owner_org_dest']
+
+    # Remove fields
+    pkg_dict.pop('owner_org_dest', None)
+    pkg_dict.pop('curation_state', None)
+    pkg_dict.pop('curator_id', None)
+
     return pkg_dict

@@ -1,4 +1,4 @@
-.PHONY: assets docker e2e i18n readme start shell test
+.PHONY: assets debug docker e2e i18n readme start shell test
 
 
 list:

@@ -1,11 +1,13 @@
 import pylons
 from paste.registry import Registry
+from nose.plugins.attrib import attr
 
-from nose.tools import assert_in, assert_not_in, assert_raises
+from nose.tools import assert_in, assert_not_in, assert_raises, assert_equals
 from ckan.plugins import toolkit
 from ckan.tests import helpers
 from ckan.tests import factories as core_factories
 
+from ckanext.unhcr import auth
 from ckanext.unhcr.tests import factories
 
 
@@ -181,3 +183,52 @@ class TestAuthAPI(AuthTestBase):
 
         helpers.call_action(
             'user_show', context=context, id=user['id'])
+
+
+class TestAuthUnit(AuthTestBase):
+
+    # Package
+
+    def test_package_create(self):
+        creator = core_factories.User(name='creator')
+        deposit = factories.DataContainer(name='data-deposit')
+        result = auth.package_create({'user': 'creator'}, {'owner_org': deposit['id']})
+        assert_equals(result['success'], True)
+
+    # TODO: fix problems with context pupulation
+    #  def test_package_update(self):
+
+        #  # Create users
+        #  depadmin = core_factories.User(name='depadmin')
+        #  curator = core_factories.User(name='curator')
+        #  depositor = core_factories.User(name='depositor')
+        #  creator = core_factories.User(name='creator')
+
+        #  # Create containers
+        #  deposit = factories.DataContainer(
+            #  id='data-deposit',
+            #  name='data-deposit',
+            #  users=[
+                #  {'name': 'depadmin', 'capacity': 'admin'},
+                #  {'name': 'curator', 'capacity': 'editor'},
+            #  ],
+        #  )
+        #  target = factories.DataContainer(
+            #  id='data-target',
+            #  name='data-target',
+        #  )
+
+        #  # Create dataset
+        #  dataset = factories.DepositedDataset(
+            #  name='dataset',
+            #  owner_org='data-deposit',
+            #  owner_org_dest='data-target',
+            #  user=creator)
+
+        #  # Forbidden depadmin/curator/depositor
+        #  assert_equals(auth.package_update({'user': 'depadmin'}, dataset), False)
+        #  assert_equals(auth.package_update({'user': 'curator'}, dataset), False)
+        #  assert_equals(auth.package_update({'user': 'depositor'}, dataset), False)
+
+        #  # Granted creator
+        #  assert_equals(auth.package_update({'user': 'creator'}, dataset), True)

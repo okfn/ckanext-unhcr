@@ -21,7 +21,7 @@ CKAN extension for the UNHCR RIDL project
 - [Updating readme](#updating-readme)
 - [Managing docker](#managing-docker)
 - [Generate deposited-dataset schema](#generate-deposited-dataset-schema)
-- [Create development users](#create-development-users)
+- [Create development users and containers](#create-development-users-and-containers)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -161,14 +161,25 @@ It will be generated based on the `dataset` schema (re-writing existent `deposit
 $ python scripts/generate_deposited_dataset_schema.py
 ```
 
-## Create development users
+## Create development users and containers
 
-To test curation workflow we need users with different roles:
+Create users using command line interface:
 
 ```
-$ docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_curator email=curator@example.com password=test -c /srv/app/production.ini
-$ docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_user1 email=user1@example.com password=test -c /srv/app/production.ini
-$ docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_user2 email=user2@example.com password=test -c /srv/app/production.ini
+# Sysadmin
+docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan sysadmin add ckan_sysadmin email=sysadmin@example.com password=test -c /srv/app/production.ini
+# Depadmin
+docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_depadmin email=depadmin@example.com password=test -c /srv/app/production.ini
+# Curators
+docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_curator1 email=curator1@example.com password=test -c /srv/app/production.ini
+docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_curator2 email=curator2@example.com password=test -c /srv/app/production.ini
+# Depositors
+docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_user1 email=user1@example.com password=test -c /srv/app/production.ini
+docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_user2 email=user2@example.com password=test -c /srv/app/production.ini
 ```
 
-Then go to the http://ckan-dev:5000/data-container/members/data-deposit and make `ckan_curator` an editor of the organization.
+Create data deposit and and editors using user interface:
+
+- create a data container named `data-deposit`
+- make `ckan_depadmin` admin of `data-deposit`
+- make `ckan_curator1` and `ckan_curator2` editors of `data-deposit`

@@ -63,6 +63,19 @@
             "field_name": "owner_org"
         }, 
         {
+            "form_snippet": "hidden.html", 
+            "validators": "ignore_missing deposited_dataset_curator_id", 
+            "field_name": "curator_id", 
+            "display_snippet": null
+        }, 
+        {
+            "form_snippet": "hidden.html", 
+            "required": true, 
+            "validators": "deposited_dataset_curation_state", 
+            "field_name": "curation_state", 
+            "display_snippet": null
+        }, 
+        {
             "display_snippet": "owner_org_dest.html", 
             "required": true, 
             "form_snippet": "owner_org_dest.html", 

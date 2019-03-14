@@ -40,16 +40,16 @@
 
 <div data-module="dataset-visibility">
 
-  {% set data_container_for_depositing = h.get_data_container_for_depositing() %}
+  {% set deposit = h.get_data_deposit() %}
 
-  {% set organizations_available=h.get_all_data_containers(exclude_ids=[data_container_for_depositing.id]) %}
+  {% set organizations_available=h.get_all_data_containers(exclude_ids=[deposit.id]) %}
   {% set org_required=not h.check_config_permission('create_unowned_dataset') or h.scheming_field_required(field) %}
 
   {% call _organization() %}
     {%- snippet 'scheming/form_snippets/help_text.html', field=field %}
   {% endcall %}
 
-  <input type="hidden" name="owner_org" value="{{ data_container_for_depositing.id }}">
+  <input type="hidden" name="owner_org" value="{{ deposit.id }}">
 
   {% block package_metadata_fields_visibility %}
     <div class="control-group form-group control-medium">

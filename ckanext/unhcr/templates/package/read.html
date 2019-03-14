@@ -3,26 +3,119 @@
 
 {% block page_primary_action %}
   {% if pkg.type == 'deposited-dataset' %}
+    {% set curation = h.get_deposited_dataset_user_curation_status(pkg, c.userobj.id) %}
+
     <div class="alert alert-warning" role="alert">
-      <p>{% trans %}This dataset is waiting for a curator approval{% endtrans %}</p>
-    </div>
-    {% set data_container_for_depositing = h.get_data_container_for_depositing() %}
-    {% if h.check_access('sysadmin') or h.user_in_org_or_group(data_container_for_depositing.id) %}
-      {% set validation_error = h.get_dataset_validation_error_or_none(pkg) %}
-      {% if not validation_error %}
+
+      {# Description #}
+
+      <p>
+        The deposited dataset is in <strong>{{ curation.state }}</strong> state.
+        {% if curation.error %}
+          The dataset has <strong>{{ curation.error.error_summary|length }}</strong> validation errors.
+        {% else %}
+          The dataset is <strong>valid</strong>.
+        {% endif %}
+        {% if curation.actions %}
+          As <strong>{{ curation.role }}</strong> you have the following available actions:
+        {% else %}
+          As <strong>{{ curation.role }}</strong> you have no available actions.
+        {% endif %}
+      </p>
+
+      {# Actions #}
+
+      {% if 'approve' in curation.actions %}
         <a href="/deposited-dataset/{{ pkg.id }}/approve" class="btn btn-primary">
           {% trans %}Approve Dataset{% endtrans %}
         </a>
-      {% else %}
-        {{ form.errors(validation_error.error_summary) }}
+      {% endif %}
+
+      {% if 'edit' in curation.actions %}
         <a href="/deposited-dataset/edit/{{ pkg.id }}" class="btn btn-primary">
-          {% trans %}Modify Dataset{% endtrans %}
+          {% trans %}Edit Dataset{% endtrans %}
         </a>
       {% endif %}
-      <a href="/deposited-dataset/{{ pkg.id }}/reject" class="btn btn-danger">
-        {% trans %}Reject Dataset{% endtrans %}
-      </a>
+
+      {% if 'submit' in curation.actions %}
+        <a href="/deposited-dataset/{{ pkg.id }}/submit" class="btn btn-primary">
+          {% trans %}Submit Dataset{% endtrans %}
+        </a>
+      {% endif %}
+
+      {% if 'request_changes' in curation.actions %}
+        <a href="/deposited-dataset/{{ pkg.id }}/request_changes" class="btn btn-info">
+          {% trans %}Request Changes{% endtrans %}
+        </a>
+      {% endif %}
+
+      {% if 'request_review' in curation.actions %}
+        <a href="/deposited-dataset/{{ pkg.id }}/request_review" class="btn btn-info">
+          {% trans %}Request Review{% endtrans %}
+        </a>
+      {% endif %}
+
+      {% if 'withdraw' in curation.actions %}
+        <a href="/deposited-dataset/{{ pkg.id }}/withdraw" class="btn btn-danger">
+          {% trans %}Withdraw Dataset{% endtrans %}
+        </a>
+      {% endif %}
+
+      {% if 'reject' in curation.actions %}
+        <a href="/deposited-dataset/{{ pkg.id }}/reject" class="btn btn-danger">
+          {% trans %}Reject Dataset{% endtrans %}
+        </a>
+      {% endif %}
+
+      {# Assignments #}
+
+      {% if 'assign' in curation.actions %}
+        <hr>
+        <form action="/deposited-dataset/{{ pkg.id }}/assign">
+          <div class="control-group control-select">
+            <div class="controls ">
+              <div class="input-append">
+                <select id="curator_id" name="curator_id">
+                  {% set curators = h.get_data_curation_users() %}
+                  {% set selected = pkg.curator_id not in curators|map(attribute='id') %}
+                  <option value="" {% if selected %}selected{% endif %}>
+                    Not Assigned {% if selected %}(current){% endif %}
+                  </option>
+                  {% for curator in curators %}
+                    {% set selected = curator.id == pkg.curator_id %}
+                    <option value="{{ curator.id }}" {% if selected %}selected{% endif %}>
+                      {{ curator.display_name }} {% if selected %}(current){% endif %}
+                    </option>
+                  {% endfor %}
+                </select>
+                <button class="btn btn-primary">Update Curator</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      {% endif %}
+
+      {# Facts #}
+
+      {% if curation.is_curator %}
+        <hr>
+        <p>You're <strong>assigned</strong> to this dataset</p>
+      {% endif %}
+
+      {% if curation.is_creator %}
+        <hr>
+        <p>You've <strong>created</strong> this dataset</p>
+      {% endif %}
+
+    </div>
+
+    {# Validation #}
+    {# TODO: move to editing form #}
+
+    {% if curation.error %}
+      {{ form.errors(curation.error.error_summary) }}
     {% endif %}
+
   {% endif %}
   {{ super() }}
 {% endblock %}

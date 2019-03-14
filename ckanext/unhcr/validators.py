@@ -1,4 +1,5 @@
 import logging
+from ckan import model
 from ckan.plugins import toolkit
 from ckan.plugins.toolkit import Invalid, missing, get_validator, _
 from ckanext.scheming.validation import scheming_validator
@@ -90,8 +91,8 @@ value please contact the site administrators.
 def deposited_dataset_owner_org(value, context):
 
     # Pass validation if data container exists and for depositing
-    depo = helpers.get_data_container_for_depositing()
-    if value == depo['id']:
+    deposit = helpers.get_data_deposit()
+    if value == deposit['id']:
         return value
 
     raise Invalid('Invalid data deposit')
@@ -101,10 +102,35 @@ def deposited_dataset_owner_org(value, context):
 def deposited_dataset_owner_org_dest(value, context):
 
     # Pass validation if data container exists and NOT for depositing
-    depo = helpers.get_data_container_for_depositing()
-    orgs = helpers.get_all_data_containers(exclude_ids=[depo['id']])
+    deposit = helpers.get_data_deposit()
+    orgs = helpers.get_all_data_containers(exclude_ids=[deposit['id']])
     for org in orgs:
         if value == org['id']:
             return value
 
     raise Invalid('Invalid data container')
+
+
+def deposited_dataset_curation_state(value, context):
+    ALLOWED = ['draft', 'submitted', 'review']
+
+    # Set default value
+    if not value:
+        value = 'draft'
+
+    # Raise if not allowed
+    if value not in ALLOWED:
+        raise Invalid('Invalid curation state')
+
+    return value
+
+
+def deposited_dataset_curator_id(value, context):
+
+    # Get curation role and raise if not curator
+    if value:
+        curation_role = helpers.get_deposited_dataset_user_curation_role(value)
+        if curation_role not in ['admin', 'curator']:
+            raise Invalid('Ivalid curator id')
+
+    return value

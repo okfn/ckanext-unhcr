@@ -27,3 +27,14 @@
     {{ super() }}
   {% endif %}
 {% endblock %}
+
+{% block packages_list %}
+  {% if c.page.items %}
+    {% set deposit = h.get_data_deposit() %}
+    {% if c.group_dict.id == deposit.id %}
+      {{ h.snippet('snippets/deposit_package_list.html', packages=c.page.items) }}
+    {% else %}
+      {{ h.snippet('snippets/package_list.html', packages=c.page.items) }}
+    {% endif %}
+  {% endif %}
+{% endblock %}

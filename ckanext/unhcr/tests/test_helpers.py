@@ -135,14 +135,36 @@ class TestHelpers(FunctionalTestBase):
 
     # Deposited Datasets
 
-    def test_get_data_container_for_depositing(self):
-        container = factories.DataContainer(id='data-deposit')
-        result = helpers.get_data_container_for_depositing()
+    def test_get_data_deposit(self):
+        deposit = factories.DataContainer(id='data-deposit')
+        result = helpers.get_data_deposit()
         assert_equals(result['id'], 'data-deposit')
 
-    def test_get_data_container_for_depositing_not_created(self):
-        result = helpers.get_data_container_for_depositing()
+    def test_get_data_deposit_not_created(self):
+        result = helpers.get_data_deposit()
         assert_equals(result, {'id': 'data-deposit'})
+
+    def test_get_data_curation_users(self):
+        depadmin = core_factories.User(name='depadmin')
+        curator1 = core_factories.User(name='curator1')
+        curator2 = core_factories.User(name='curator2')
+        deposit = factories.DataContainer(
+            name='data-deposit',
+            users=[
+                {'name': 'depadmin', 'capacity': 'admin'},
+                {'name': 'curator1', 'capacity': 'editor'},
+                {'name': 'curator2', 'capacity': 'editor'},
+            ],
+        )
+        curators = helpers.get_data_curation_users(context={'user': 'depadmin'})
+        curator_names = sorted([curator['name']
+            for curator in curators
+            # Added to org by ckan
+            if not curator['sysadmin']])
+        assert_equals(len(curator_names), 3)
+        assert_equals(curator_names[0], 'curator1')
+        assert_equals(curator_names[1], 'curator2')
+        assert_equals(curator_names[2], 'depadmin')
 
     def test_get_dataset_validation_error_or_none(self):
         deposit = factories.DataContainer(id='data-deposit')

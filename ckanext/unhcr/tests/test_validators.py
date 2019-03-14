@@ -29,32 +29,45 @@ class TestValidators(FunctionalTestBase):
 
     # Deposited Datasets
 
-    def test_deposited_datset_owner_org(self):
-        depo = factories.DataContainer(id='data-deposit')
-        dest = factories.DataContainer(id='data-destination')
+    def test_deposited_dataset_owner_org(self):
+        deposit = factories.DataContainer(id='data-deposit')
+        target = factories.DataContainer(id='data-target')
         result = validators.deposited_dataset_owner_org('data-deposit', {})
         assert_equals(result, 'data-deposit')
 
-    def test_deposited_datset_owner_org_invalid(self):
-        depo = factories.DataContainer(id='data-deposit')
-        dest = factories.DataContainer(id='data-destination')
+    def test_deposited_dataset_owner_org_invalid(self):
+        deposit = factories.DataContainer(id='data-deposit')
+        target = factories.DataContainer(id='data-target')
         assert_raises(toolkit.Invalid,
-            validators.deposited_dataset_owner_org, 'data-destination', {})
+            validators.deposited_dataset_owner_org, 'data-target', {})
 
-    def test_deposited_datset_owner_org_dest(self):
-        depo = factories.DataContainer(id='data-deposit')
-        dest = factories.DataContainer(id='data-destination')
-        result = validators.deposited_dataset_owner_org_dest('data-destination', {})
-        assert_equals(result, 'data-destination')
+    def test_deposited_dataset_owner_org_dest(self):
+        deposit = factories.DataContainer(id='data-deposit')
+        target = factories.DataContainer(id='data-target')
+        result = validators.deposited_dataset_owner_org_dest('data-target', {})
+        assert_equals(result, 'data-target')
 
-    def test_deposited_datset_owner_org_dest_invalid_data_deposit(self):
-        depo = factories.DataContainer(id='data-deposit')
-        dest = factories.DataContainer(id='data-destination')
+    def test_deposited_dataset_owner_org_dest_invalid_data_deposit(self):
+        deposit = factories.DataContainer(id='data-deposit')
+        target = factories.DataContainer(id='data-target')
         assert_raises(toolkit.Invalid,
             validators.deposited_dataset_owner_org_dest, 'data-deposit', {})
 
-    def test_deposited_datset_owner_org_dest_invalid_not_existent(self):
-        depo = factories.DataContainer(id='data-deposit')
-        dest = factories.DataContainer(id='data-destination')
+    def test_deposited_dataset_owner_org_dest_invalid_not_existent(self):
+        deposit = factories.DataContainer(id='data-deposit')
+        target = factories.DataContainer(id='data-target')
         assert_raises(toolkit.Invalid,
             validators.deposited_dataset_owner_org_dest, 'not-existent', {})
+
+    def test_deposited_dataset_curation_state(self):
+        assert_equals(validators.deposited_dataset_curation_state('draft', {}), 'draft')
+        assert_equals(validators.deposited_dataset_curation_state('submitted', {}), 'submitted')
+        assert_equals(validators.deposited_dataset_curation_state('review', {}), 'review')
+
+    def test_deposited_dataset_curation_state_invalid(self):
+        assert_raises(toolkit.Invalid,
+            validators.deposited_dataset_curation_state, 'invalid', {})
+
+    def test_deposited_dataset_curation_id_invalid(self):
+        assert_raises(toolkit.Invalid,
+            validators.deposited_dataset_curator_id, 'invalid', {})

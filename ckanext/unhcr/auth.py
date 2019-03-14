@@ -7,6 +7,8 @@ from ckanext.unhcr import helpers
 log = logging.getLogger(__name__)
 
 
+# General
+
 def restrict_access_to_get_auth_functions():
     '''
     By default, all GET actions in CKAN core allow anonymous access (non
@@ -65,6 +67,8 @@ def site_read(context, data_dict):
     return {'success': True}
 
 
+# Organization
+
 @toolkit.auth_allow_anonymous_access
 def organization_list_for_user(context, data_dict):
     if not context.get('user'):
@@ -107,34 +111,37 @@ def organization_create(context, data_dict):
     return {'success': False, 'msg': 'Not allowed to create a data container'}
 
 
+# Package
+
 def package_create(context, data_dict):
 
-    # For data deposit container
+    # Data deposit
     if data_dict:
-        depo = helpers.get_data_container_for_depositing()
-        if depo['id'] == data_dict.get('owner_org'):
+        deposit = helpers.get_data_deposit()
+        if deposit['id'] == data_dict.get('owner_org'):
             return {'success': True}
 
-    # For normal container
+    # Data container
     return auth_create_core.package_create(context, data_dict)
 
 
 def package_update(context, data_dict):
 
-    # Get package id
-    package_id = None
+    # Get dataset
+    dataset_id = None
     if data_dict:
-        package_id = data_dict['id']
+        dataset_id = data_dict['id']
     if context.get('package'):
-        package_id = context['package'].id
+        dataset_id = context['package'].id
+    dataset = toolkit.get_action('package_show')(context, {'id': dataset_id})
 
-    # For data deposit container
-    if package_id:
-        pack = toolkit.get_action('package_show')({}, {'id': package_id})
-        depo = helpers.get_data_container_for_depositing()
-        if (toolkit.c.userobj.id == pack.get('creator_user_id') and
-            depo['id'] == pack.get('owner_org')):
-                return {'success': True}
+    # Deposited dataset
+    if dataset['type'] == 'deposited-dataset':
+        curation = helpers.get_deposited_dataset_user_curation_status(
+            dataset, toolkit.c.userobj.id)
+        if 'edit' in curation['actions']:
+            return {'success': True}
+        return {'success': False, 'msg': 'Not authorized to edit deposited dataset'}
 
-    # For normal container
+    # Regular dataset
     return auth_update_core.package_update(context, data_dict)

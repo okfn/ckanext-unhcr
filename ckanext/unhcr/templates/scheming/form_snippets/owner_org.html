@@ -14,9 +14,9 @@
 
 <div data-module="dataset-visibility">
 
-  {% set data_container_for_depositing = h.get_data_container_for_depositing() %}
+  {% set deposit = h.get_data_deposit() %}
 
-  {% set organizations_available=h.organizations_available('create_dataset') | rejectattr('id', 'equalto', data_container_for_depositing.id) %}
+  {% set organizations_available=h.organizations_available('create_dataset') | rejectattr('id', 'equalto', deposit.id) %}
   {% set org_required=not h.check_config_permission('create_unowned_dataset') or h.scheming_field_required(field) %}
 
   {% snippet "scheming/form_snippets/_organization_select.html",
