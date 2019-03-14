@@ -308,3 +308,21 @@ def convert_deposited_dataset_to_regular_dataset(pkg_dict):
     pkg_dict.pop('curator_id', None)
 
     return pkg_dict
+
+
+def create_curation_activity(
+        activity_type, dataset_id, dataset_name, user_id, feedback=None):
+    activity_context = {'ignore_auth': True}
+    data_dict = {
+        'user_id': user_id,
+        'object_id': dataset_id,
+        'activity_type': 'changed package',
+        'data': {
+            'curation_activity': activity_type,
+            'package': {'name': dataset_name, 'id': dataset_id},
+        }
+    }
+    if feedback:
+        data_dict['data']['feedback'] = feedback
+
+    toolkit.get_action('activity_create')(activity_context, data_dict)
