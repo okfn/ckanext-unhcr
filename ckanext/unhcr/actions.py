@@ -39,3 +39,46 @@ def organization_create(context, data_dict):
             log.critical(message.format(org_dict['title']))
 
     return org_dict
+
+
+@toolkit.side_effect_free
+def package_activity_list(context, data_dict):
+    get_curation_activities = data_dict.get('get_curation_activities')
+    full_list = get_core.package_activity_list(context, data_dict)
+    curation_activities = [
+        a for a in full_list if 'curation_activity' in a.get('data', {})]
+    normal_activities = [
+        a for a in full_list if 'curation_activity' not in a.get('data', {})]
+    # Filter out the activities that are related `curation_state`
+    normal_activities = list(filter(
+        lambda activity: get_core.activity_detail_list(
+            context, {'id': activity['id']}).pop()
+            .get('data', {})
+            .get('package_extra', {})
+            .get('key') not in ('curation_state', 'curator_id'), normal_activities))
+    return (curation_activities
+        if get_curation_activities else normal_activities)
+
+
+@toolkit.side_effect_free
+def dashboard_activity_list(context, data_dict):
+    full_list = get_core.dashboard_activity_list(context, data_dict)
+    normal_activities = [
+        a for a in full_list if 'curation_activity' not in a.get('data', {})]
+    return normal_activities
+
+
+@toolkit.side_effect_free
+def group_activity_list(context, data_dict):
+    full_list = get_core.group_activity_list(context, data_dict)
+    normal_activities = [
+        a for a in full_list if 'curation_activity' not in a.get('data', {})]
+    return normal_activities
+
+
+@toolkit.side_effect_free
+def recently_changed_packages_activity_list(context, data_dict):
+    full_list = get_core.recently_changed_packages_activity_list(context, data_dict)
+    normal_activities = [
+        a for a in full_list if 'curation_activity' not in a.get('data', {})]
+    return normal_activities

@@ -193,6 +193,10 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
     def get_actions(self):
         return {
             'organization_create': actions.organization_create,
+            'package_activity_list': actions.package_activity_list,
+            'dashboard_activity_list': actions.dashboard_activity_list,
+            'group_activity_list': actions.group_activity_list,
+            'recently_changed_packages_activity_list': actions.recently_changed_packages_activity_list,
         }
 
     # IValidators
