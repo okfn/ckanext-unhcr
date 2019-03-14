@@ -194,12 +194,18 @@ def get_deposited_dataset_user_curation_status(dataset, user_id):
     status['role'] = get_deposited_dataset_user_curation_role(user_id)
     status['state'] = dataset['curation_state']
 
-    # is_creator/curator
-    status['is_creator'] = dataset.get('creator_user_id') == user_id
+    # is_depositor/curator
+    status['is_depositor'] = dataset.get('creator_user_id') == user_id
     status['is_curator'] = dataset.get('curator_id') == user_id
 
     # actions
     status['actions'] = get_deposited_dataset_user_curation_actions(status)
+
+    # contacts
+    status['contacts'] = {
+        'depositor': get_deposited_dataset_user_contact(dataset.get('creator_user_id')),
+        'curator': get_deposited_dataset_user_contact(dataset.get('curator_id')),
+    }
 
     return status
 
@@ -228,7 +234,7 @@ def get_deposited_dataset_user_curation_actions(status):
 
     # Draft
     if status['state'] == 'draft':
-        if status['is_creator']:
+        if status['is_depositor']:
             actions.extend(['edit', 'submit', 'withdraw'])
 
     # Submitted
@@ -245,12 +251,31 @@ def get_deposited_dataset_user_curation_actions(status):
 
     # Review
     if status['state'] == 'review':
-        if status['is_creator']:
+        if status['is_depositor']:
             actions.extend(['request_changes'])
             if not status['error']:
                 actions.extend(['approve'])
 
     return actions
+
+
+def get_deposited_dataset_user_contact(user_id=None):
+
+    # Return none (no id)
+    if not user_id:
+        return None
+
+    # Return none (no user)
+    try:
+        user = toolkit.get_action('user_show')({'ignore_auth': True}, {'id': user_id})
+    except toolkit.ObjectNotFound:
+        return None
+
+    # Return contact
+    return {
+        'title': user.get('display_name'),
+        'email': user.get('email'),
+    }
 
 
 def get_dataset_validation_error_or_none(pkg_dict, context=None):

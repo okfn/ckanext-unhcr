@@ -1926,3 +1926,51 @@ i {
 .resource_type > p {
   margin-top: 5px;
 }
+
+.curation-read .btn {
+  margin: 0.25em 0;
+  width: 85%;
+}
+
+.curation-read hr {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  width: 95%;
+}
+
+.curation-read dl {
+  margin-left: 1em;
+}
+
+.curation-read ul {
+  list-style-position: inside;
+}
+
+.curation-actions .curation-buttons {
+  padding-top: 0;
+}
+
+.curation-actions .curation-message {
+  padding-top: 0.5em;
+  width: 90%;
+}
+
+.curation-actions .curation-message textarea {
+  width: 100%;
+}
+
+.curation-information .curation-metadata {
+  padding-top: 0;
+}
+
+.curation-modals form {
+  margin: 0;
+}
+
+.curation-modals textarea {
+  width: 97%;
+}
+
+.curation-modals select {
+  width: 100%;
+}

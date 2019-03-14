@@ -37,6 +37,10 @@ class DepositedDatasetController(toolkit.BaseController):
             message = 'Deposited dataset "%s" is invalid\n(validation error summary: %s)'
             return toolkit.abort(403, message % (id, error.error_summary))
 
+        # TODO: incorporate to activity/email
+        message = toolkit.request.params.get('message')
+        log.debug('Action message: %s' % message)
+
         # Update activity stream
         #
 
@@ -110,6 +114,10 @@ class DepositedDatasetController(toolkit.BaseController):
             dataset['curation_state'] = 'draft'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
+        # TODO: incorporate to activity/email
+        message = toolkit.request.params.get('message')
+        log.debug('Action message: %s' % message)
+
         # Update activity stream
         #
 
@@ -141,6 +149,10 @@ class DepositedDatasetController(toolkit.BaseController):
         dataset['curation_state'] = 'review'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
+        # TODO: incorporate to activity/email
+        message = toolkit.request.params.get('message')
+        log.debug('Action message: %s' % message)
+
         # Update activity stream
         #
 
@@ -170,6 +182,10 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Purge rejected dataset
         toolkit.get_action('dataset_purge')(context, {'id': dataset_id})
+
+        # TODO: incorporate to activity/email
+        message = toolkit.request.params.get('message')
+        log.debug('Action message: %s' % message)
 
         # Update activity stream
         #
@@ -202,6 +218,10 @@ class DepositedDatasetController(toolkit.BaseController):
         dataset['curation_state'] = 'submitted'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
+        # TODO: incorporate to activity/email
+        message = toolkit.request.params.get('message')
+        log.debug('Action message: %s' % message)
+
         # Update activity stream
         #
 
@@ -231,6 +251,10 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Purge withdrawn dataset
         toolkit.get_action('dataset_purge')(context, {'id': dataset_id})
+
+        # TODO: incorporate to activity/email
+        message = toolkit.request.params.get('message')
+        log.debug('Action message: %s' % message)
 
         # Update activity stream
         #

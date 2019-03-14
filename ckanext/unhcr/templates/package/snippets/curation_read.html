@@ -1,0 +1,132 @@
+<div class="curation curation-read">
+
+  {# Heading #}
+  <section class="module module-narrow curation-title">
+    <div class="module context-info">
+      <div class="module-content">
+        <h1 class="heading">{{ h.dataset_display_name(pkg) }}</h1>
+        <p><span class="label">CURATION / {{ curation.state }}</span></p>
+      </div>
+    </div>
+  </section>
+
+  {# Actions #}
+  <section class="module module-narrow module-shallow curation-actions">
+    <h2 class="module-heading"><i class="fa fa-medium fa-bars"></i>Actions</h2>
+
+    <p class="module-content">
+      As a{% if curation.role == 'admin' %}n{% endif %}
+      <strong>{{ curation.role }}</strong> you have
+      {% if curation.actions %}
+        the following available actions
+      {% else %}
+        no available actions.
+      {% endif %}
+    </p>
+
+    <div class="module-content curation-buttons">
+      {% set link_help = 'Click to open the form' %}
+
+      {% if 'approve' in curation.actions %}
+        <a href="#curation-approve" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
+          {% trans %}Approve Dataset{% endtrans %}
+        </a>
+      {% endif %}
+
+      {% if 'edit' in curation.actions %}
+        <a href="/deposited-dataset/edit/{{ pkg.id }}" class="btn btn-warning" title="{{ link_help }}">
+          {% trans %}Edit Dataset{% endtrans %}
+        </a>
+      {% endif %}
+
+      {% if 'submit' in curation.actions %}
+        <a href="#curation-submit" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
+          {% trans %}Submit Dataset{% endtrans %}
+        </a>
+      {% endif %}
+
+      {% if 'assign' in curation.actions %}
+        <a href="#curation-assign" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
+          {% trans %}Update curator{% endtrans %}
+        </a>
+      {% endif %}
+
+      {% if 'request_changes' in curation.actions %}
+        <a href="#curation-request-changes" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
+          {% trans %}Request Changes{% endtrans %}
+        </a>
+      {% endif %}
+
+      {% if 'request_review' in curation.actions %}
+        <a href="#curation-request-review" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
+          {% trans %}Request Review{% endtrans %}
+        </a>
+      {% endif %}
+
+      {% if 'withdraw' in curation.actions %}
+        <a href="#curation-withdraw" role="button" class="btn btn-danger" data-toggle="modal" title="{{ link_help }}">
+          {% trans %}Withdraw Dataset{% endtrans %}
+        </a>
+      {% endif %}
+
+      {% if 'reject' in curation.actions %}
+        <a href="#curation-reject" role="button" class="btn btn-danger" data-toggle="modal" title="{{ link_help }}">
+          {% trans %}Reject Dataset{% endtrans %}
+        </a>
+      {% endif %}
+
+    </div>
+
+  </section>
+
+  {# Contacts #}
+  <section class="module module-narrow module-shallow curation-contacts">
+    <h2 class="module-heading"><i class="fa fa-medium fa-envelope"></i>Contacts</h2>
+    {% set depositor = curation.contacts.depositor %}
+    {% if depositor %}
+      <dl>
+        <dt>Depositor {% if curation.is_depositor %}<strong>(you)</strong>{% endif %}</dt>
+        <dd>{{ depositor.title }} <a href="mailto:{{ depositor.email }}">(email)</a></dd>
+      </dl>
+    {% endif %}
+    {% set curator = curation.contacts.curator %}
+    {% if curator %}
+      <dl>
+        <dt>Curator {% if curation.is_curator %}<strong>(you)</strong>{% endif %}</dt>
+        <dd>{{ curator.title }} <a href="mailto:{{ curator.email }}">(email)</a></dd>
+      </dl>
+    {% endif %}
+  </section>
+
+  {# Validation #}
+  <section class="module module-narrow module-shallow curation-validation">
+    {% if curation.error %}
+      <h2 class="module-heading"><i class="fa fa-medium fa-times"></i>Validation</h2>
+      <p class="module-content">
+        The following fields need to be updated before the dataset can be published
+      </p>
+      <ul>
+        {% for error in curation.error.error_summary %}
+          <li><small>{{ error }}</small></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <h2 class="module-heading"><i class="fa fa-medium fa-check"></i>Validation</h2>
+      <p class="module-content">
+        The dataset is valid and can be published.
+      </p>
+    {% endif %}
+  </section>
+
+  {# Modals #}
+  <div class="modals">
+
+    {% if 'request_changes' in curation.actions %}
+    {% endif %}
+
+  </div>
+
+  {# License #}
+  {% snippet "snippets/license.html", pkg_dict=pkg %}
+
+</div>

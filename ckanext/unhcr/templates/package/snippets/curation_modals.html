@@ -1,0 +1,181 @@
+<div class="curation curation-modals">
+
+  {# Approve #}
+  {% if 'approve' in curation.actions %}
+    <div id="curation-approve" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+      <form action="/deposited-dataset/{{ pkg.id }}/approve">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3>Approve Dataset</h3>
+        </div>
+        <div class="modal-body">
+          <p>
+            After approval the dataset will be published to the RIDL.
+          </p>
+          <textarea name="message" rows="5" placeholder="Add an optional message"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+          <button class="btn btn-primary">Confirm</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+  {# Submit #}
+  {% if 'submit' in curation.actions %}
+    <div id="curation-submit" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+      <form action="/deposited-dataset/{{ pkg.id }}/submit">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3>Submit Dataset</h3>
+        </div>
+        <div class="modal-body">
+          <p>
+            If you submit the dataset it will become editable by the curators.
+            You will not be able to edit the dataset after submission.
+            The dataset's curator can request changes returning the dataset back to you if needed.
+          </p>
+          <textarea name="message" rows="5" placeholder="Add an optional message"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+          <button class="btn btn-primary">Confirm</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+  {# Assign #}
+  {% if 'assign' in curation.actions %}
+    <div id="curation-assign" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+      <form action="/deposited-dataset/{{ pkg.id }}/assign">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3>Update Curator</h3>
+        </div>
+        <div class="modal-body">
+          <p>
+            You can assign a new responsible person among the curation admins and curators.
+            Choose "Not Assigned" to remove an existent assignment.
+          </p>
+          <div class="control-group control-select">
+            <div class="controls ">
+              <select id="curator_id" name="curator_id">
+                {% set curators = h.get_data_curation_users() %}
+                {% set selected = pkg.curator_id not in curators|map(attribute='id') %}
+                <option value="" {% if selected %}selected{% endif %}>
+                  Not Assigned {% if selected %}(current){% endif %}
+                </option>
+                {% for curator in curators %}
+                  {% set selected = curator.id == pkg.curator_id %}
+                  <option value="{{ curator.id }}" {% if selected %}selected{% endif %}>
+                    {{ curator.display_name }} {% if selected %}(current){% endif %}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+          <button class="btn btn-primary">Confirm</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+  {# Request Changes #}
+  {% if 'request_changes' in curation.actions %}
+    <div id="curation-request-changes" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+      <form action="/deposited-dataset/{{ pkg.id }}/request_changes">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3>Request Changes</h3>
+        </div>
+        <div class="modal-body">
+          <p>
+            {% set recipient = 'depositor' if curation.state == 'submitted' else 'curators'%}
+            If you request changes the dataset will be returned to the <strong>{{ recipient }}</strong>.
+            You can add a message bellow to communicate the reason to the depositor.
+          </p>
+          <textarea name="message" rows="5" placeholder="Add an optional message"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+          <button class="btn btn-primary">Confirm</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+  {# Request Review #}
+  {% if 'request_review' in curation.actions %}
+    <div id="curation-request-review" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+      <form action="/deposited-dataset/{{ pkg.id }}/request_review">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3>Request Changes</h3>
+        </div>
+        <div class="modal-body">
+          <p>
+            If you request a review the dataset will be reviewed by the depositor.
+            The depositor will be able to publish it to the RIDL or request changes returing the dataset to you.
+          </p>
+          <textarea name="message" rows="5" placeholder="Add an optional message"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+          <button class="btn btn-primary">Confirm</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+  {# Withdraw #}
+  {% if 'withdraw' in curation.actions %}
+    <div id="curation-withdraw" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+      <form action="/deposited-dataset/{{ pkg.id }}/withdraw">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3>Withdraw Dataset</h3>
+        </div>
+        <div class="modal-body">
+          <p>
+            If you withdraw the dataset it will be deleted.
+            This action cannot be undone!
+          </p>
+          <textarea name="message" rows="5" placeholder="Add an optional message"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+          <button class="btn btn-primary">Confirm</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+  {# Reject #}
+  {% if 'reject' in curation.actions %}
+    <div id="curation-reject" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+      <form action="/deposited-dataset/{{ pkg.id }}/reject">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3>Reject Dataset</h3>
+        </div>
+        <div class="modal-body">
+          <p>
+            If you reject the dataset it will be deleted.
+            This action cannot be undone!
+          </p>
+          <textarea name="message" rows="5" placeholder="Add an optional message"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+          <button class="btn btn-primary">Confirm</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+</div>
