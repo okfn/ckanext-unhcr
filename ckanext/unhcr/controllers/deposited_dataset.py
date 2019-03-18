@@ -1,4 +1,6 @@
 import logging
+import string
+import random
 from ckan import model
 import ckan.plugins.toolkit as toolkit
 import ckan.lib.helpers as lib_helpers
@@ -189,15 +191,17 @@ class DepositedDatasetController(toolkit.BaseController):
             return toolkit.abort(403, message % dataset_id)
         context['ignore_auth'] = True
 
-        # Purge rejected dataset
-        toolkit.get_action('dataset_purge')(context, {'id': dataset_id})
+        # Delete rejected dataset, but first update its name so it can be reused
+        new_name = _get_rejected_dataset_name(dataset['name'])
+        toolkit.get_action('package_patch')(context, {'id': dataset_id, 'name': new_name})
+        toolkit.get_action('package_delete')(context, {'id': dataset_id})
 
-        # TODO: incorporate to activity/email
         message = toolkit.request.params.get('message')
-        log.debug('Action message: %s' % message)
 
         # Update activity stream
-        #
+        helpers.create_curation_activity('dataset_rejected', dataset['id'],
+            dataset['name'], user_id, message=message)
+
 
         # Send notification email
         #
@@ -257,14 +261,16 @@ class DepositedDatasetController(toolkit.BaseController):
             return toolkit.abort(403, message % dataset_id)
         context['ignore_auth'] = True
 
-        # Purge withdrawn dataset
-        toolkit.get_action('dataset_purge')(context, {'id': dataset_id})
+        # Delete withdrawn dataset, but first update its name so it can be reused
+        new_name = _get_withdrawn_dataset_name(dataset['name'])
+        toolkit.get_action('package_patch')(context, {'id': dataset_id, 'name': new_name})
+        toolkit.get_action('package_delete')(context, {'id': dataset_id})
 
-        # TODO: incorporate to activity/email
         message = toolkit.request.params.get('message')
-        log.debug('Action message: %s' % message)
 
         # Update activity stream
+        helpers.create_curation_activity('dataset_withdrawn', dataset['id'],
+            dataset['name'], user_id, message=message)
 
         # Send notification email
         #
@@ -297,3 +303,19 @@ def _get_deposited_dataset(context, dataset_id):
         message = 'Deposited dataset "%s" not found' % dataset_id
         raise toolkit.ObjectNotFound(message)
     return dataset
+
+
+def _get_rejected_dataset_name(name):
+    return _get_deleted_dataset_name('reject')
+
+
+def _get_withdrawn_dataset_name(name):
+    return _get_deleted_dataset_name('withdrawn')
+
+
+def _get_deleted_dataset_name(name, operation='reject'):
+    rand_chars = ''.join(
+        random.choice(
+            string.ascii_lowercase + string.digits) for _ in range(4)
+    )
+    return '{}-{}-{}'.format(name, operation, rand_chars)
