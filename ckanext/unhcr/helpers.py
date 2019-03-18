@@ -311,7 +311,8 @@ def convert_deposited_dataset_to_regular_dataset(pkg_dict):
 
 
 def create_curation_activity(
-        activity_type, dataset_id, dataset_name, user_id, feedback=None):
+        activity_type, dataset_id, dataset_name, user_id,
+        message=None, **kwargs):
     activity_context = {'ignore_auth': True}
     data_dict = {
         'user_id': user_id,
@@ -322,7 +323,10 @@ def create_curation_activity(
             'package': {'name': dataset_name, 'id': dataset_id},
         }
     }
-    if feedback:
-        data_dict['data']['feedback'] = feedback
+    if message:
+        data_dict['data']['message'] = message
+    if kwargs:
+        for key, value in kwargs.iteritems():
+            data_dict['data'][key] = value
 
     toolkit.get_action('activity_create')(activity_context, data_dict)

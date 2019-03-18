@@ -37,12 +37,11 @@ class DepositedDatasetController(toolkit.BaseController):
             message = 'Deposited dataset "%s" is invalid\n(validation error summary: %s)'
             return toolkit.abort(403, message % (id, error.error_summary))
 
-        # TODO: incorporate to activity/email
         message = toolkit.request.params.get('message')
-        log.debug('Action message: %s' % message)
 
         # Update activity stream
-        #
+        helpers.create_curation_activity('dataset_approved', dataset['id'],
+            dataset['name'], user_id, message=message)
 
         # Send notification email
         #
@@ -81,7 +80,15 @@ class DepositedDatasetController(toolkit.BaseController):
             return toolkit.abort(403, message)
 
         # Update activity stream
-        #
+        if curator_id:
+            context = _get_context(ignore_auth=True)
+            curator = toolkit.get_action('user_show')(context, {'id': curator_id})
+            helpers.create_curation_activity('curator_assigned', dataset['id'],
+                dataset['name'], user_id, curator_id=curator_id, curator_name=curator['name'])
+        else:
+            helpers.create_curation_activity('curator_removed', dataset['id'],
+                dataset['name'], user_id)
+
 
         # Send notification email
         #
@@ -114,12 +121,11 @@ class DepositedDatasetController(toolkit.BaseController):
             dataset['curation_state'] = 'draft'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
-        # TODO: incorporate to activity/email
         message = toolkit.request.params.get('message')
-        log.debug('Action message: %s' % message)
 
         # Update activity stream
-        #
+        helpers.create_curation_activity('changes_requested', dataset['id'],
+                dataset['name'], user_id, message=message)
 
         # Send notification email
         #
@@ -149,12 +155,15 @@ class DepositedDatasetController(toolkit.BaseController):
         dataset['curation_state'] = 'review'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
-        # TODO: incorporate to activity/email
         message = toolkit.request.params.get('message')
-        log.debug('Action message: %s' % message)
 
         # Update activity stream
-        #
+        context = _get_context(ignore_auth=True)
+        depositor = toolkit.get_action('user_show')(context, {'id': dataset['creator_user_id']})
+
+        helpers.create_curation_activity('final_review_requested', dataset['id'],
+            dataset['name'], user_id, message=message, depositor_name=depositor['name'])
+
 
         # Send notification email
         #
@@ -218,12 +227,11 @@ class DepositedDatasetController(toolkit.BaseController):
         dataset['curation_state'] = 'submitted'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
-        # TODO: incorporate to activity/email
         message = toolkit.request.params.get('message')
-        log.debug('Action message: %s' % message)
 
         # Update activity stream
-        #
+        helpers.create_curation_activity('dataset_submitted', dataset['id'],
+            dataset['name'], user_id, feedback=message)
 
         # Send notification email
         #
@@ -257,7 +265,6 @@ class DepositedDatasetController(toolkit.BaseController):
         log.debug('Action message: %s' % message)
 
         # Update activity stream
-        #
 
         # Send notification email
         #
