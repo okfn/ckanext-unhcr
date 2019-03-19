@@ -2,20 +2,6 @@
 
 {% set pkg = c.pkg_dict %}
 
-{% if pkg.type == 'deposited-dataset' %}
-  {% set curation = h.get_deposited_dataset_user_curation_status(pkg, c.userobj.id) %}
-{% endif %}
-
-{# TODO: Use actual curation stream page #}
-{% block content_primary_nav %}
-  {% if pkg.type == 'deposited-dataset' %}
-    {{ h.build_nav_icon('dataset_read', _('Dataset'), id=pkg.name) }}
-    {{ h.build_nav_icon('dataset_activity', _('Curation Stream'), id=pkg.name) }}
-  {% else %}
-    {{ super() }}
-  {% endif %}
-{% endblock %}
-
 {% block page_primary_action %}
   {{ super() }}
 {% endblock %}
@@ -23,22 +9,4 @@
 {% block package_resources %}
   {% snippet "package/snippets/resources_list.html", pkg=pkg, type='data' %}
   {% snippet "package/snippets/resources_list.html", pkg=pkg, type='attachment' %}
-{% endblock %}
-
-{% block secondary_content %}
-  {% if pkg.type == 'deposited-dataset' %}
-    {% snippet "package/snippets/curation_read.html", pkg=pkg, curation=curation %}
-  {% else %}
-    {{ super() }}
-  {% endif %}
-{% endblock %}
-
-{% block package_social %}
-{% endblock %}
-
-{% block footer %}
-  {{ super() }}
-  {% if pkg.type == 'deposited-dataset' %}
-    {% snippet "package/snippets/curation_modals.html", pkg=pkg, curation=curation %}
-  {% endif %}
 {% endblock %}

@@ -86,7 +86,7 @@ class DepositedDatasetController(toolkit.BaseController):
             context = _get_context(ignore_auth=True)
             curator = toolkit.get_action('user_show')(context, {'id': curator_id})
             helpers.create_curation_activity('curator_assigned', dataset['id'],
-                dataset['name'], user_id, curator_id=curator_id, curator_name=curator['name'])
+                dataset['name'], user_id, curator_name=curator['name'])
         else:
             helpers.create_curation_activity('curator_removed', dataset['id'],
                 dataset['name'], user_id)
@@ -279,6 +279,29 @@ class DepositedDatasetController(toolkit.BaseController):
         message = 'Datasest "%s" withdrawn'
         toolkit.h.flash_error(message % dataset['title'])
         toolkit.redirect_to('data-container_read', id='data-deposit')
+
+    def activity(self, dataset_id):
+        '''Render package's curation activity stream page.'''
+
+        context = _get_context()
+        data_dict = {'id': dataset_id}
+        try:
+            toolkit.check_access('package_update', context, data_dict)
+            toolkit.c.pkg_dict = toolkit.get_action('package_show')(context, data_dict)
+            toolkit.c.pkg = context['package']
+            toolkit.c.package_activity_stream = toolkit.get_action(
+                'package_activity_list_html')(
+                context, {
+                    'id': dataset_id,
+                    'get_curation_activities': True
+                })
+        except toolkit.ObjectNotFound:
+            toolkit.abort(404, _('Dataset not found'))
+        except toolkit.NotAuthorized:
+            toolkit.abort(403, _('Unauthorized to read the curation activity for dataset %s') % dataset_id)
+
+        return toolkit.render('package/activity.html', {'dataset_type': 'deposited-dataset'})
+
 
 
 # Internal

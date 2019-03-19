@@ -1,3 +1,4 @@
+# encoding: utf-8
 import json
 import logging
 
@@ -5,6 +6,9 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan.lib.plugins import DefaultTranslation
 from ckan.lib.plugins import DefaultPermissionLabels
+
+# 🙈
+from ckan.lib.activity_streams import activity_stream_string_functions
 
 from ckanext.unhcr import actions, auth, helpers, jobs, validators
 
@@ -35,6 +39,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         toolkit.add_public_directory(config_, 'public')
         toolkit.add_resource('fanstatic', 'unhcr')
 
+        activity_stream_string_functions['changed package'] = helpers.custom_activity_renderer
+
     # IRoutes
 
     def before_map(self, _map):
@@ -58,6 +64,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         _map.connect('/deposited-dataset/{dataset_id}/reject', controller=controller, action='reject')
         _map.connect('/deposited-dataset/{dataset_id}/submit', controller=controller, action='submit')
         _map.connect('/deposited-dataset/{dataset_id}/withdraw', controller=controller, action='withdraw')
+        _map.connect('deposited-dataset_curation_activity', '/deposited-dataset/curation_activity/{dataset_id}', controller=controller, action='activity')
+        _map.connect('dataset_curation_activity','/dataset/curation_activity/{dataset_id}', controller=controller, action='activity')
 
         return _map
 
