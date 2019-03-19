@@ -329,13 +329,13 @@ def _get_deposited_dataset(context, dataset_id):
 
 
 def _get_rejected_dataset_name(name):
-    return _get_deleted_dataset_name('reject')
+    return _get_deleted_dataset_name(name, 'rejected')
 
 
 def _get_withdrawn_dataset_name(name):
-    return _get_deleted_dataset_name('withdraw')
+    return _get_deleted_dataset_name(name, 'withdrawn')
 
-def _get_deleted_dataset_name(name, operation='reject'):
+def _get_deleted_dataset_name(name, operation='rejected'):
     rand_chars = ''.join(
         random.choice(
             string.ascii_lowercase + string.digits) for _ in range(4)

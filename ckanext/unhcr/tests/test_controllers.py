@@ -488,7 +488,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Reject dataset
         self.make_request('reject', user=user, status=302)
         assert_equals(self.dataset['state'], 'deleted')
-        assert_in('-reject-', self.dataset['name'])
+        assert_in('-rejected-', self.dataset['name'])
 
     def test_reject_submitted_not_granted(self):
         for user in ['creator', 'depositor']:
@@ -584,7 +584,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Withdraw dataset
         self.make_request('withdraw', user=user, status=302)
         assert_equals(self.dataset['state'], 'deleted')
-        assert_in('-withdraw-', self.dataset['name'])
+        assert_in('-withdrawn-', self.dataset['name'])
 
     def test_withdraw_draft_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'depositor']:
