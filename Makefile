@@ -31,4 +31,4 @@ shell:
 	docker-compose -f ../../docker-compose.dev.yml exec ckan-dev bash
 
 test:
-	docker-compose -f ../../docker-compose.dev.yml exec ckan-dev nosetests --ckan --nologcapture --reset-db -s -v --with-pylons=/srv/app/src_extensions/ckanext-unhcr/test.ini --with-coverage --cover-package=ckanext.unhcr --cover-inclusive --cover-erase --cover-tests /srv/app/src_extensions/ckanext-unhcr/ ${ARGS}
+	docker-compose -f ../../docker-compose.dev.yml exec ckan-dev nosetests --ckan --nologcapture -s -v --with-pylons=/srv/app/src_extensions/ckanext-unhcr/test.ini --with-coverage --cover-package=ckanext.unhcr --cover-inclusive --cover-erase --cover-tests /srv/app/src_extensions/ckanext-unhcr/ckanext/unhcr/tests/test_controllers.py:TestDepositedDatasetController ${ARGS}

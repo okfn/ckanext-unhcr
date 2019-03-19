@@ -296,9 +296,9 @@ class DepositedDatasetController(toolkit.BaseController):
                     'get_curation_activities': True
                 })
         except toolkit.ObjectNotFound:
-            toolkit.abort(404, _('Dataset not found'))
+            toolkit.abort(404, toolkit._('Dataset not found'))
         except toolkit.NotAuthorized:
-            toolkit.abort(403, _('Unauthorized to read the curation activity for dataset %s') % dataset_id)
+            toolkit.abort(403, toolkit._('Unauthorized to read the curation activity for dataset %s') % dataset_id)
 
         return toolkit.render('package/activity.html', {'dataset_type': 'deposited-dataset'})
 
@@ -333,8 +333,7 @@ def _get_rejected_dataset_name(name):
 
 
 def _get_withdrawn_dataset_name(name):
-    return _get_deleted_dataset_name('withdrawn')
-
+    return _get_deleted_dataset_name('withdraw')
 
 def _get_deleted_dataset_name(name, operation='reject'):
     rand_chars = ''.join(

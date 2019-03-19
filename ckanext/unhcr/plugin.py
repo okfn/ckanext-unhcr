@@ -182,8 +182,16 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             toolkit.enqueue_job(jobs.process_dataset_links_on_create, [data_dict['id']])
 
         if data_dict.get('type') == 'deposited-dataset':
-            helpers.create_curation_activity('dataset_deposited', data_dict['id'],
-                data_dict['name'], context['auth_user_obj'].id)
+            user_id = None
+            if context.get('auth_user_obj'):
+                user_id = context['auth_user_obj'].id
+            elif context.get('user'):
+                user = toolkit.get_action('user_show')(
+                    {'ignore_auth': True}, {'id': context['user']})
+                user_id = user['id']
+            if user_id:
+                helpers.create_curation_activity('dataset_deposited', data_dict['id'],
+                    data_dict['name'], user_id)
 
     def after_delete(self, context, data_dict):
         if not context.get('job'):
