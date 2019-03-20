@@ -53,6 +53,7 @@ def restrict_access_to_get_auth_functions():
     overriden_auth_functions['organization_create'] = organization_create
     overriden_auth_functions['package_create'] = package_create
     overriden_auth_functions['package_update'] = package_update
+    overriden_auth_functions['package_activity_list'] = package_activity_list
 
     return overriden_auth_functions
 
@@ -145,3 +146,11 @@ def package_update(context, data_dict):
 
     # Regular dataset
     return auth_update_core.package_update(context, data_dict)
+
+
+def package_activity_list(context, data_dict):
+    if toolkit.asbool(data_dict.get('get_curation_activities')):
+        # Check if the user can see the curation activity,
+        # for now we check if the user can edit the dataset
+        return auth_update_core.package_update(context, data_dict)
+    return {'success': True}

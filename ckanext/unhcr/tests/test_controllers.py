@@ -7,6 +7,8 @@ from nose.tools import assert_raises, assert_equals, nottest
 from ckan.tests import helpers as core_helpers, factories as core_factories
 from ckanext.unhcr.tests import base, factories
 
+assert_in = core_helpers.assert_in
+assert_not_in = core_helpers.assert_not_in
 
 # TODO: optimize testing speed
 class TestDepositedDatasetController(base.FunctionalTestBase):
@@ -32,6 +34,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.curator = core_factories.User(name='curator', id='curator')
         self.creator = core_factories.User(name='creator', id='creator')
         self.depositor = core_factories.User(name='depositor', id='depositor')
+        self.editor = core_factories.User(name='editor', id='editor')
 
         # Containers
         self.deposit = factories.DataContainer(
@@ -44,7 +47,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         )
         self.target = factories.DataContainer(
             name='data-target',
-            id='data-target'
+            id='data-target',
+            users=[
+                {'name': 'editor', 'capacity': 'editor'},
+            ],
+
         )
 
         # Dataset
@@ -480,7 +487,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Reject dataset
         self.make_request('reject', user=user, status=302)
-        assert_equals(self.dataset, None)
+        assert_equals(self.dataset['state'], 'deleted')
+        assert_in('-rejected-', self.dataset['name'])
 
     def test_reject_submitted_not_granted(self):
         for user in ['creator', 'depositor']:
@@ -575,7 +583,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Withdraw dataset
         self.make_request('withdraw', user=user, status=302)
-        assert_equals(self.dataset, None)
+        assert_equals(self.dataset['state'], 'deleted')
+        assert_in('-withdrawn-', self.dataset['name'])
 
     def test_withdraw_draft_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'depositor']:
@@ -617,3 +626,67 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Withdraw dataset
         self.make_request('withdraw', user=user, status=403)
+
+    def _approve_dataset(self):
+        self.patch_dataset({
+            'curation_state': 'submitted',
+            'unit_of_measurement': 'individual',
+            'keywords': ['shelter', 'health'],
+            'archived': 'False',
+            'data_collector': ['acf'],
+            'data_collection_technique': 'f2f',
+        })
+
+        self.make_request('approve', user='sysadmin', status=302)
+
+    def test_activites_shown_on_deposited_dataset(self):
+
+        env = {'REMOTE_USER': self.creator['name'].encode('ascii')}
+        resp = self.app.get(
+            url=url_for('deposited-dataset_read', id=self.dataset['id']), extra_environ=env)
+        assert_in('Curation Activity', resp.body)
+
+    def test_activites_shown_on_normal_dataset(self):
+        for user in ['sysadmin', 'editor']:
+            yield self.check_activities_shown, user
+
+    def check_activities_shown(self, user):
+
+        self._approve_dataset()
+
+        env = {'REMOTE_USER': user.encode('ascii')}
+        resp = self.app.get(
+            url=url_for('dataset_read', id=self.dataset['id']), extra_environ=env)
+
+        assert_in('Curation Activity', resp.body)
+
+    def test_activites_not_shown_on_normal_dataset(self):
+
+        for user in ['depositor', 'curator']:
+            yield self.check_activities_not_shown, user
+
+    def check_activities_not_shown(self, user):
+
+        self._approve_dataset()
+
+        env = {'REMOTE_USER': user.encode('ascii')} if user else {}
+        resp = self.app.get(
+            url=url_for('dataset_read', id=self.dataset['id']), extra_environ=env)
+
+        assert_not_in('Curation Activity', resp.body)
+
+    def test_activity_created_in_deposited_dataset(self):
+
+
+        self.make_request('submit', user=self.creator['name'], status=302)
+        params = {'curator_id': self.curator['id']}
+        self.make_request('assign', user=self.depadmin['name'], params=params)
+
+        env = {'REMOTE_USER': self.curator['name'].encode('ascii')}
+        resp = self.app.get(
+            url=url_for('deposited-dataset_curation_activity', dataset_id=self.dataset['name']), extra_environ=env)
+
+        assert_in('deposited dataset', resp.body)
+        assert_in('submitted dataset', resp.body)
+        assert_in('assigned', resp.body)
+        assert_in('as curator', resp.body)

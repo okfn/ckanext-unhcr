@@ -1,3 +1,4 @@
+# encoding: utf-8
 import json
 import logging
 
@@ -5,6 +6,9 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan.lib.plugins import DefaultTranslation
 from ckan.lib.plugins import DefaultPermissionLabels
+
+# 🙈
+from ckan.lib.activity_streams import activity_stream_string_functions
 
 from ckanext.unhcr import actions, auth, helpers, jobs, validators
 
@@ -35,6 +39,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         toolkit.add_public_directory(config_, 'public')
         toolkit.add_resource('fanstatic', 'unhcr')
 
+        activity_stream_string_functions['changed package'] = helpers.custom_activity_renderer
+
     # IRoutes
 
     def before_map(self, _map):
@@ -58,6 +64,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         _map.connect('/deposited-dataset/{dataset_id}/reject', controller=controller, action='reject')
         _map.connect('/deposited-dataset/{dataset_id}/submit', controller=controller, action='submit')
         _map.connect('/deposited-dataset/{dataset_id}/withdraw', controller=controller, action='withdraw')
+        _map.connect('deposited-dataset_curation_activity', '/deposited-dataset/curation_activity/{dataset_id}', controller=controller, action='activity')
+        _map.connect('dataset_curation_activity','/dataset/curation_activity/{dataset_id}', controller=controller, action='activity')
 
         return _map
 
@@ -173,6 +181,18 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             toolkit.enqueue_job(jobs.process_dataset_fields, [data_dict['id']])
             toolkit.enqueue_job(jobs.process_dataset_links_on_create, [data_dict['id']])
 
+        if data_dict.get('type') == 'deposited-dataset':
+            user_id = None
+            if context.get('auth_user_obj'):
+                user_id = context['auth_user_obj'].id
+            elif context.get('user'):
+                user = toolkit.get_action('user_show')(
+                    {'ignore_auth': True}, {'id': context['user']})
+                user_id = user['id']
+            if user_id:
+                helpers.create_curation_activity('dataset_deposited', data_dict['id'],
+                    data_dict['name'], user_id)
+
     def after_delete(self, context, data_dict):
         if not context.get('job'):
             toolkit.enqueue_job(jobs.process_dataset_links_on_delete, [data_dict['id']])
@@ -193,6 +213,10 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
     def get_actions(self):
         return {
             'organization_create': actions.organization_create,
+            'package_activity_list': actions.package_activity_list,
+            'dashboard_activity_list': actions.dashboard_activity_list,
+            'group_activity_list': actions.group_activity_list,
+            'recently_changed_packages_activity_list': actions.recently_changed_packages_activity_list,
         }
 
     # IValidators

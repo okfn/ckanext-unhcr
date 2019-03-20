@@ -1,4 +1,6 @@
 import logging
+import string
+import random
 from ckan import model
 import ckan.plugins.toolkit as toolkit
 import ckan.lib.helpers as lib_helpers
@@ -37,12 +39,11 @@ class DepositedDatasetController(toolkit.BaseController):
             message = 'Deposited dataset "%s" is invalid\n(validation error summary: %s)'
             return toolkit.abort(403, message % (id, error.error_summary))
 
-        # TODO: incorporate to activity/email
         message = toolkit.request.params.get('message')
-        log.debug('Action message: %s' % message)
 
         # Update activity stream
-        #
+        helpers.create_curation_activity('dataset_approved', dataset['id'],
+            dataset['name'], user_id, message=message)
 
         # Send notification email
         #
@@ -81,7 +82,15 @@ class DepositedDatasetController(toolkit.BaseController):
             return toolkit.abort(403, message)
 
         # Update activity stream
-        #
+        if curator_id:
+            context = _get_context(ignore_auth=True)
+            curator = toolkit.get_action('user_show')(context, {'id': curator_id})
+            helpers.create_curation_activity('curator_assigned', dataset['id'],
+                dataset['name'], user_id, curator_name=curator['name'])
+        else:
+            helpers.create_curation_activity('curator_removed', dataset['id'],
+                dataset['name'], user_id)
+
 
         # Send notification email
         #
@@ -114,12 +123,11 @@ class DepositedDatasetController(toolkit.BaseController):
             dataset['curation_state'] = 'draft'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
-        # TODO: incorporate to activity/email
         message = toolkit.request.params.get('message')
-        log.debug('Action message: %s' % message)
 
         # Update activity stream
-        #
+        helpers.create_curation_activity('changes_requested', dataset['id'],
+                dataset['name'], user_id, message=message)
 
         # Send notification email
         #
@@ -149,12 +157,15 @@ class DepositedDatasetController(toolkit.BaseController):
         dataset['curation_state'] = 'review'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
-        # TODO: incorporate to activity/email
         message = toolkit.request.params.get('message')
-        log.debug('Action message: %s' % message)
 
         # Update activity stream
-        #
+        context = _get_context(ignore_auth=True)
+        depositor = toolkit.get_action('user_show')(context, {'id': dataset['creator_user_id']})
+
+        helpers.create_curation_activity('final_review_requested', dataset['id'],
+            dataset['name'], user_id, message=message, depositor_name=depositor['name'])
+
 
         # Send notification email
         #
@@ -180,15 +191,17 @@ class DepositedDatasetController(toolkit.BaseController):
             return toolkit.abort(403, message % dataset_id)
         context['ignore_auth'] = True
 
-        # Purge rejected dataset
-        toolkit.get_action('dataset_purge')(context, {'id': dataset_id})
+        # Delete rejected dataset, but first update its name so it can be reused
+        new_name = _get_rejected_dataset_name(dataset['name'])
+        toolkit.get_action('package_patch')(context, {'id': dataset_id, 'name': new_name})
+        toolkit.get_action('package_delete')(context, {'id': dataset_id})
 
-        # TODO: incorporate to activity/email
         message = toolkit.request.params.get('message')
-        log.debug('Action message: %s' % message)
 
         # Update activity stream
-        #
+        helpers.create_curation_activity('dataset_rejected', dataset['id'],
+            dataset['name'], user_id, message=message)
+
 
         # Send notification email
         #
@@ -218,12 +231,11 @@ class DepositedDatasetController(toolkit.BaseController):
         dataset['curation_state'] = 'submitted'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
-        # TODO: incorporate to activity/email
         message = toolkit.request.params.get('message')
-        log.debug('Action message: %s' % message)
 
         # Update activity stream
-        #
+        helpers.create_curation_activity('dataset_submitted', dataset['id'],
+            dataset['name'], user_id, feedback=message)
 
         # Send notification email
         #
@@ -249,15 +261,16 @@ class DepositedDatasetController(toolkit.BaseController):
             return toolkit.abort(403, message % dataset_id)
         context['ignore_auth'] = True
 
-        # Purge withdrawn dataset
-        toolkit.get_action('dataset_purge')(context, {'id': dataset_id})
+        # Delete withdrawn dataset, but first update its name so it can be reused
+        new_name = _get_withdrawn_dataset_name(dataset['name'])
+        toolkit.get_action('package_patch')(context, {'id': dataset_id, 'name': new_name})
+        toolkit.get_action('package_delete')(context, {'id': dataset_id})
 
-        # TODO: incorporate to activity/email
         message = toolkit.request.params.get('message')
-        log.debug('Action message: %s' % message)
 
         # Update activity stream
-        #
+        helpers.create_curation_activity('dataset_withdrawn', dataset['id'],
+            dataset['name'], user_id, message=message)
 
         # Send notification email
         #
@@ -266,6 +279,29 @@ class DepositedDatasetController(toolkit.BaseController):
         message = 'Datasest "%s" withdrawn'
         toolkit.h.flash_error(message % dataset['title'])
         toolkit.redirect_to('data-container_read', id='data-deposit')
+
+    def activity(self, dataset_id):
+        '''Render package's curation activity stream page.'''
+
+        context = _get_context()
+        data_dict = {'id': dataset_id}
+        try:
+            toolkit.check_access('package_update', context, data_dict)
+            toolkit.c.pkg_dict = toolkit.get_action('package_show')(context, data_dict)
+            toolkit.c.pkg = context['package']
+            toolkit.c.package_activity_stream = toolkit.get_action(
+                'package_activity_list_html')(
+                context, {
+                    'id': dataset_id,
+                    'get_curation_activities': True
+                })
+        except toolkit.ObjectNotFound:
+            toolkit.abort(404, toolkit._('Dataset not found'))
+        except toolkit.NotAuthorized:
+            toolkit.abort(403, toolkit._('Unauthorized to read the curation activity for dataset %s') % dataset_id)
+
+        return toolkit.render('package/activity.html', {'dataset_type': 'deposited-dataset'})
+
 
 
 # Internal
@@ -290,3 +326,18 @@ def _get_deposited_dataset(context, dataset_id):
         message = 'Deposited dataset "%s" not found' % dataset_id
         raise toolkit.ObjectNotFound(message)
     return dataset
+
+
+def _get_rejected_dataset_name(name):
+    return _get_deleted_dataset_name(name, 'rejected')
+
+
+def _get_withdrawn_dataset_name(name):
+    return _get_deleted_dataset_name(name, 'withdrawn')
+
+def _get_deleted_dataset_name(name, operation='rejected'):
+    rand_chars = ''.join(
+        random.choice(
+            string.ascii_lowercase + string.digits) for _ in range(4)
+    )
+    return '{}-{}-{}'.format(name, operation, rand_chars)

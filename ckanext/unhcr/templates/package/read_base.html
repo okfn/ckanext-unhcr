@@ -1,0 +1,39 @@
+{% ckan_extends %}
+
+{% set pkg = c.pkg_dict %}
+
+{% if pkg.type == 'deposited-dataset' %}
+  {% set curation = h.get_deposited_dataset_user_curation_status(pkg, c.userobj.id) %}
+{% endif %}
+
+{% block content_primary_nav %}
+  {% if pkg.type == 'deposited-dataset' %}
+    {{ h.build_nav_icon('dataset_read', _('Dataset'), id=pkg.name) }}
+  	{{ h.build_nav_icon('%s_curation_activity' % dataset_type, _('Curation Activity'), dataset_id=pkg.name, icon='gavel') }}
+  {% else %}
+    {{ h.build_nav_icon('dataset_read', _('Dataset'), id=pkg.name) }}
+    {{ h.build_nav_icon('dataset_activity', _('Activity Stream'), id=pkg.name) }}
+    {% if h.check_access('package_update', {'user': c.user, 'id': c.pkg_dict.id}) %}
+      {{ h.build_nav_icon('%s_curation_activity' % dataset_type, _('Curation Activity'), dataset_id=pkg.name, icon='gavel') }}
+    {% endif %}
+  {% endif %}
+{% endblock %}
+
+{% block secondary_content %}
+  {% if pkg.type == 'deposited-dataset' %}
+    {% snippet "package/snippets/curation_read.html", pkg=pkg, curation=curation %}
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
+{% block package_social %}
+{% endblock %}
+
+{% block footer %}
+  {{ super() }}
+  {% if pkg.type == 'deposited-dataset' %}
+    {% snippet "package/snippets/curation_modals.html", pkg=pkg, curation=curation %}
+  {% endif %}
+{% endblock %}
+

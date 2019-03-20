@@ -3,6 +3,7 @@ from ckan import model
 from operator import itemgetter
 from ckan.logic import ValidationError
 from ckan.plugins import toolkit
+import ckan.lib.helpers as core_helpers
 import ckan.lib.plugins as lib_plugins
 from ckanext.unhcr import utils
 log = logging.getLogger(__name__)
@@ -308,3 +309,69 @@ def convert_deposited_dataset_to_regular_dataset(pkg_dict):
     pkg_dict.pop('curator_id', None)
 
     return pkg_dict
+
+
+def create_curation_activity(
+        activity_type, dataset_id, dataset_name, user_id,
+        message=None, **kwargs):
+    activity_context = {'ignore_auth': True}
+    data_dict = {
+        'user_id': user_id,
+        'object_id': dataset_id,
+        'activity_type': 'changed package',
+        'data': {
+            'curation_activity': activity_type,
+            'package': {'name': dataset_name, 'id': dataset_id},
+        }
+    }
+    if message:
+        data_dict['data']['message'] = message
+    if kwargs:
+        for key, value in kwargs.iteritems():
+            data_dict['data'][key] = value
+
+    toolkit.get_action('activity_create')(activity_context, data_dict)
+
+
+def custom_activity_renderer(context, activity):
+    '''
+    Before CKAN 2.9 the only way to customize the activty stream snippets was to
+    monkey patch a renderer, as we do here.
+    '''
+    log.error(activity)
+    if 'curation_activity' not in activity.get('data', {}):
+        # Default core one
+        return toolkit._("{actor} updated the dataset {dataset}")
+
+    activity_name = activity['data']['curation_activity']
+
+    output = ''
+
+    if activity_name == 'dataset_deposited':
+        output =  toolkit._("{actor} deposited dataset {dataset}")
+    elif activity_name == 'dataset_submitted':
+        output =  toolkit._("{actor} submitted dataset {dataset} for curation")
+    elif activity_name == 'curator_assigned':
+        curator_link = core_helpers.tags.link_to(
+	    activity['data']['curator_name'],
+            toolkit.url_for(
+                controller='user', action='read', id=activity['data']['curator_name'])
+	)
+        output =  toolkit._("{actor} assigned %s as curator for dataset {dataset}" % curator_link)
+    elif activity_name == 'curator_removed':
+        output =  toolkit._("{actor} removed the assigned curator from dataset {dataset}")
+    elif activity_name == 'changes_requested':
+        output =  toolkit._("{actor} unlocked {dataset} for further changes by the depositor")
+    elif activity_name == 'final_review_requested':
+        output =  toolkit._("{actor} requested a final review of {dataset} from the depositor")
+    elif activity_name == 'dataset_rejected':
+        output = toolkit._("{actor} rejected dataset {dataset} for publication")
+    elif activity_name == 'dataset_withdrawn':
+        output = toolkit._("{actor} withdrawn dataset {dataset} from the data deposit")
+    elif activity_name == 'dataset_approved':
+        output = toolkit._("{actor} approved dataset {dataset} for publication")
+
+    if activity['data'].get('message'):
+        output = output + ' with the following message: %s' % activity['data']['message']
+
+    return output
