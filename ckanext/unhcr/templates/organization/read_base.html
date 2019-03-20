@@ -1,0 +1,18 @@
+{% ckan_extends %}
+
+{% set deposit = h.get_data_deposit() %}
+
+{% block secondary_content %}
+  {% if c.group_dict.id == deposit.id %}
+    {% snippet "organization/snippets/curation_sidebar.html", deposit=deposit, facet_titles=c.facet_titles %}
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
+{% block footer %}
+  {{ super() }}
+  {% if c.group_dict.id == deposit.id %}
+    {% snippet "organization/snippets/curation_modals.html", deposit=deposit %}
+  {% endif %}
+{% endblock %}

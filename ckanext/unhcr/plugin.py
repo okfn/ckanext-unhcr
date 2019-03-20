@@ -115,6 +115,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'get_data_deposit': helpers.get_data_deposit,
             'get_data_curation_users': helpers.get_data_curation_users,
             'get_deposited_dataset_user_curation_status': helpers.get_deposited_dataset_user_curation_status,
+            'get_deposited_dataset_user_curation_role': helpers.get_deposited_dataset_user_curation_role,
             'get_dataset_validation_report': helpers.get_dataset_validation_report,
             'get_field_pretty_name': helpers.get_field_pretty_name,
         }

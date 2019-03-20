@@ -16,11 +16,7 @@
       </a>
      {% endif %}
   {% else %}
-    {% if c.group_dict.id == deposit.id %}
-      <a href="#curation-deposit" role="button" class="btn btn-primary" data-toggle="modal" title="Click to open the form">
-        {% trans %}Deposit Dataset{% endtrans %}
-      </a>
-    {% else %}
+    {% if c.group_dict.id != deposit.id %}
       {% if h.check_access('package_create', {'owner_org': c.group_dict.id}) %}
         {% snippet 'snippets/add_dataset_buttons.html', group=c.group_dict.id%}
       {% endif %}
@@ -41,12 +37,5 @@
     {% else %}
       {{ h.snippet('snippets/package_list.html', packages=c.page.items) }}
     {% endif %}
-  {% endif %}
-{% endblock %}
-
-{% block footer %}
-  {{ super() }}
-  {% if c.group_dict.id == deposit.id %}
-    {% snippet "organization/snippets/curation_modals.html", deposit=deposit %}
   {% endif %}
 {% endblock %}

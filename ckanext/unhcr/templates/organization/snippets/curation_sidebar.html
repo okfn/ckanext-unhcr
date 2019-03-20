@@ -1,0 +1,48 @@
+<div class="curation curation-sidebar">
+  {% set curation_role = h.get_deposited_dataset_user_curation_role(c.userobj.id) %}
+
+  {# Heading #}
+  <section class="module module-narrow curation-title">
+    <div class="module context-info">
+      <div class="module-content">
+        <h1 class="heading">{{ deposit.title }}</h1>
+        <p><span class="label">CURATION INTERFACE</span></p>
+      </div>
+    </div>
+  </section>
+
+  {# Actions #}
+  <section class="module module-narrow module-shallow curation-actions">
+    <h2 class="module-heading"><i class="fa fa-medium fa-bars"></i>Actions</h2>
+    <p class="module-content">
+      As a{% if curation_role == 'admin' %}n{% endif %}
+      <strong>{{ curation_role }}</strong> you can deposit a dataset and
+      perform other actions on deposited datasets
+    </p>
+    <div class="module-content curation-buttons">
+      {% set link_help = 'Click to open the form' %}
+      <a href="#curation-deposit" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
+        {% trans %}Deposit Dataset{% endtrans %}
+      </a>
+    </div>
+  </section>
+
+  {# Facets #}
+  {% if facet_titles %}
+    <section class="module module-narrow module-shallow curation-actions">
+      <h2 class="module-heading"><i class="fa fa-medium fa-search"></i>Filters</h2>
+      <p class="module-content">
+        The filters below allows to search among the deposited datasets
+      </p>
+      <div class="module-content filters">
+        <div>
+          {% for facet in facet_titles %}
+            {{ h.snippet('snippets/facet_list.html', title=facet_titles[facet], name=facet, extras={'id': deposit.id}) }}
+          {% endfor %}
+        </div>
+        <a class="close no-text hide-filters"><i class="fa fa-times-circle"></i><span class="text">close</span></a>
+      </div>
+    </section>
+  {% endif %}
+
+</div>
