@@ -19,9 +19,14 @@
   {% endif %}
 {% endblock %}
 
+{% block package_resources %}
+  {% snippet "package/snippets/resources_list.html", pkg=pkg, type='data' %}
+  {% snippet "package/snippets/resources_list.html", pkg=pkg, type='attachment' %}
+{% endblock %}
+
 {% block secondary_content %}
   {% if pkg.type == 'deposited-dataset' %}
-    {% snippet "package/snippets/curation_read.html", pkg=pkg, curation=curation %}
+    {% snippet "package/snippets/curation_sidebar.html", pkg=pkg, curation=curation %}
   {% else %}
     {{ super() }}
   {% endif %}
@@ -36,4 +41,3 @@
     {% snippet "package/snippets/curation_modals.html", pkg=pkg, curation=curation %}
   {% endif %}
 {% endblock %}
-

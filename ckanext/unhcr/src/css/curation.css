@@ -1,4 +1,6 @@
-.curation-read {
+/* General */
+
+.curation-sidebar {
   & .btn {
     margin: 0.25em 0;
     width: 85%;
@@ -44,5 +46,32 @@
   }
   & select {
     width: 100%;
+  }
+}
+
+/* Editing */
+
+.control-group.curation-invalid {
+  border-radius: 3px;
+  background-color: #FF4C0F;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  padding-right: 1em;
+  & label {
+    color: #fff;
+  }
+  & input,
+  & select,
+  & textarea {
+    border-width: 0;
+  }
+  & .info-block {
+    color: #fff;
+  }
+  & .info-block:nth-of-type(2) {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 0;
   }
 }

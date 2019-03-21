@@ -1,6 +1,8 @@
+import re
 import logging
 from ckan import model
 from operator import itemgetter
+from collections import OrderedDict
 from ckan.logic import ValidationError
 from ckan.plugins import toolkit
 import ckan.lib.helpers as core_helpers
@@ -309,6 +311,33 @@ def convert_deposited_dataset_to_regular_dataset(pkg_dict):
     pkg_dict.pop('curator_id', None)
 
     return pkg_dict
+
+
+def get_dataset_validation_report(pkg_dict, error_dict):
+    report = {}
+
+    # Dataset
+    report['dataset'] = {
+        'fields': sorted([field for field in error_dict if field != 'resources']),
+    }
+
+    # Resources
+    report['resources'] = []
+    for index, resource in enumerate(pkg_dict.get('resources', [])):
+        report['resources'].append({
+            'id': resource['id'],
+            'name': resource['name'],
+            'fields': sorted(error_dict['resources'][index]),
+        })
+
+    return report
+
+
+def get_field_pretty_name(field_name):
+    # https://github.com/ckan/ckan/blob/master/ckan/logic/__init__.py#L90
+    field_name = field_name.replace('_', ' ').capitalize()
+    field_name = re.sub('(?<!\w)[Uu]rl(?!\w)', 'URL', field_name)
+    return field_name.replace('_', ' ')
 
 
 def create_curation_activity(

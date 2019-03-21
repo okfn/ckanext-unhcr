@@ -1,5 +1,7 @@
 {% ckan_extends %}
 
+{% set deposit = h.get_data_deposit() %}
+
 {% block page_primary_action %}
   {% if c.group_dict.state == 'approval_needed' %}
     <div class="alert alert-warning" role="alert">
@@ -14,10 +16,14 @@
       </a>
      {% endif %}
   {% else %}
-    {% if h.check_access('package_create', {'owner_org': c.group_dict.id}) %}
-      {% snippet 'snippets/add_dataset_buttons.html', group=c.group_dict.id%}
+    {% if c.group_dict.id == deposit.id %}
+      <a href="#curation-deposit" role="button" class="btn btn-primary" data-toggle="modal" title="Click to open the form">
+        {% trans %}Deposit Dataset{% endtrans %}
+      </a>
     {% else %}
-      {% link_for _('Deposit Dataset'), named_route='/deposited-dataset/new', class_='btn btn-primary', icon='plus-square', group=c.group_dict.id %}
+      {% if h.check_access('package_create', {'owner_org': c.group_dict.id}) %}
+        {% snippet 'snippets/add_dataset_buttons.html', group=c.group_dict.id%}
+      {% endif %}
     {% endif %}
   {% endif %}
 {% endblock %}
@@ -30,11 +36,17 @@
 
 {% block packages_list %}
   {% if c.page.items %}
-    {% set deposit = h.get_data_deposit() %}
     {% if c.group_dict.id == deposit.id %}
       {{ h.snippet('snippets/deposit_package_list.html', packages=c.page.items) }}
     {% else %}
       {{ h.snippet('snippets/package_list.html', packages=c.page.items) }}
     {% endif %}
+  {% endif %}
+{% endblock %}
+
+{% block footer %}
+  {{ super() }}
+  {% if c.group_dict.id == deposit.id %}
+    {% snippet "organization/snippets/curation_modals.html", deposit=deposit %}
   {% endif %}
 {% endblock %}

@@ -1,4 +1,4 @@
-<div class="curation curation-read">
+<div class="curation curation-sidebar">
 
   {# Heading #}
   <section class="module module-narrow curation-title">
@@ -34,7 +34,7 @@
       {% endif %}
 
       {% if 'edit' in curation.actions %}
-        <a href="/deposited-dataset/edit/{{ pkg.id }}" class="btn btn-warning" title="{{ link_help }}">
+        <a href="/deposited-dataset/edit/{{ pkg.id }}" class="btn btn-warning {% if editing %}disabled{% endif %}" {% if not editing %}title="{{ link_help }}"{% endif %}>
           {% trans %}Edit Dataset{% endtrans %}
         </a>
       {% endif %}
@@ -105,9 +105,18 @@
       <p class="module-content">
         The following fields need to be updated before the dataset can be published
       </p>
-      <ul>
-        {% for error in curation.error.error_summary %}
-          <li><small>{{ error }}</small></li>
+      {% set validation = h.get_dataset_validation_report(pkg, curation.error.error_dict) %}
+      <ul {% if editing and not res %}data-fields="{{ h.dump_json(validation.dataset.fields) }}"{% endif %}>
+        {% for field in validation.dataset.fields %}
+          <li><small>{{ h.get_field_pretty_name(field) }}</small></li>
+        {% endfor %}
+        {% for resource in validation.resources %}
+          <li><small>{{ h.resource_display_name(resource) }}</small></li>
+          <ul {% if editing and res and res.id == resource.id %}data-fields="{{ h.dump_json(resource.fields) }}"{% endif %}>
+            {% for resource_field in resource.fields %}
+              <li><small>{{ h.get_field_pretty_name(resource_field) }}</small></li>
+            {% endfor %}
+          </ul>
         {% endfor %}
       </ul>
     {% else %}

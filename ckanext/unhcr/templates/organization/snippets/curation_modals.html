@@ -1,0 +1,53 @@
+<div class="curation curation-modals">
+
+  {# Deposit #}
+  <div id="curation-deposit" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <form action="/deposited-dataset/new" method="get">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>Deposit Dataset</h3>
+      </div>
+      <div class="modal-body">
+        <p>
+          You can use the Data Deposit to submit data that is not yet ready for publication. While in the Data Deposit,
+          datasets will be only visible to yourself, the curation team and the site admins.
+        </p>
+        <p>
+          After depositing the dataset, you will be able to make additional changes. Once you are ready, you can submit it
+          to the curation team, which will work on the dataset metadata to make it meet the RIDL requirements. A designated
+          curator will be assigned to the dataset as contact point. At this point you won't able to make further changes to
+          the dataset, but the curator will be able to release it back in order for you to do so.
+        </p>
+        <p>
+            If the dataset is approved and passes the validation it will be published on the site. Please select below the
+            suggested destination Data Container and the Access Level for the dataset you are submitting.
+        </p>
+        <div class="control-group control-select">
+          <label for="field-private" class="control-label">Destination Data Container</label>
+          <div class="controls">
+            <select name="owner_org_dest">
+              {% set orgs = h.get_all_data_containers(exclude_ids=[deposit.id]) %}
+              {% for org in orgs %}
+                <option value="{{ org.id }}">{{ org.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="control-group control-select">
+          <label for="field-private" class="control-label">Raw Data Access Level</label>
+          <div class="controls">
+            <select id="field-private" name="private">
+              <option value="True">Private</option>
+              <option value="False">Internally Visible</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+        <button class="btn btn-primary">Confirm</button>
+      </div>
+    </form>
+  </div>
+
+</div>
