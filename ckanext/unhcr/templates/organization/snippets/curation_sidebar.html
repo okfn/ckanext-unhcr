@@ -14,17 +14,28 @@
   {# Actions #}
   <section class="module module-narrow module-shallow curation-actions">
     <h2 class="module-heading"><i class="fa fa-medium fa-bars"></i>Actions</h2>
+
     <p class="module-content">
       As a{% if curation_role == 'admin' %}n{% endif %}
       <strong>{{ curation_role }}</strong> you can deposit a dataset and
       perform other actions on deposited datasets
     </p>
+
     <div class="module-content curation-buttons">
       {% set link_help = 'Click to open the form' %}
+
       <a href="#curation-deposit" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
         {% trans %}Deposit Dataset{% endtrans %}
       </a>
+
+      {% if curation_role == 'admin' %}
+        <a href="/data-container/members/{{ deposit.name }}" role="button" class="btn btn-warning" title="{{ link_help }}">
+          {% trans %}Manage Curators{% endtrans %}
+        </a>
+      {% endif %}
+
     </div>
+
   </section>
 
   {# Facets #}
