@@ -93,9 +93,16 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
     def group_facets(self, facets_dict, group_type, package_type):
         return self._facets(facets_dict)
 
-    def organization_facets(self, facets_dict, organization_type,
-                            package_type):
-        return self._facets(facets_dict)
+    def organization_facets(self, facets_dict, organization_type, package_type):
+        # TODO: optimize data deposit calls
+        deposit = helpers.get_data_deposit()
+        if deposit['id'] == getattr(toolkit.c.group, 'id', None):
+            facets_dict.clear()
+            facets_dict['curation_state'] = _('State')
+            facets_dict['curator_id'] = _('Curator')
+            return facets_dict
+        else:
+            return self._facets(facets_dict)
 
     # ITemplateHelpers
 
