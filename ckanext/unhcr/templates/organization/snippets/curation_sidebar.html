@@ -31,9 +31,15 @@
       </a>
 
       {% if curation_role == 'admin' %}
-        <a href="/data-container/members/{{ deposit.name }}" role="button" class="btn btn-warning" title="{{ link_help }}">
-          {% trans %}Manage Curators{% endtrans %}
-        </a>
+        {% if editing %}
+          <a href="/data-container/{{ deposit.name }}" role="button" class="btn btn-warning" title="{{ link_help }}">
+            {% trans %}Manage Datasets{% endtrans %}
+          </a>
+        {% else %}
+          <a href="/data-container/members/{{ deposit.name }}" role="button" class="btn btn-warning" title="{{ link_help }}">
+            {% trans %}Manage Curators{% endtrans %}
+          </a>
+        {% endif %}
       {% endif %}
 
     </div>
