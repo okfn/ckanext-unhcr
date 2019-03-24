@@ -17,8 +17,10 @@
 
     <p class="module-content">
       As a{% if curation_role == 'admin' %}n{% endif %}
-      <strong>{{ curation_role }}</strong> you can deposit a dataset and
-      perform other actions on deposited datasets
+      <strong>{{ curation_role }}</strong> you can deposit a dataset
+      {% if curation_role == 'admin' %}
+        and manage the curation team's members and roles
+      {% endif %}
     </p>
 
     <div class="module-content curation-buttons">
