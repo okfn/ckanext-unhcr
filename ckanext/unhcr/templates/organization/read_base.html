@@ -2,6 +2,12 @@
 
 {% set deposit = h.get_data_deposit() %}
 
+{% block page_header %}
+  {% if c.group_dict.id != deposit.id %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
 {% block secondary_content %}
   {% if c.group_dict.id == deposit.id %}
     {% snippet "organization/snippets/curation_sidebar.html", deposit=deposit, facet_titles=c.facet_titles %}
