@@ -64,7 +64,7 @@
       <div class="module-content filters">
         <div>
           {% for facet in facet_titles %}
-            {{ h.snippet('snippets/facet_list.html', title=facet_titles[facet], name=facet, extras={'id': deposit.id}) }}
+            {{ h.snippet('snippets/facet_list.html', title=facet_titles[facet], name=facet, extras={'id': deposit.id}, alternative_url='/data-container/%s' % deposit.name) }}
           {% endfor %}
         </div>
         <a class="close no-text hide-filters"><i class="fa fa-times-circle"></i><span class="text">close</span></a>
