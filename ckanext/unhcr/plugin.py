@@ -99,7 +99,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         if deposit['id'] == getattr(toolkit.c.group, 'id', None):
             facets_dict.clear()
             facets_dict['curation_state'] = _('State')
-            facets_dict['curator_id'] = _('Curator')
+            facets_dict['curator_name'] = _('Curator')
             return facets_dict
         else:
             return self._facets(facets_dict)
@@ -130,6 +130,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
     # IPackageController
 
     def before_index(self, pkg_dict):
+
         # Remove internal non-indexable fields
 
         # admin_notes
@@ -183,6 +184,18 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
                                 if choice['value'] == item:
                                     out.append(choice['label'])
                 pkg_dict['vocab_' + field] = out
+
+        # Index curator name for deposited dataset
+
+        if pkg_dict.get('type') == 'deposited-dataset':
+            curator_id = pkg_dict.get('curator_id')
+            if curator_id:
+                try:
+                    curator = toolkit.get_action('user_show')(
+                        {'ignore_auth': True}, {'id': curator_id})
+                    pkg_dict['curator_name'] = curator.get('name')
+                except toolkit.ObjectNotFound:
+                    pass
 
         return pkg_dict
 
