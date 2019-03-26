@@ -33,7 +33,7 @@
               {{ h.popular('recent views', package.tracking_summary.recent, min=10) if package.tracking_summary }}
             {% endblock %}
             {% if curation.error %}
-              <small>({{ curation.error.error_summary|length }} validation errors)</small>
+              <small>&nbsp;({{ curation.error.error_summary|length }} validation errors)</small>
             {% endif %}
           </h3>
         {% endblock %}
