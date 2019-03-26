@@ -5,13 +5,14 @@
 {% set curation = h.get_deposited_dataset_user_curation_status(package, c.userobj.id) %}
 
 {% block package_item %}
-  <li class="{{ item_class or "dataset-item" }} dataset-curation-{{ 'valid' if not curation.error else 'invalid' }}">
+  <li class="{{ item_class or "dataset-item" }} dataset-item-curation dataset-item-curation-{{ 'valid' if not curation.error else 'invalid' }}">
     {% block content %}
 
       {# General #}
       <div class="dataset-content">
         {% block heading %}
           <h3 class="dataset-heading">
+            <i class="fa fa-{{ 'times' if curation.error else 'check' }}"></i>
             {% block heading_private %}
               {% if package.private %}
                 <span class="dataset-private label label-inverse">
@@ -31,6 +32,9 @@
               {% endif %}
               {{ h.popular('recent views', package.tracking_summary.recent, min=10) if package.tracking_summary }}
             {% endblock %}
+            {% if curation.error %}
+              <small>({{ curation.error.error_summary|length }} validation errors)</small>
+            {% endif %}
           </h3>
         {% endblock %}
         {% block banner %}
@@ -47,19 +51,17 @@
         {% endblock %}
       </div>
 
-      <hr>
-
       {# Curation #}
       <div class="dataset-curation">
         <table>
           <tr>
-            <th>
+            <td>
               <dl>
                 <dt>State</dt>
                 <dd>{{ curation.state }}</dd>
               </dl>
-            </th>
-            <th>
+            </td>
+            <td>
               {% set depositor = curation.contacts.depositor %}
               {% if depositor %}
                 <dl>
@@ -67,8 +69,8 @@
                   <dd>{{ depositor.title }} <a href="mailto:{{ depositor.email }}">(email)</a></dd>
                 </dl>
               {% endif %}
-            </th>
-            <th>
+            </td>
+            <td>
               {% set curator = curation.contacts.curator %}
               {% if curator %}
                 <dl>
@@ -76,7 +78,7 @@
                   <dd>{{ curator.title }} <a href="mailto:{{ curator.email }}">(email)</a></dd>
                 </dl>
               {% endif %}
-            </th>
+            </td>
           </tr>
         </table>
       </div>

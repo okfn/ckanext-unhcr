@@ -1977,6 +1977,33 @@ i {
   width: 100%;
 }
 
+/* Search */
+
+.dataset-item-curation table {
+  width: 100%;
+  background-color: #f8f8f8;
+  margin-top: 0.5em;
+  border-radius: 5px;
+  -webkit-box-shadow: 3px 3px 3px #ddd;
+  box-shadow: 3px 3px 3px #ddd;
+}
+
+.dataset-item-curation dl {
+  margin: 0.5em 1em;
+}
+
+.dataset-item-curation td {
+  border: solid 1px #ccc;
+}
+
+.dataset-item-curation dd {
+  font-weight: normal;
+}
+
+.dataset-item-curation a {
+  color: #aaa;
+}
+
 /* Editing */
 
 .control-group.curation-invalid {

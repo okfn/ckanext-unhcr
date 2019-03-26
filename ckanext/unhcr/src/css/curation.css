@@ -49,6 +49,30 @@
   }
 }
 
+/* Search */
+
+.dataset-item-curation {
+  & table {
+    width: 100%;
+    background-color: #f8f8f8;
+    margin-top: 0.5em;
+    border-radius: 5px;
+    box-shadow: 3px 3px 3px #ddd;
+  }
+  & dl {
+    margin: 0.5em 1em;
+  }
+  & td {
+    border: solid 1px #ccc;
+  }
+  & dd {
+    font-weight: normal;
+  }
+  & a {
+    color: #aaa;
+  }
+}
+
 /* Editing */
 
 .control-group.curation-invalid {
