@@ -62,20 +62,20 @@
               </dl>
             </td>
             <td>
-              {% set depositor = curation.contacts.depositor %}
-              {% if depositor %}
-                <dl>
-                  <dt>Depositor</dt>
-                  <dd>{{ depositor.title }} <a href="mailto:{{ depositor.email }}">(email)</a></dd>
-                </dl>
-              {% endif %}
-            </td>
-            <td>
               {% set curator = curation.contacts.curator %}
               {% if curator %}
                 <dl>
                   <dt>Curator</dt>
                   <dd>{{ curator.title }} <a href="mailto:{{ curator.email }}">(email)</a></dd>
+                </dl>
+              {% endif %}
+            </td>
+            <td>
+              {% set depositor = curation.contacts.depositor %}
+              {% if depositor %}
+                <dl>
+                  <dt>Depositor</dt>
+                  <dd>{{ depositor.title }} <a href="mailto:{{ depositor.email }}">(email)</a></dd>
                 </dl>
               {% endif %}
             </td>

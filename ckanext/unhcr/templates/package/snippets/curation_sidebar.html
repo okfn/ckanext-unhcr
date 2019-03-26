@@ -82,18 +82,18 @@
   {# Contacts #}
   <section class="module module-narrow module-shallow curation-contacts">
     <h2 class="module-heading"><i class="fa fa-medium fa-envelope"></i>Contacts</h2>
-    {% set depositor = curation.contacts.depositor %}
-    {% if depositor %}
-      <dl>
-        <dt>Depositor {% if curation.is_depositor %}<strong>(you)</strong>{% endif %}</dt>
-        <dd>{{ depositor.title }} <a href="mailto:{{ depositor.email }}">(email)</a></dd>
-      </dl>
-    {% endif %}
     {% set curator = curation.contacts.curator %}
     {% if curator %}
       <dl>
         <dt>Curator {% if curation.is_curator %}<strong>(you)</strong>{% endif %}</dt>
         <dd>{{ curator.title }} <a href="mailto:{{ curator.email }}">(email)</a></dd>
+      </dl>
+    {% endif %}
+    {% set depositor = curation.contacts.depositor %}
+    {% if depositor %}
+      <dl>
+        <dt>Depositor {% if curation.is_depositor %}<strong>(you)</strong>{% endif %}</dt>
+        <dd>{{ depositor.title }} <a href="mailto:{{ depositor.email }}">(email)</a></dd>
       </dl>
     {% endif %}
   </section>
