@@ -10,7 +10,7 @@
         </div>
         <div class="modal-body">
           <p>
-            After approval the dataset will be published to the RIDL.
+            After approval the dataset will be published in RIDL.
           </p>
           <textarea name="message" rows="5" placeholder="Add an optional message"></textarea>
         </div>
@@ -32,7 +32,7 @@
         </div>
         <div class="modal-body">
           <p>
-            If you submit the dataset it will become editable by the curators.
+            If you submit the dataset it will become editable by the curation team.
             You will not be able to edit the dataset after submission.
             The dataset's curator can request changes returning the dataset back to you if needed.
           </p>
@@ -56,8 +56,8 @@
         </div>
         <div class="modal-body">
           <p>
-            You can assign a new responsible person among the curation admins and curators.
-            Choose "Not Assigned" to remove an existent assignment.
+            You can assign a new responsible person from the curation team.
+            Choose "Not Assigned" to remove an existing assignment.
           </p>
           <div class="control-group control-select">
             <div class="controls ">
@@ -97,7 +97,7 @@
           <p>
             {% set recipient = 'depositor' if curation.state == 'submitted' else 'curators'%}
             If you request changes the dataset will be returned to the <strong>{{ recipient }}</strong>.
-            You can add a message bellow to communicate the reason to the depositor.
+            You can add a message below to provide additional feedback.
           </p>
           <textarea name="message" rows="5" placeholder="Add an optional message"></textarea>
         </div>
@@ -115,12 +115,12 @@
       <form action="/deposited-dataset/{{ pkg.id }}/request_review">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-          <h3>Request Review</h3>
+          <h3>Request Final Review</h3>
         </div>
         <div class="modal-body">
           <p>
-            If you request a review the dataset will be reviewed by the depositor.
-            The depositor will be able to publish it to the RIDL or request changes returing the dataset to you.
+            If you request a final review, the dataset will be reviewed by the depositor.
+            The depositor will be able to publish it in RIDL or request changes returing the dataset to you.
           </p>
           <textarea name="message" rows="5" placeholder="Add an optional message"></textarea>
         </div>
@@ -142,8 +142,7 @@
         </div>
         <div class="modal-body">
           <p>
-            If you withdraw the dataset it will be deleted.
-            This action cannot be undone!
+            If you withdraw the dataset it will be deleted. This action cannot be undone!
           </p>
           <textarea name="message" rows="5" placeholder="Add an optional message"></textarea>
         </div>
@@ -165,8 +164,7 @@
         </div>
         <div class="modal-body">
           <p>
-            If you reject the dataset it will be deleted.
-            This action cannot be undone!
+            If you reject the dataset it will be deleted. This action cannot be undone!
           </p>
           <textarea name="message" rows="5" placeholder="Add an optional message"></textarea>
         </div>

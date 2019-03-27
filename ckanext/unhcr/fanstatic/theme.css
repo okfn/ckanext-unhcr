@@ -1984,8 +1984,6 @@ i {
   background-color: #f8f8f8;
   margin-top: 0.5em;
   border-radius: 5px;
-  -webkit-box-shadow: 3px 3px 3px #ddd;
-  box-shadow: 3px 3px 3px #ddd;
 }
 
 .dataset-item-curation dl {
