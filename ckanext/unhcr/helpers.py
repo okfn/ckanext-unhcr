@@ -401,6 +401,6 @@ def custom_activity_renderer(context, activity):
         output = toolkit._("{actor} approved dataset {dataset} for publication")
 
     if activity['data'].get('message'):
-        output = output + ' with the following message: %s' % activity['data']['message']
+        output = output + ' with the following message: <q class="curation-message">%s</q>' % activity['data']['message']
 
     return output
