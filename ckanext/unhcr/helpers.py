@@ -368,7 +368,6 @@ def custom_activity_renderer(context, activity):
     Before CKAN 2.9 the only way to customize the activty stream snippets was to
     monkey patch a renderer, as we do here.
     '''
-    log.error(activity)
     if 'curation_activity' not in activity.get('data', {}):
         # Default core one
         return toolkit._("{actor} updated the dataset {dataset}")
