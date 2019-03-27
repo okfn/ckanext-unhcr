@@ -1,0 +1,54 @@
+{% ckan_extends %}
+
+{% block package_description %}
+
+  {% if pkg.type == 'deposited-dataset' %}
+	<div class="review alert alert-info" role="alert">
+
+	{% if curation['state'] == 'draft' %}
+
+	  {% if curation['role'] == 'depositor' %}
+	    <p>{% trans %}This deposited dataset is in <strong>draft</strong> state. You can make further edits if necessary. When you want to submit it to the curation team, click on the "Submit Dataset" button on the left.{% endtrans %}</p>
+		<p>{% trans %}<strong>Note:</strong> You won't be able to edit the dataset once submitted. You can submit a dataset for curation even if it does not pass the validation requirements.{% endtrans %}</p>
+	  {% else %}
+		<p>{% trans %}This deposited dataset is in <strong>draft</strong> state. The depositor can still make further edits if necessary.{% endtrans %}</p>
+	  {% endif %}
+
+	{% elif curation['state'] == 'submitted' %}
+
+	  {% if curation['role'] == 'depositor' %}
+		<p>{% trans %}This deposited dataset has been <strong>submitted</strong> to the curation team. The curation team will review it and improve the metadata if necessary.{% endtrans %}</p>
+		<p>{% trans %}<strong>Note:</strong> You can't edit the dataset at this point.{% endtrans %}</p>
+	  {% else %}
+		<p>{% trans %}This deposited dataset has been <strong>submitted</strong> to the curation team.{% endtrans %}</p>
+	  {% endif %}
+
+        {% set curator = curation.contacts.curator %}
+        {% if curator %}
+          {% if curator.name == c.user %}
+            <p>You have been assigned as curator of this dataset.</p>
+	      {% else %}
+            <p>{{ curator.title }} <a href="mailto:{{ curator.email }}">(email)</a> has been assigned as curator of this dataset.</p>
+          {% endif %}
+	    {% else %}
+		  <p>{% trans %}A curator for this dataset has not yet been assigned.{% endtrans %}</p>
+        {% endif %}
+
+	{% elif curation['state'] == 'review' %}
+
+	  {% if curation['role'] == 'depositor' %}
+        <p>{% trans %}The curation team has asked for your <strong>final review</strong> on this deposited dataset.{% endtrans %}</p>
+        <p>{% trans %}Use the buttons on the left to approve the datasets (and automatically publish it in RIDL) or to request additional changes.{% endtrans %}</p>
+      {% else %}
+        <p>{% trans %}This deposited dataset is awaiting a <strong>final review</strong> by the depositor before publication.{% endtrans %}</p>
+      {% endif %}
+
+	{% endif %}
+
+    </div>
+  {% endif %}
+
+  {{ super() }}
+
+{% endblock %}
+
