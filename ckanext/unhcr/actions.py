@@ -6,6 +6,7 @@ import ckan.logic.action.get as get_core
 import ckan.logic.action.create as create_core
 import ckan.logic.action.update as update_core
 import ckan.logic.action.patch as patch_core
+import ckan.lib.activity_streams as activity_streams
 from ckanext.unhcr.mailer import mail_data_container_request_to_sysadmins
 log = logging.getLogger(__name__)
 
@@ -83,3 +84,17 @@ def recently_changed_packages_activity_list(context, data_dict):
     normal_activities = [
         a for a in full_list if 'curation_activity' not in a.get('data', {})]
     return normal_activities
+
+
+# Without this action our `package_activity_list` is not overriden (ckan bug?)
+def package_activity_list_html(context, data_dict):
+    activity_stream = package_activity_list(context, data_dict)
+    offset = int(data_dict.get('offset', 0))
+    extra_vars = {
+        'controller': 'package',
+        'action': 'activity',
+        'id': data_dict['id'],
+        'offset': offset,
+    }
+    return activity_streams.activity_list_to_html(
+        context, activity_stream, extra_vars)
