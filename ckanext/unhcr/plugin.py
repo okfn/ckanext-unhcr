@@ -93,9 +93,17 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
     def group_facets(self, facets_dict, group_type, package_type):
         return self._facets(facets_dict)
 
-    def organization_facets(self, facets_dict, organization_type,
-                            package_type):
-        return self._facets(facets_dict)
+    def organization_facets(self, facets_dict, organization_type, package_type):
+        # TODO: optimize data deposit calls
+        deposit = helpers.get_data_deposit()
+        if deposit['id'] == getattr(toolkit.c.group, 'id', None):
+            facets_dict.clear()
+            facets_dict['curation_state'] = _('State')
+            facets_dict['curator_name'] = _('Curator')
+            facets_dict['depositor_name'] = _('Depositor')
+            return facets_dict
+        else:
+            return self._facets(facets_dict)
 
     # ITemplateHelpers
 
@@ -115,6 +123,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'get_data_deposit': helpers.get_data_deposit,
             'get_data_curation_users': helpers.get_data_curation_users,
             'get_deposited_dataset_user_curation_status': helpers.get_deposited_dataset_user_curation_status,
+            'get_deposited_dataset_user_curation_role': helpers.get_deposited_dataset_user_curation_role,
             'get_dataset_validation_report': helpers.get_dataset_validation_report,
             'get_field_pretty_name': helpers.get_field_pretty_name,
         }
@@ -122,6 +131,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
     # IPackageController
 
     def before_index(self, pkg_dict):
+
         # Remove internal non-indexable fields
 
         # admin_notes
@@ -175,6 +185,28 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
                                 if choice['value'] == item:
                                     out.append(choice['label'])
                 pkg_dict['vocab_' + field] = out
+
+        # Index curator name for deposited dataset
+
+        if pkg_dict.get('type') == 'deposited-dataset':
+            # curator
+            curator_id = pkg_dict.get('curator_id')
+            if curator_id:
+                try:
+                    curator = toolkit.get_action('user_show')(
+                        {'ignore_auth': True}, {'id': curator_id})
+                    pkg_dict['curator_name'] = curator.get('name')
+                except toolkit.ObjectNotFound:
+                    pass
+            # depositor
+            depositor_id = pkg_dict.get('creator_user_id')
+            if depositor_id:
+                try:
+                    depositor = toolkit.get_action('user_show')(
+                        {'ignore_auth': True}, {'id': depositor_id})
+                    pkg_dict['depositor_name'] = depositor.get('name')
+                except toolkit.ObjectNotFound:
+                    pass
 
         return pkg_dict
 
