@@ -235,7 +235,7 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Update activity stream
         helpers.create_curation_activity('dataset_submitted', dataset['id'],
-            dataset['name'], user_id, feedback=message)
+            dataset['name'], user_id, message=message)
 
         # Send notification email
         #
