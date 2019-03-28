@@ -86,14 +86,14 @@
     {% if curator %}
       <dl>
         <dt>Curator {% if curation.is_curator %}<strong>(you)</strong>{% endif %}</dt>
-        <dd>{{ curator.title }} <a href="mailto:{{ curator.email }}">(email)</a></dd>
+        <dd><a href="/user/{{ curator.name }}">{{ curator.title }}</a> <a href="mailto:{{ curator.email }}">(email)</a></dd>
       </dl>
     {% endif %}
     {% set depositor = curation.contacts.depositor %}
     {% if depositor %}
       <dl>
         <dt>Depositor {% if curation.is_depositor %}<strong>(you)</strong>{% endif %}</dt>
-        <dd>{{ depositor.title }} <a href="mailto:{{ depositor.email }}">(email)</a></dd>
+        <dd><a href="/user/{{ depositor.name }}">{{ depositor.title }}</a> <a href="mailto:{{ depositor.email }}">(email)</a></dd>
       </dl>
     {% endif %}
   </section>
