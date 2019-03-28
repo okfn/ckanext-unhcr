@@ -10,6 +10,7 @@ $( document ).ready(function() {
   });
 });
 
+// Validation
 $(document).ready(function() {
 
   // Get fields
@@ -32,6 +33,15 @@ $(document).ready(function() {
     );
   }
 
+});
+
+// Header
+$(document).ready(function() {
+  var sidebar = $('.curation-sidebar');
+  if (sidebar.length) {
+    var predicat = function() {return $(this).text() === "Data Deposit";}
+    $('.navigation a').filter(predicat).parent().addClass('active');
+  }
 });
 
 $( document ).ready(function() {
