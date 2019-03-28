@@ -117,6 +117,20 @@ def dashboard_activity_list_html(context, data_dict):
 
 
 # Without this action the `*_activity_list` is not overriden (ckan bug?)
+def group_activity_list_html(context, data_dict):
+    activity_stream = group_activity_list(context, data_dict)
+    offset = int(data_dict.get('offset', 0))
+    extra_vars = {
+        'controller': 'group',
+        'action': 'activity',
+        'id': data_dict['id'],
+        'offset': offset,
+    }
+    return activity_streams.activity_list_to_html(
+        context, activity_stream, extra_vars)
+
+
+# Without this action the `*_activity_list` is not overriden (ckan bug?)
 def recently_changed_packages_activity_list_html(context, data_dict):
     activity_stream = recently_changed_packages_activity_list(
         context, data_dict)
