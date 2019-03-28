@@ -101,6 +101,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             facets_dict['curation_state'] = _('State')
             facets_dict['curator_name'] = _('Curator')
             facets_dict['depositor_name'] = _('Depositor')
+            facets_dict['owner_org_dest_display_name'] = _('Data Container')
             return facets_dict
         else:
             return self._facets(facets_dict)
@@ -186,7 +187,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
                                     out.append(choice['label'])
                 pkg_dict['vocab_' + field] = out
 
-        # Index curator name for deposited dataset
+        # Index additional data for deposited dataset
 
         if pkg_dict.get('type') == 'deposited-dataset':
             # curator
@@ -205,6 +206,15 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
                     depositor = toolkit.get_action('user_show')(
                         {'ignore_auth': True}, {'id': depositor_id})
                     pkg_dict['depositor_name'] = depositor.get('name')
+                except toolkit.ObjectNotFound:
+                    pass
+            # data-container
+            owner_org_dest_id = pkg_dict.get('owner_org_dest')
+            if owner_org_dest_id:
+                try:
+                    owner_org_dest = toolkit.get_action('organization_show')(
+                        {'ignore_auth': True}, {'id': owner_org_dest_id})
+                    pkg_dict['owner_org_dest_display_name'] = owner_org_dest.get('display_name')
                 except toolkit.ObjectNotFound:
                     pass
 
