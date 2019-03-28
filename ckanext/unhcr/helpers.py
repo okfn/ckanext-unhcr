@@ -148,13 +148,13 @@ def get_linked_datasets_for_display(value, context=None):
 
 # Deposited datasets
 
+deposit = None
 def get_data_deposit():
-    try:
-        context = {'model': model, 'ignore_auth': True}
-        return toolkit.get_action('organization_show')(context, {'id': 'data-deposit'})
-    except toolkit.ObjectNotFound:
-        log.error('Data Deposit is not created')
-        return {'id': 'data-deposit'}
+    global deposit
+    if not deposit:
+        deposit =  toolkit.get_action('organization_show')(
+            {'ignore_auth': True}, {'id': 'data-deposit'})
+    return deposit
 
 
 def get_data_curation_users(context=None):
