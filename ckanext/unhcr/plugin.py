@@ -99,8 +99,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         if deposit['id'] == getattr(toolkit.c.group, 'id', None):
             facets_dict.clear()
             facets_dict['curation_state'] = _('State')
-            facets_dict['curator_name'] = _('Curator')
-            facets_dict['depositor_name'] = _('Depositor')
+            facets_dict['curator_display_name'] = _('Curator')
+            facets_dict['depositor_display_name'] = _('Depositor')
             facets_dict['owner_org_dest_display_name'] = _('Data Container')
             return facets_dict
         else:
@@ -196,7 +196,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
                 try:
                     curator = toolkit.get_action('user_show')(
                         {'ignore_auth': True}, {'id': curator_id})
-                    pkg_dict['curator_name'] = curator.get('name')
+                    pkg_dict['curator_display_name'] = curator.get('display_name')
                 except toolkit.ObjectNotFound:
                     pass
             # depositor
@@ -205,7 +205,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
                 try:
                     depositor = toolkit.get_action('user_show')(
                         {'ignore_auth': True}, {'id': depositor_id})
-                    pkg_dict['depositor_name'] = depositor.get('name')
+                    pkg_dict['depositor_display_name'] = depositor.get('display_name')
                 except toolkit.ObjectNotFound:
                     pass
             # data-container
