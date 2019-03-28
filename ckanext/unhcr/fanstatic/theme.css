@@ -1999,6 +1999,10 @@ i {
 }
 
 .dataset-item-curation a {
+  color: #666;
+}
+
+.dataset-item-curation a.email {
   color: #aaa;
 }
 

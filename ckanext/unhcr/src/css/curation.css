@@ -68,6 +68,9 @@
     font-weight: normal;
   }
   & a {
+    color: #666;
+  }
+  & a.email {
     color: #aaa;
   }
 }
