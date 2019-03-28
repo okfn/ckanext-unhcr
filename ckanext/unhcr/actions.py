@@ -86,7 +86,7 @@ def recently_changed_packages_activity_list(context, data_dict):
     return normal_activities
 
 
-# Without this action our `package_activity_list` is not overriden (ckan bug?)
+# Without this action our `*_activity_list` is not overriden (ckan bug?)
 def package_activity_list_html(context, data_dict):
     activity_stream = package_activity_list(context, data_dict)
     offset = int(data_dict.get('offset', 0))
@@ -98,3 +98,19 @@ def package_activity_list_html(context, data_dict):
     }
     return activity_streams.activity_list_to_html(
         context, activity_stream, extra_vars)
+
+
+# Without this action the `*_activity_list` is not overriden (ckan bug?)
+def dashboard_activity_list_html(context, data_dict):
+    activity_stream = dashboard_activity_list(context, data_dict)
+    model = context['model']
+    user_id = context['user']
+    offset = data_dict.get('offset', 0)
+    extra_vars = {
+        'controller': 'user',
+        'action': 'dashboard',
+        'offset': offset,
+        'id': user_id
+    }
+    return activity_streams.activity_list_to_html(context, activity_stream,
+                                                  extra_vars)

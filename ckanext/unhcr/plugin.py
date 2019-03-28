@@ -260,6 +260,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'package_activity_list': actions.package_activity_list,
             'package_activity_list_html': actions.package_activity_list_html,
             'dashboard_activity_list': actions.dashboard_activity_list,
+            'dashboard_activity_list_html': actions.dashboard_activity_list_html,
             'group_activity_list': actions.group_activity_list,
             'recently_changed_packages_activity_list': actions.recently_changed_packages_activity_list,
         }
