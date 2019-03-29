@@ -1999,6 +1999,10 @@ i {
 }
 
 .dataset-item-curation a {
+  color: #666;
+}
+
+.dataset-item-curation a.email {
   color: #aaa;
 }
 
@@ -2031,4 +2035,12 @@ i {
   padding-bottom: 0;
   margin-top: 0;
   margin-bottom: 0;
+}
+
+/* Stream */
+
+.activity .curation-message {
+  font-weight: bold;
+  /* font-size: 1.2em; */
+  color: #000;
 }

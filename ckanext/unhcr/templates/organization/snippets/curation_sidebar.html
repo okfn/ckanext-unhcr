@@ -1,5 +1,5 @@
 <div class="curation curation-sidebar">
-  {% set curation_role = h.get_deposited_dataset_user_curation_role(c.userobj.id) %}
+  {% set curation_role = h.get_deposited_dataset_user_curation_role(c.userobj.display_name) %}
 
   {# Heading #}
   <section class="module module-narrow curation-title">
@@ -32,7 +32,7 @@
 
       {% if curation_role in ['admin', 'curator'] %}
         {% if not editing %}
-          <a href="/data-container/{{ deposit.name }}?curator_name={{ c.userobj.name }}" role="button" class="btn btn-warning">
+          <a href="/data-container/{{ deposit.name }}?curator_display_name={{ c.userobj.name }}" role="button" class="btn btn-warning">
             {% trans %}Show Assigned To Me{% endtrans %}
           </a>
         {% endif %}

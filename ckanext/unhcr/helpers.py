@@ -148,6 +148,25 @@ def get_linked_datasets_for_display(value, context=None):
 
 # Deposited datasets
 
+#  deposit = None
+#  def get_data_deposit():
+
+    #  # TODO: it's hack; update
+    #  import os
+    #  from ckan.lib.app_globals import app_globals
+    #  testing = 'test' in os.environ['CKAN_SQLALCHEMY_URL']
+
+    #  global deposit
+    #  if not deposit or testing:
+        #  try:
+            #  deposit =  toolkit.get_action('organization_show')(
+                #  {'model': model, 'ignore_auth': True}, {'id': 'data-deposit'})
+        #  except toolkit.ObjectNotFound:
+            #  log.error('Data deposit is not created')
+            #  return {'id': 'data-deposit'}
+    #  return deposit
+
+
 def get_data_deposit():
     try:
         context = {'model': model, 'ignore_auth': True}
@@ -368,7 +387,6 @@ def custom_activity_renderer(context, activity):
     Before CKAN 2.9 the only way to customize the activty stream snippets was to
     monkey patch a renderer, as we do here.
     '''
-    log.error(activity)
     if 'curation_activity' not in activity.get('data', {}):
         # Default core one
         return toolkit._("{actor} updated the dataset {dataset}")
@@ -402,6 +420,6 @@ def custom_activity_renderer(context, activity):
         output = toolkit._("{actor} approved dataset {dataset} for publication")
 
     if activity['data'].get('message'):
-        output = output + ' with the following message: %s' % activity['data']['message']
+        output = output + ' with the following message: <q class="curation-message">%s</q>' % activity['data']['message']
 
     return output

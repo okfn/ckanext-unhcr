@@ -161,7 +161,16 @@ It will be generated based on the `dataset` schema (re-writing existent `deposit
 $ python scripts/generate_deposited_dataset_schema.py
 ```
 
-## Create development users and containers
+## Create data containers and data deposit
+
+It will create all initial data containers and data deposit. For local development `url` should be `http://ckan-dev:5000` and `api_key` from your user profile.
+
+```
+$ python scripts/initial_data_containers.py url api_key
+$ python scripts/create_data_deposit.py url api_key
+```
+
+## Create development users
 
 Create users using command line interface:
 
@@ -178,8 +187,7 @@ docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=cka
 docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_user2 email=user2@example.com password=test -c /srv/app/production.ini
 ```
 
-Create data deposit and and editors using user interface:
+Add admins and and editors to data deposit using web interface:
 
-- create a data container named `data-deposit`
 - make `ckan_depadmin` admin of `data-deposit`
 - make `ckan_curator1` and `ckan_curator2` editors of `data-deposit`

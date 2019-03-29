@@ -99,8 +99,9 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         if deposit['id'] == getattr(toolkit.c.group, 'id', None):
             facets_dict.clear()
             facets_dict['curation_state'] = _('State')
-            facets_dict['curator_name'] = _('Curator')
-            facets_dict['depositor_name'] = _('Depositor')
+            facets_dict['curator_display_name'] = _('Curator')
+            facets_dict['depositor_display_name'] = _('Depositor')
+            facets_dict['owner_org_dest_display_name'] = _('Data Container')
             return facets_dict
         else:
             return self._facets(facets_dict)
@@ -186,7 +187,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
                                     out.append(choice['label'])
                 pkg_dict['vocab_' + field] = out
 
-        # Index curator name for deposited dataset
+        # Index additional data for deposited dataset
 
         if pkg_dict.get('type') == 'deposited-dataset':
             # curator
@@ -195,7 +196,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
                 try:
                     curator = toolkit.get_action('user_show')(
                         {'ignore_auth': True}, {'id': curator_id})
-                    pkg_dict['curator_name'] = curator.get('name')
+                    pkg_dict['curator_display_name'] = curator.get('display_name')
                 except toolkit.ObjectNotFound:
                     pass
             # depositor
@@ -204,7 +205,16 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
                 try:
                     depositor = toolkit.get_action('user_show')(
                         {'ignore_auth': True}, {'id': depositor_id})
-                    pkg_dict['depositor_name'] = depositor.get('name')
+                    pkg_dict['depositor_display_name'] = depositor.get('display_name')
+                except toolkit.ObjectNotFound:
+                    pass
+            # data-container
+            owner_org_dest_id = pkg_dict.get('owner_org_dest')
+            if owner_org_dest_id:
+                try:
+                    owner_org_dest = toolkit.get_action('organization_show')(
+                        {'ignore_auth': True}, {'id': owner_org_dest_id})
+                    pkg_dict['owner_org_dest_display_name'] = owner_org_dest.get('display_name')
                 except toolkit.ObjectNotFound:
                     pass
 
@@ -250,7 +260,13 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'package_activity_list': actions.package_activity_list,
             'dashboard_activity_list': actions.dashboard_activity_list,
             'group_activity_list': actions.group_activity_list,
+            'organization_activity_list': actions.organization_activity_list,
             'recently_changed_packages_activity_list': actions.recently_changed_packages_activity_list,
+            'package_activity_list_html': actions.package_activity_list_html,
+            'dashboard_activity_list_html': actions.dashboard_activity_list_html,
+            'group_activity_list_html': actions.group_activity_list_html,
+            'organization_activity_list_html': actions.organization_activity_list_html,
+            'recently_changed_packages_activity_list_html': actions.recently_changed_packages_activity_list_html,
         }
 
     # IValidators

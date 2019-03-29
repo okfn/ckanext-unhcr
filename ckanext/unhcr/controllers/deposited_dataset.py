@@ -235,7 +235,7 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Update activity stream
         helpers.create_curation_activity('dataset_submitted', dataset['id'],
-            dataset['name'], user_id, feedback=message)
+            dataset['name'], user_id, message=message)
 
         # Send notification email
         #
@@ -286,7 +286,9 @@ class DepositedDatasetController(toolkit.BaseController):
         context = _get_context()
         data_dict = {'id': dataset_id}
         try:
-            toolkit.check_access('package_update', context, data_dict)
+            # We check for package_show because
+            # in some states package_update can be forbidden
+            toolkit.check_access('package_show', context, data_dict)
             toolkit.c.pkg_dict = toolkit.get_action('package_show')(context, data_dict)
             toolkit.c.pkg = context['package']
             toolkit.c.package_activity_stream = toolkit.get_action(
