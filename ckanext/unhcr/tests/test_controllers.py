@@ -627,6 +627,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Withdraw dataset
         self.make_request('withdraw', user=user, status=403)
 
+    # Activities
+
     def _approve_dataset(self):
         self.patch_dataset({
             'curation_state': 'submitted',

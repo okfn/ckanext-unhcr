@@ -148,17 +148,32 @@ def get_linked_datasets_for_display(value, context=None):
 
 # Deposited datasets
 
-deposit = None
+#  deposit = None
+#  def get_data_deposit():
+
+    #  # TODO: it's hack; update
+    #  import os
+    #  from ckan.lib.app_globals import app_globals
+    #  testing = 'test' in os.environ['CKAN_SQLALCHEMY_URL']
+
+    #  global deposit
+    #  if not deposit or testing:
+        #  try:
+            #  deposit =  toolkit.get_action('organization_show')(
+                #  {'model': model, 'ignore_auth': True}, {'id': 'data-deposit'})
+        #  except toolkit.ObjectNotFound:
+            #  log.error('Data deposit is not created')
+            #  return {'id': 'data-deposit'}
+    #  return deposit
+
+
 def get_data_deposit():
-    global deposit
-    if not deposit:
-        try:
-            deposit =  toolkit.get_action('organization_show')(
-                {'ignore_auth': True}, {'id': 'data-deposit'})
-        except toolkit.ObjectNotFound:
-            log.error('Data deposit is not created')
-            return {'id': 'data-deposit'}
-    return deposit
+    try:
+        context = {'model': model, 'ignore_auth': True}
+        return toolkit.get_action('organization_show')(context, {'id': 'data-deposit'})
+    except toolkit.ObjectNotFound:
+        log.error('Data Deposit is not created')
+        return {'id': 'data-deposit'}
 
 
 def get_data_curation_users(context=None):
