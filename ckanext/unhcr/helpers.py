@@ -157,7 +157,7 @@ def get_data_deposit():
                 {'ignore_auth': True}, {'id': 'data-deposit'})
         except toolkit.ObjectNotFound:
             log.error('Data deposit is not created')
-            return {'id': 'deposit'}
+            return {'id': 'data-deposit'}
     return deposit
 
 
