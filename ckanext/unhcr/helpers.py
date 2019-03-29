@@ -119,7 +119,7 @@ def get_linked_datasets_for_form(selected_ids=[], exclude_ids=[], context=None, 
 
         if package['id'] in exclude_ids:
             continue
-        if package.get('owner_org') != current_org:
+        if package.get('owner_org') and package.get('owner_org') != current_org:
             current_org = package['owner_org']
 
             orgs.append({'text': package['organization']['title'], 'children': []})
