@@ -152,8 +152,12 @@ deposit = None
 def get_data_deposit():
     global deposit
     if not deposit:
-        deposit =  toolkit.get_action('organization_show')(
-            {'ignore_auth': True}, {'id': 'data-deposit'})
+        try:
+            deposit =  toolkit.get_action('organization_show')(
+                {'ignore_auth': True}, {'id': 'data-deposit'})
+        except toolkit.ObjectNotFound:
+            log.error('Data deposit is not created')
+            return {'id': 'deposit'}
     return deposit
 
 
