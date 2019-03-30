@@ -242,7 +242,11 @@ class DepositedDatasetController(toolkit.BaseController):
             dataset['name'], user_id, message=message)
 
         # Send notification email
-        #
+        for user in helpers.get_data_curation_users():
+            subj = mailer.compose_curation_email_subj(dataset)
+            body = mailer.compose_curation_email_body(
+                dataset, curation, user['display_name'], 'submit')
+            mailer.mail_user_by_id(user['id'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" submitted'
