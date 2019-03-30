@@ -21,7 +21,9 @@ CKAN extension for the UNHCR RIDL project
 - [Updating readme](#updating-readme)
 - [Managing docker](#managing-docker)
 - [Generate deposited-dataset schema](#generate-deposited-dataset-schema)
-- [Create development users and containers](#create-development-users-and-containers)
+- [Create data containers and data deposit](#create-data-containers-and-data-deposit)
+- [Create development users](#create-development-users)
+- [Testing email notifications](#testing-email-notifications)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -191,3 +193,16 @@ Add admins and and editors to data deposit using web interface:
 
 - make `ckan_depadmin` admin of `data-deposit`
 - make `ckan_curator1` and `ckan_curator2` editors of `data-deposit`
+
+
+## Testing email notifications
+
+We use a fake SMTP server to test email notifications:
+
+- log into https://mailtrap.io/inboxes
+- select `Demo Inbox`
+- copy SMTP credentials
+- past to `docker-ckan-ed:.env` (mail service connection section)
+- restart the development server
+
+Now all email sent by `from ckan.lib.mailer import mail_user` should be sent to the `Demo Inbox` at Mailtrap.
