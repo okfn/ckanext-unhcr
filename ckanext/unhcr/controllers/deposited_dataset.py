@@ -138,7 +138,12 @@ class DepositedDatasetController(toolkit.BaseController):
                 dataset['name'], user_id, message=message)
 
         # Send notification email
-        #
+        # TODO: send to curator if a depositor requested changes (state=review)
+        depositor = curation['contacts']['depositor']
+        subj = mailer.compose_curation_email_subj(dataset)
+        body = mailer.compose_curation_email_body(
+            dataset, curation, depositor['title'], 'request_changes')
+        mailer.mail_user_by_id(depositor['name'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" changes requested'
@@ -355,6 +360,7 @@ def _get_rejected_dataset_name(name):
 
 def _get_withdrawn_dataset_name(name):
     return _get_deleted_dataset_name(name, 'withdrawn')
+
 
 def _get_deleted_dataset_name(name, operation='rejected'):
     rand_chars = ''.join(
