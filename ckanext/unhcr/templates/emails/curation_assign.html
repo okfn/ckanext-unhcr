@@ -8,7 +8,7 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    A new dataset has been submitted for curation by {{ curation.contacts.depositor.title }}:
+    A new dataset has been assigned to you for curation:
   {% endcall %}
 
   {% call email.paragraph() %}
@@ -19,7 +19,7 @@
     &nbsp;&nbsp;&nbsp;&nbsp;{{ dataset.notes }}
   {% endcall %}
 
-  {% call email.action(dataset.url) %}
+  {% call email.action(dataset_url) %}
     Curate Dataset
   {% endcall %}
 

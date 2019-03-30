@@ -4,7 +4,7 @@ import random
 from ckan import model
 import ckan.plugins.toolkit as toolkit
 import ckan.lib.helpers as lib_helpers
-from ckanext.unhcr import helpers
+from ckanext.unhcr import helpers, mailer
 log = logging.getLogger(__name__)
 
 
@@ -91,9 +91,13 @@ class DepositedDatasetController(toolkit.BaseController):
             helpers.create_curation_activity('curator_removed', dataset['id'],
                 dataset['name'], user_id)
 
-
+        # TODO: handle assigning removal?
         # Send notification email
-        #
+        if curator_id:
+            subj = mailer.compose_curation_email_subj(dataset)
+            body = mailer.compose_curation_email_body(
+                dataset, curation, curator['display_name'], 'assign')
+            mailer.mail_user_by_id(curator['id'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" curator updated'
@@ -279,6 +283,8 @@ class DepositedDatasetController(toolkit.BaseController):
         message = 'Datasest "%s" withdrawn'
         toolkit.h.flash_error(message % dataset['title'])
         toolkit.redirect_to('data-container_read', id='data-deposit')
+
+    # Activity
 
     def activity(self, dataset_id):
         '''Render package's curation activity stream page.'''
