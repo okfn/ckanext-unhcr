@@ -8,7 +8,7 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    This dataset has been withdrawn from curation by {{ curation.contacts.depositor.title }}:
+    This dataset has been approved and published to RIDL:
   {% endcall %}
 
   {% call email.paragraph() %}
@@ -17,6 +17,10 @@
 
   {% call email.paragraph() %}
     &nbsp;&nbsp;&nbsp;&nbsp;{{ dataset.notes }}
+  {% endcall %}
+
+  {% call email.action(dataset_url) %}
+    View Dataset
   {% endcall %}
 
 {% endblock %}

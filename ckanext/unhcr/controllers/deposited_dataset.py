@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 
 # Module API
 
+# TODO: add messages to email notifications
 # TODO: extract duplication (get_curation/authorize) from methods
 class DepositedDatasetController(toolkit.BaseController):
 
@@ -39,14 +40,18 @@ class DepositedDatasetController(toolkit.BaseController):
             message = 'Deposited dataset "%s" is invalid\n(validation error summary: %s)'
             return toolkit.abort(403, message % (id, error.error_summary))
 
-        message = toolkit.request.params.get('message')
-
         # Update activity stream
+        message = toolkit.request.params.get('message')
         helpers.create_curation_activity('dataset_approved', dataset['id'],
             dataset['name'], user_id, message=message)
 
         # Send notification email
-        #
+        # TODO: mail to curator when approved by depositor (state=review)?
+        depositor = curation['contacts']['depositor']
+        subj = mailer.compose_curation_email_subj(dataset)
+        body = mailer.compose_curation_email_body(
+            dataset, curation, depositor['title'], 'approve')
+        mailer.mail_user_by_id(depositor['name'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" approved and moved to the destination data container'
@@ -127,9 +132,8 @@ class DepositedDatasetController(toolkit.BaseController):
             dataset['curation_state'] = 'draft'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
-        message = toolkit.request.params.get('message')
-
         # Update activity stream
+        message = toolkit.request.params.get('message')
         helpers.create_curation_activity('changes_requested', dataset['id'],
                 dataset['name'], user_id, message=message)
 
@@ -161,12 +165,11 @@ class DepositedDatasetController(toolkit.BaseController):
         dataset['curation_state'] = 'review'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
-        message = toolkit.request.params.get('message')
 
         # Update activity stream
+        message = toolkit.request.params.get('message')
         context = _get_context(ignore_auth=True)
         depositor = toolkit.get_action('user_show')(context, {'id': dataset['creator_user_id']})
-
         helpers.create_curation_activity('final_review_requested', dataset['id'],
             dataset['name'], user_id, message=message, depositor_name=depositor['name'])
 
@@ -200,9 +203,8 @@ class DepositedDatasetController(toolkit.BaseController):
         toolkit.get_action('package_patch')(context, {'id': dataset_id, 'name': new_name})
         toolkit.get_action('package_delete')(context, {'id': dataset_id})
 
-        message = toolkit.request.params.get('message')
-
         # Update activity stream
+        message = toolkit.request.params.get('message')
         helpers.create_curation_activity('dataset_rejected', dataset['id'],
             dataset['name'], user_id, message=message)
 
@@ -235,9 +237,8 @@ class DepositedDatasetController(toolkit.BaseController):
         dataset['curation_state'] = 'submitted'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
-        message = toolkit.request.params.get('message')
-
         # Update activity stream
+        message = toolkit.request.params.get('message')
         helpers.create_curation_activity('dataset_submitted', dataset['id'],
             dataset['name'], user_id, message=message)
 
@@ -274,9 +275,8 @@ class DepositedDatasetController(toolkit.BaseController):
         toolkit.get_action('package_patch')(context, {'id': dataset_id, 'name': new_name})
         toolkit.get_action('package_delete')(context, {'id': dataset_id})
 
-        message = toolkit.request.params.get('message')
-
         # Update activity stream
+        message = toolkit.request.params.get('message')
         helpers.create_curation_activity('dataset_withdrawn', dataset['id'],
             dataset['name'], user_id, message=message)
 
