@@ -165,7 +165,6 @@ class DepositedDatasetController(toolkit.BaseController):
         dataset['curation_state'] = 'review'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
-
         # Update activity stream
         message = toolkit.request.params.get('message')
         context = _get_context(ignore_auth=True)
@@ -173,9 +172,12 @@ class DepositedDatasetController(toolkit.BaseController):
         helpers.create_curation_activity('final_review_requested', dataset['id'],
             dataset['name'], user_id, message=message, depositor_name=depositor['name'])
 
-
         # Send notification email
-        #
+        depositor = curation['contacts']['depositor']
+        subj = mailer.compose_curation_email_subj(dataset)
+        body = mailer.compose_curation_email_body(
+            dataset, curation, depositor['title'], 'request_review')
+        mailer.mail_user_by_id(depositor['name'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" review requested'
@@ -208,9 +210,12 @@ class DepositedDatasetController(toolkit.BaseController):
         helpers.create_curation_activity('dataset_rejected', dataset['id'],
             dataset['name'], user_id, message=message)
 
-
         # Send notification email
-        #
+        depositor = curation['contacts']['depositor']
+        subj = mailer.compose_curation_email_subj(dataset)
+        body = mailer.compose_curation_email_body(
+            dataset, curation, depositor['title'], 'reject')
+        mailer.mail_user_by_id(depositor['name'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" rejected'
