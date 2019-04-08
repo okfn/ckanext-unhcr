@@ -1,5 +1,5 @@
 <div class="curation curation-sidebar">
-  {% set curation_role = h.get_deposited_dataset_user_curation_role(c.userobj.display_name) %}
+  {% set curation_role = h.get_deposited_dataset_user_curation_role(c.userobj.id) %}
 
   {# Heading #}
   <section class="module module-narrow curation-title">
