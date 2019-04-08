@@ -208,6 +208,7 @@ def get_data_curation_users(context=None):
 
 
 def get_deposited_dataset_user_curation_status(dataset, user_id):
+    log.error('[vur2] user id: {}'.format(user_id))
     deposit = get_data_deposit()
 
     # General
