@@ -238,12 +238,18 @@ def get_deposited_dataset_user_curation_role(user_id):
     deposit = get_data_deposit()
 
     # Admin
+
+    log.error('[cur] user id: {}'.format(user_id))
+    log.error('[cur] dep id: {}'.format(deposit['id']))
     orgs = action(context, {'permission': 'admin'})
+    log.error('[cur] admin orgs: {}'.format(orgs))
     if deposit['id'] in [org['id'] for org in orgs]:
         return 'admin'
 
     # Curator
     orgs = action(context, {'permission': 'create_dataset'})
+
+    log.error('[cur] curator orgs: {}'.format(orgs))
     if deposit['id'] in [org['id'] for org in orgs]:
         return 'curator'
 
