@@ -482,7 +482,6 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     # Request Review (submitted)
 
-    @attr('only')
     def test_request_review_submitted(self):
         for user in ['sysadmin', 'depadmin', 'curator']:
             yield self.check_request_review_submitted, user
@@ -566,11 +565,13 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     # Reject (submitted)
 
+    @attr('only')
     def test_reject_submitted(self):
         for user in ['sysadmin', 'depadmin', 'curator']:
             yield self.check_reject_submitted, user
 
-    def check_reject_submitted(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_reject_submitted(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
@@ -581,6 +582,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.make_request('reject', user=user, status=302)
         assert_equals(self.dataset['state'], 'deleted')
         assert_in('-rejected-', self.dataset['name'])
+        self.assert_mail(mail,
+            recipient='creator',
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['This dataset has been rejected'],
+        )
 
     def test_reject_submitted_not_granted(self):
         for user in ['creator', 'depositor']:
