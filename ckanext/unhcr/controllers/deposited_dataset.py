@@ -48,7 +48,7 @@ class DepositedDatasetController(toolkit.BaseController):
         # Send notification email
         if curation['state'] == 'submitted':
             recipient = curation['contacts']['depositor']
-        if curation['state'] == 'review':
+        elif curation['state'] == 'review':
             recipient = curation['contacts']['curator']
         if recipient:
             subj = mailer.compose_curation_email_subj(dataset)
@@ -99,13 +99,19 @@ class DepositedDatasetController(toolkit.BaseController):
             helpers.create_curation_activity('curator_removed', dataset['id'],
                 dataset['name'], user_id)
 
-        # TODO: handle assigning removal?
         # Send notification email
+        recipient = None
         if curator_id:
+            action = 'assign'
+            recipient = {'name': curator['id'], 'title': curator['display_name']}
+        elif curation['contacts']['curator']:
+            action = 'remove'
+            recipient = curation['contacts']['curator']
+        if recipient:
             subj = mailer.compose_curation_email_subj(dataset)
             body = mailer.compose_curation_email_body(
-                dataset, curation, curator['display_name'], 'assign')
-            mailer.mail_user_by_id(curator['id'], subj, body)
+                dataset, curation, recipient['title'], action)
+            mailer.mail_user_by_id(recipient['name'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" curator updated'

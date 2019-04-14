@@ -262,7 +262,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin']:
             yield self.check_assign_submitted, user
 
-    def check_assign_submitted(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_assign_submitted(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
@@ -273,12 +274,41 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         params = {'curator_id': self.curator['id']}
         self.make_request('assign', user=user, params=params, status=302)
         assert_equals(self.dataset['curator_id'], self.curator['id'])
+        self.assert_mail(mail,
+            recipient='curator',
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['A new dataset has been assigned to you for curation'],
+        )
 
-    def test_assign_submitted_no_one(self):
+    def test_assign_submitted_remove(self):
         for user in ['sysadmin', 'depadmin']:
-            yield self.check_assign_submitted_no_one, user
+            yield self.check_assign_submitted_remove, user
 
-    def check_assign_submitted_no_one(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_assign_submitted_remove(self, user, mail):
+
+        # Prepare dataset
+        self.patch_dataset({
+            'curator_id': 'curator',
+            'curation_state': 'submitted',
+        })
+
+        # Assign curator
+        params = {'curator_id': ''}
+        self.make_request('assign', user=user, params=params, status=302)
+        assert_equals(self.dataset.get('curator_id'), None)
+        self.assert_mail(mail,
+            recipient='curator',
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['You have been removed as a curator of the dataset'],
+        )
+
+    def test_assign_submitted_remove_not_assigned(self):
+        for user in ['sysadmin', 'depadmin']:
+            yield self.check_assign_submitted_remove_not_assigned, user
+
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_assign_submitted_remove_not_assigned(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
@@ -289,6 +319,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         params = {'curator_id': ''}
         self.make_request('assign', user=user, params=params, status=302)
         assert_equals(self.dataset.get('curator_id'), None)
+        mail.assert_not_called()
 
     # TODO: it breaks sessions for all following tests
     #  def test_assign_submitted_bad_curator_id(self):
