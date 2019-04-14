@@ -81,6 +81,12 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
                 self.dataset = None
         return resp
 
+    def assert_mail(self, mail, recipient, subject, texts):
+        assert_equals(mail.call_args[0][0], recipient)
+        assert_equals(mail.call_args[0][1], subject)
+        for text in texts:
+            assert_in(text, mail.call_args[0][2])
+
     # General
 
     def test_all_actions_anonimous(self):
@@ -122,7 +128,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin', 'curator']:
             yield self.check_approve_submitted, user
 
-    def check_approve_submitted(self, user):
+    def check_approve_submitted(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
@@ -137,6 +143,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Approve dataset
         self.make_request('approve', user=user, status=302)
         assert_equals(self.dataset['type'], 'dataset')
+        self.assert_mail(mail,
+            recipient='creator',
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['This dataset has been approved'],
+        )
 
     def test_approve_submitted_not_valid(self):
         for user in ['sysadmin', 'depadmin', 'curator']:
@@ -168,11 +179,12 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     # Approve (review)
 
-    def test_approve_review(self):
+    def test_approve_review_without_curator(self):
         for user in ['creator']:
-            yield self.check_approve_review, user
+            yield self.check_approve_review_without_curator, user
 
-    def check_approve_review(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_approve_review_without_curator(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
@@ -188,6 +200,35 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.make_request('approve', user=user, status=302)
         assert_equals(self.dataset['type'], 'dataset')
         assert_equals(self.dataset['owner_org'], 'data-target')
+        mail.assert_not_called()
+
+    def test_approve_review_with_curator(self):
+        for user in ['creator']:
+            yield self.check_approve_review_with_curator, user
+
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_approve_review_with_curator(self, user, mail):
+
+        # Prepare dataset
+        self.patch_dataset({
+            'curator_id': 'curator',
+            'curation_state': 'review',
+            'unit_of_measurement': 'individual',
+            'keywords': ['shelter', 'health'],
+            'archived': 'False',
+            'data_collector': ['acf'],
+            'data_collection_technique': 'f2f',
+        })
+
+        # Approve dataset
+        self.make_request('approve', user=user, status=302)
+        assert_equals(self.dataset['type'], 'dataset')
+        assert_equals(self.dataset['owner_org'], 'data-target')
+        self.assert_mail(mail,
+            recipient='curator',
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['This dataset has been approved'],
+        )
 
     def test_approve_review_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'depositor']:

@@ -46,12 +46,15 @@ class DepositedDatasetController(toolkit.BaseController):
             dataset['name'], user_id, message=message)
 
         # Send notification email
-        # TODO: mail to curator when approved by depositor (state=review)?
-        depositor = curation['contacts']['depositor']
-        subj = mailer.compose_curation_email_subj(dataset)
-        body = mailer.compose_curation_email_body(
-            dataset, curation, depositor['title'], 'approve')
-        mailer.mail_user_by_id(depositor['name'], subj, body)
+        if curation['state'] == 'submitted':
+            recipient = curation['contacts']['depositor']
+        if curation['state'] == 'review':
+            recipient = curation['contacts']['curator']
+        if recipient:
+            subj = mailer.compose_curation_email_subj(dataset)
+            body = mailer.compose_curation_email_body(
+                dataset, curation, recipient['title'], 'approve')
+            mailer.mail_user_by_id(recipient['name'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" approved and moved to the destination data container'
