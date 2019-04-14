@@ -382,7 +382,6 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     # Request Changes (submitted)
 
-    @attr('only')
     def test_request_changes_submitted(self):
         for user in ['sysadmin', 'depadmin', 'curator']:
             yield self.check_request_changes_submitted, user
@@ -420,7 +419,6 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     # Request Changes (review)
 
-    @attr('only')
     def test_request_changes_review(self):
         for user in ['creator']:
             yield self.check_request_changes_review, user
@@ -484,11 +482,13 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     # Request Review (submitted)
 
+    @attr('only')
     def test_request_review_submitted(self):
         for user in ['sysadmin', 'depadmin', 'curator']:
             yield self.check_request_review_submitted, user
 
-    def check_request_review_submitted(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_request_review_submitted(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
@@ -503,6 +503,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Request review
         self.make_request('request_review', user=user, status=302)
         assert_equals(self.dataset['curation_state'], 'review')
+        self.assert_mail(mail,
+            recipient='creator',
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['A review has been requested for this dataset'],
+        )
 
     def test_request_review_submitted_not_valid(self):
         for user in ['sysadmin', 'depadmin', 'curator']:
