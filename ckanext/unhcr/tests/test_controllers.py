@@ -81,11 +81,12 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
                 self.dataset = None
         return resp
 
-    def assert_mail(self, mail, recipient, subject, texts):
-        assert_equals(mail.call_args[0][0], recipient)
-        assert_equals(mail.call_args[0][1], subject)
-        for text in texts:
-            assert_in(text, mail.call_args[0][2])
+    def assert_mail(self, mail, users, subject, texts):
+        for index, user in enumerate(users):
+            assert_equals(mail.call_args_list[index][0][0], user)
+            assert_equals(mail.call_args_list[index][0][1], subject)
+            for text in texts:
+                assert_in(text, mail.call_args_list[index][0][2])
 
     # General
 
@@ -144,7 +145,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.make_request('approve', user=user, status=302)
         assert_equals(self.dataset['type'], 'dataset')
         self.assert_mail(mail,
-            recipient='creator',
+            users=['creator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
             texts=['This dataset has been approved'],
         )
@@ -225,7 +226,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         assert_equals(self.dataset['type'], 'dataset')
         assert_equals(self.dataset['owner_org'], 'data-target')
         self.assert_mail(mail,
-            recipient='curator',
+            users=['curator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
             texts=['This dataset has been approved'],
         )
@@ -275,7 +276,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.make_request('assign', user=user, params=params, status=302)
         assert_equals(self.dataset['curator_id'], self.curator['id'])
         self.assert_mail(mail,
-            recipient='curator',
+            users=['curator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
             texts=['A new dataset has been assigned to you for curation'],
         )
@@ -298,7 +299,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.make_request('assign', user=user, params=params, status=302)
         assert_equals(self.dataset.get('curator_id'), None)
         self.assert_mail(mail,
-            recipient='curator',
+            users=['curator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
             texts=['You have been removed as a curator of the dataset'],
         )
@@ -398,7 +399,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.make_request('request_changes', user=user, status=302)
         assert_equals(self.dataset['curation_state'], 'draft')
         self.assert_mail(mail,
-            recipient='creator',
+            users=['creator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
             texts=['A changes have been requested for this dataset'],
         )
@@ -441,7 +442,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.make_request('request_changes', user=user, status=302)
         assert_equals(self.dataset['curation_state'], 'submitted')
         self.assert_mail(mail,
-            recipient='curator',
+            users=['curator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
             texts=['A changes have been requested for this dataset'],
         )
@@ -503,7 +504,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.make_request('request_review', user=user, status=302)
         assert_equals(self.dataset['curation_state'], 'review')
         self.assert_mail(mail,
-            recipient='creator',
+            users=['creator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
             texts=['A review has been requested for this dataset'],
         )
@@ -565,7 +566,6 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     # Reject (submitted)
 
-    @attr('only')
     def test_reject_submitted(self):
         for user in ['sysadmin', 'depadmin', 'curator']:
             yield self.check_reject_submitted, user
@@ -583,7 +583,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         assert_equals(self.dataset['state'], 'deleted')
         assert_in('-rejected-', self.dataset['name'])
         self.assert_mail(mail,
-            recipient='creator',
+            users=['creator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
             texts=['This dataset has been rejected'],
         )
@@ -624,11 +624,17 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['creator']:
             yield self.check_submit_draft, user
 
-    def check_submit_draft(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_submit_draft(self, user, mail):
 
         # Submit dataset
         self.make_request('submit', user=user, status=302)
         assert_equals(self.dataset['curation_state'], 'submitted')
+        self.assert_mail(mail,
+            users=['depadmin', 'curator'],
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['A new dataset has been submitted for curation by %s' % self.creator['display_name']],
+        )
 
     def test_submit_draft_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'depositor']:
@@ -677,12 +683,18 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['creator']:
             yield self.check_withdraw_draft, user
 
-    def check_withdraw_draft(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_withdraw_draft(self, user, mail):
 
         # Withdraw dataset
         self.make_request('withdraw', user=user, status=302)
         assert_equals(self.dataset['state'], 'deleted')
         assert_in('-withdrawn-', self.dataset['name'])
+        self.assert_mail(mail,
+            users=['depadmin', 'curator'],
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['This dataset has been withdrawn from curation by %s' % self.creator['display_name']],
+        )
 
     def test_withdraw_draft_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'depositor']:
