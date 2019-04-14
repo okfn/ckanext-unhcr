@@ -105,7 +105,7 @@ class DepositedDatasetController(toolkit.BaseController):
             action = 'assign'
             recipient = {'name': curator['id'], 'title': curator['display_name']}
         elif curation['contacts']['curator']:
-            action = 'remove'
+            action = 'assign_remove'
             recipient = curation['contacts']['curator']
         if recipient:
             subj = mailer.compose_curation_email_subj(dataset)
@@ -147,12 +147,15 @@ class DepositedDatasetController(toolkit.BaseController):
                 dataset['name'], user_id, message=message)
 
         # Send notification email
-        # TODO: send to curator if a depositor requested changes (state=review)
-        depositor = curation['contacts']['depositor']
-        subj = mailer.compose_curation_email_subj(dataset)
-        body = mailer.compose_curation_email_body(
-            dataset, curation, depositor['title'], 'request_changes')
-        mailer.mail_user_by_id(depositor['name'], subj, body)
+        if curation['state'] == 'submitted':
+            recipient = curation['contacts']['depositor']
+        elif curation['state'] == 'review':
+            recipient = curation['contacts']['curator']
+        if recipient:
+            subj = mailer.compose_curation_email_subj(dataset)
+            body = mailer.compose_curation_email_body(
+                dataset, curation, recipient['title'], 'request_changes')
+            mailer.mail_user_by_id(recipient['name'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" changes requested'

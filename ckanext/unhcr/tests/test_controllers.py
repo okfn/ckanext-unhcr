@@ -382,11 +382,13 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     # Request Changes (submitted)
 
+    @attr('only')
     def test_request_changes_submitted(self):
         for user in ['sysadmin', 'depadmin', 'curator']:
             yield self.check_request_changes_submitted, user
 
-    def check_request_changes_submitted(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_request_changes_submitted(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
@@ -396,6 +398,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Request changes
         self.make_request('request_changes', user=user, status=302)
         assert_equals(self.dataset['curation_state'], 'draft')
+        self.assert_mail(mail,
+            recipient='creator',
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['A changes have been requested for this dataset'],
+        )
 
     def test_request_changes_submitted_not_granted(self):
         for user in ['creator', 'depositor']:
@@ -413,14 +420,17 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     # Request Changes (review)
 
+    @attr('only')
     def test_request_changes_review(self):
         for user in ['creator']:
             yield self.check_request_changes_review, user
 
-    def check_request_changes_review(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_request_changes_review(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
+            'curator_id': 'curator',
             'curation_state': 'review',
             'unit_of_measurement': 'individual',
             'keywords': ['shelter', 'health'],
@@ -432,6 +442,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Request changes
         self.make_request('request_changes', user=user, status=302)
         assert_equals(self.dataset['curation_state'], 'submitted')
+        self.assert_mail(mail,
+            recipient='curator',
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['A changes have been requested for this dataset'],
+        )
 
     def test_request_changes_review_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'depositor']:
