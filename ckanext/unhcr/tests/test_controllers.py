@@ -129,6 +129,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin', 'curator']:
             yield self.check_approve_submitted, user
 
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
     def check_approve_submitted(self, user, mail):
 
         # Prepare dataset
@@ -751,7 +752,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         self.make_request('approve', user='sysadmin', status=302)
 
-    def test_activites_shown_on_deposited_dataset(self):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def test_activites_shown_on_deposited_dataset(self, mail):
 
         env = {'REMOTE_USER': self.creator['name'].encode('ascii')}
         resp = self.app.get(
@@ -762,7 +764,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'editor']:
             yield self.check_activities_shown, user
 
-    def check_activities_shown(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_activities_shown(self, user, mail):
 
         self._approve_dataset()
 
@@ -777,7 +780,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['depositor', 'curator']:
             yield self.check_activities_not_shown, user
 
-    def check_activities_not_shown(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_activities_not_shown(self, user, mail):
 
         self._approve_dataset()
 
@@ -787,7 +791,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         assert_not_in('Curation Activity', resp.body)
 
-    def test_activity_created_in_deposited_dataset(self):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def test_activity_created_in_deposited_dataset(self, mail):
 
 
         self.make_request('submit', user=self.creator['name'], status=302)
