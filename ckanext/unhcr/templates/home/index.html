@@ -1,6 +1,6 @@
 {% ckan_extends %}
-{% set stats = h.get_site_statistics() %}
 {% set intro = g.site_intro_text %}
+{% set dataset_count = h.get_dataset_count() %}
 
 {% block bodytag %} {{ super() }} class="home"{% endblock %}
 
@@ -17,8 +17,8 @@
 
         <div class="module module-search module-narrow module-shallow box">
           <form class="module-content search-form" method="get" action="{% url_for controller='package', action='search' %}">
-            <h3 class="heading">{{ _("Search the library of") }} {{ h.SI_number_span(stats.dataset_count) }}
-          {{ _('dataset') if stats.dataset_count == 1 else _('datasets') }}</h3>
+            <h3 class="heading">{{ _("Search the library of") }} {{ h.SI_number_span(dataset_count) }}
+          {{ _('dataset') if dataset_count == 1 else _('datasets') }}</h3>
             <div class="search-input form-group search-giant">
               <input id="field-main-search" type="text" class="form-control" name="q" value="" autocomplete="off" placeholder="Search keywords, metadata, version data etc." />
               <button type="submit">

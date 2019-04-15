@@ -29,6 +29,11 @@ def get_all_data_containers(exclude_ids=[]):
     return data_containers
 
 
+def get_dataset_count():
+    return toolkit.get_action('package_search')(
+        {}, {'fq': 'dataset_type:dataset', 'rows': 1})['count']
+
+
 # Hierarchy
 
 def render_tree(top_nodes=None):
