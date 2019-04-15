@@ -12,11 +12,11 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    &nbsp;&nbsp;&nbsp;&nbsp;{{ dataset.title }}
+    <b>{{ dataset.title }}</b>
   {% endcall %}
 
   {% call email.paragraph() %}
-    &nbsp;&nbsp;&nbsp;&nbsp;{{ dataset.notes }}
+    <i>{{ dataset.notes }}</i>
   {% endcall %}
 
 {% endblock %}
