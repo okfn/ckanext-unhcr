@@ -445,7 +445,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.assert_mail(mail,
             users=['curator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
-            texts=['A changes have been requested for this dataset'],
+            texts=['The reviewer has requested changes on the following dataset'],
         )
 
     def test_request_changes_review_not_granted(self):
