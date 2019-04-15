@@ -294,7 +294,8 @@ def get_deposited_dataset_user_contact(user_id=None):
 
     # Return none (no user)
     try:
-        user = toolkit.get_action('user_show')({'ignore_auth': True}, {'id': user_id})
+        user = toolkit.get_action('user_show')(
+            {'ignore_auth': True, 'keep_email': True}, {'id': user_id})
     except toolkit.ObjectNotFound:
         return None
 
