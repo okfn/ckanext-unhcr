@@ -1,0 +1,13 @@
+diff --git a/ckan/config/environment.py b/ckan/config/environment.py
+index 1123346aa..52187a195 100644
+--- a/ckan/config/environment.py
++++ b/ckan/config/environment.py
+@@ -287,7 +287,7 @@ def update_config():
+         # The database is not initialised.  This is a bit dirty.  This occurs
+         # when running tests.
+         pass
+-    except sqlalchemy.exc.InternalError:
++    except (sqlalchemy.exc.InternalError, sqlalchemy.exc.DBAPIError):
+         # The database is not initialised.  Travis hits this
+         pass
+ 

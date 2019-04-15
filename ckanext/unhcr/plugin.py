@@ -113,6 +113,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             # General
             'get_data_container': helpers.get_data_container,
             'get_all_data_containers': helpers.get_all_data_containers,
+            'get_dataset_count': helpers.get_dataset_count,
             # Hierarchy
             'render_tree': helpers.render_tree,
             # Access restriction

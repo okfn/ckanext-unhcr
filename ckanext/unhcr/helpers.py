@@ -29,6 +29,11 @@ def get_all_data_containers(exclude_ids=[]):
     return data_containers
 
 
+def get_dataset_count():
+    return toolkit.get_action('package_search')(
+        {}, {'fq': 'dataset_type:dataset', 'rows': 1})['count']
+
+
 # Hierarchy
 
 def render_tree(top_nodes=None):
@@ -289,7 +294,8 @@ def get_deposited_dataset_user_contact(user_id=None):
 
     # Return none (no user)
     try:
-        user = toolkit.get_action('user_show')({'ignore_auth': True}, {'id': user_id})
+        user = toolkit.get_action('user_show')(
+            {'ignore_auth': True, 'keep_email': True}, {'id': user_id})
     except toolkit.ObjectNotFound:
         return None
 
