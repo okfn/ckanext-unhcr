@@ -46,6 +46,7 @@ class DepositedDatasetController(toolkit.BaseController):
             dataset['name'], user_id, message=message)
 
         # Send notification email
+        message = toolkit.request.params.get('message')
         if curation['state'] == 'submitted':
             recipient = curation['contacts']['depositor']
         elif curation['state'] == 'review':
@@ -53,7 +54,7 @@ class DepositedDatasetController(toolkit.BaseController):
         if recipient:
             subj = mailer.compose_curation_email_subj(dataset)
             body = mailer.compose_curation_email_body(
-                dataset, curation, recipient['title'], 'approve')
+                dataset, curation, recipient['title'], 'approve', message=message)
             mailer.mail_user_by_id(recipient['name'], subj, body)
 
         # Show flash message and redirect
@@ -147,6 +148,7 @@ class DepositedDatasetController(toolkit.BaseController):
                 dataset['name'], user_id, message=message)
 
         # Send notification email
+        message = toolkit.request.params.get('message')
         if curation['state'] == 'submitted':
             recipient = curation['contacts']['depositor']
         elif curation['state'] == 'review':
@@ -154,7 +156,7 @@ class DepositedDatasetController(toolkit.BaseController):
         if recipient:
             subj = mailer.compose_curation_email_subj(dataset)
             body = mailer.compose_curation_email_body(
-                dataset, curation, recipient['title'], 'request_changes')
+                dataset, curation, recipient['title'], 'request_changes', message=message)
             mailer.mail_user_by_id(recipient['name'], subj, body)
 
         # Show flash message and redirect
@@ -190,10 +192,11 @@ class DepositedDatasetController(toolkit.BaseController):
             dataset['name'], user_id, message=message, depositor_name=depositor['name'])
 
         # Send notification email
+        message = toolkit.request.params.get('message')
         depositor = curation['contacts']['depositor']
         subj = mailer.compose_curation_email_subj(dataset)
         body = mailer.compose_curation_email_body(
-            dataset, curation, depositor['title'], 'request_review')
+            dataset, curation, depositor['title'], 'request_review', message=message)
         mailer.mail_user_by_id(depositor['name'], subj, body)
 
         # Show flash message and redirect
@@ -228,10 +231,11 @@ class DepositedDatasetController(toolkit.BaseController):
             dataset['name'], user_id, message=message)
 
         # Send notification email
+        message = toolkit.request.params.get('message')
         depositor = curation['contacts']['depositor']
         subj = mailer.compose_curation_email_subj(dataset)
         body = mailer.compose_curation_email_body(
-            dataset, curation, depositor['title'], 'reject')
+            dataset, curation, depositor['title'], 'reject', message=message)
         mailer.mail_user_by_id(depositor['name'], subj, body)
 
         # Show flash message and redirect
@@ -265,10 +269,14 @@ class DepositedDatasetController(toolkit.BaseController):
             dataset['name'], user_id, message=message)
 
         # Send notification email
-        for user in helpers.get_data_curation_users():
+        message = toolkit.request.params.get('message')
+        curator = curation['contacts']['curator']
+        # We don't bother all curators if someone is already assigned
+        users = [curator] if curator else helpers.get_data_curation_users()
+        for user in users:
             subj = mailer.compose_curation_email_subj(dataset)
             body = mailer.compose_curation_email_body(
-                dataset, curation, user['display_name'], 'submit')
+                dataset, curation, user['display_name'], 'submit', message=message)
             mailer.mail_user_by_id(user['id'], subj, body)
 
         # Show flash message and redirect
@@ -303,10 +311,11 @@ class DepositedDatasetController(toolkit.BaseController):
             dataset['name'], user_id, message=message)
 
         # Send notification email
+        message = toolkit.request.params.get('message')
         for user in helpers.get_data_curation_users():
             subj = mailer.compose_curation_email_subj(dataset)
             body = mailer.compose_curation_email_body(
-                dataset, curation, user['display_name'], 'withdraw')
+                dataset, curation, user['display_name'], 'withdraw', message=message)
             mailer.mail_user_by_id(user['id'], subj, body)
 
         # Show flash message and redirect

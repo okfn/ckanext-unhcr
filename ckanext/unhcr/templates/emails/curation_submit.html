@@ -8,7 +8,10 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    A new dataset has been submitted for curation by {{ curation.contacts.depositor.title }}:
+    A new dataset has been submitted for curation by {{ curation.contacts.depositor.title }}
+    {% if message %}
+      with the following message "{{ message }}"
+    {% endif %}
   {% endcall %}
 
   {% call email.paragraph() %}

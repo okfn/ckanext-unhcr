@@ -8,7 +8,10 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    The reviewer has requested changes on the following dataset:
+    The reviewer has requested changes on the following dataset
+    {% if message %}
+      with the following message "{{ message }}"
+    {% endif %}
   {% endcall %}
 
   {% call email.paragraph() %}

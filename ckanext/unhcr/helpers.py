@@ -301,7 +301,9 @@ def get_deposited_dataset_user_contact(user_id=None):
 
     # Return contact
     return {
+        'id': user.get('id'),
         'title': user.get('display_name'),
+        'display_name': user.get('display_name'),
         'name': user.get('name'),
         'email': user.get('email'),
     }

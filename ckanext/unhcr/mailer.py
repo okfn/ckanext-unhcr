@@ -62,7 +62,7 @@ def compose_curation_email_subj(dataset):
     return '[UNHCR RIDL] Curation: %s' % dataset.get('title')
 
 
-def compose_curation_email_body(dataset, curation, recipient, event):
+def compose_curation_email_body(dataset, curation, recipient, event, message=None):
     context = {}
     context['site_title'] = config.get('ckan.site_title')
     context['site_url'] = config.get('ckan.site_url')
@@ -70,6 +70,7 @@ def compose_curation_email_body(dataset, curation, recipient, event):
     context['dataset_url'] = toolkit.url_for('dataset_read', id=dataset['name'], qualified=True)
     context['curation'] = curation
     context['recipient'] = recipient
+    context['message'] = message
     return render_jinja2('emails/curation_%s.html' % event, context)
 
 

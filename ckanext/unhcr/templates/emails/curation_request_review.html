@@ -8,7 +8,10 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    As depositor of this dataset, the curator assigned to it has requested your final review before publication:
+    As depositor of this dataset, the curator assigned to it has requested your final review before publication
+    {% if message %}
+      with the following message "{{ message }}"
+    {% endif %}
   {% endcall %}
 
   {% call email.paragraph() %}

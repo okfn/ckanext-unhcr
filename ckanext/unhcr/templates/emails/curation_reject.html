@@ -8,7 +8,10 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    This dataset has been rejected:
+    This dataset has been rejected
+    {% if message %}
+      with the following message "{{ message }}"
+    {% endif %}
   {% endcall %}
 
   {% call email.paragraph() %}

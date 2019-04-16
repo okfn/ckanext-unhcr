@@ -8,7 +8,10 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    You have been removed as curator of the following dataset:
+    You have been removed as curator of the following dataset
+    {% if message %}
+      with the following message "{{ message }}"
+    {% endif %}
   {% endcall %}
 
   {% call email.paragraph() %}
