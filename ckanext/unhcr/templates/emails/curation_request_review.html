@@ -1,0 +1,26 @@
+{% extends "emails/curation_base.html" %}
+{% import 'emails/macros/email.html' as email with context %}
+
+{% block email_body %}
+
+  {% call email.paragraph() %}
+    Dear {{ recipient }},
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    As depositor of this dataset, the curator assigned to it has requested your final review before publication:
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    <b>{{ dataset.title }}</b>
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    <i>{{ dataset.notes }}</i>
+  {% endcall %}
+
+  {% call email.action(dataset_url) %}
+    Review Dataset
+  {% endcall %}
+
+{% endblock %}

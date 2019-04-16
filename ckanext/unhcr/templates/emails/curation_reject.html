@@ -1,0 +1,26 @@
+{% extends "emails/curation_base.html" %}
+{% import 'emails/macros/email.html' as email with context %}
+
+{% block email_body %}
+
+  {% call email.paragraph() %}
+    Dear {{ recipient }},
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    This dataset has been rejected:
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    <b>{{ dataset.title }}</b>
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    <i>{{ dataset.notes }}</i>
+  {% endcall %}
+
+  {% call email.action(dataset_url) %}
+    View Dataset
+  {% endcall %}
+
+{% endblock %}

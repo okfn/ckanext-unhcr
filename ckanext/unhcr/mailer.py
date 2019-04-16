@@ -8,6 +8,8 @@ import ckan.logic.action.get as get_core
 log = logging.getLogger(__name__)
 
 
+# Data Containers
+
 def mail_data_container_request_to_sysadmins(context, org_dict):
     context.setdefault('model', model)
 
@@ -51,3 +53,26 @@ def _compose_email_body(org_dict, user, event='request'):
         'org_title': org_dict['title'],
         'org_link': org_link,
     })
+
+
+# Data Deposit
+# TODO: sync data/container deposit approaches
+
+def compose_curation_email_subj(dataset):
+    return '[UNHCR RIDL] Curation: %s' % dataset.get('title')
+
+
+def compose_curation_email_body(dataset, curation, recipient, event):
+    context = {}
+    context['site_title'] = config.get('ckan.site_title')
+    context['site_url'] = config.get('ckan.site_url')
+    context['dataset'] = dataset
+    context['dataset_url'] = toolkit.url_for('dataset_read', id=dataset['name'], qualified=True)
+    context['curation'] = curation
+    context['recipient'] = recipient
+    return render_jinja2('emails/curation_%s.html' % event, context)
+
+
+def mail_user_by_id(user_id, subj, body):
+    user = model.User.get(user_id)
+    return mail_user(user, subj, body)

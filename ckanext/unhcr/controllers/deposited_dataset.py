@@ -4,12 +4,13 @@ import random
 from ckan import model
 import ckan.plugins.toolkit as toolkit
 import ckan.lib.helpers as lib_helpers
-from ckanext.unhcr import helpers
+from ckanext.unhcr import helpers, mailer
 log = logging.getLogger(__name__)
 
 
 # Module API
 
+# TODO: add messages to email notifications
 # TODO: extract duplication (get_curation/authorize) from methods
 class DepositedDatasetController(toolkit.BaseController):
 
@@ -39,14 +40,21 @@ class DepositedDatasetController(toolkit.BaseController):
             message = 'Deposited dataset "%s" is invalid\n(validation error summary: %s)'
             return toolkit.abort(403, message % (id, error.error_summary))
 
-        message = toolkit.request.params.get('message')
-
         # Update activity stream
+        message = toolkit.request.params.get('message')
         helpers.create_curation_activity('dataset_approved', dataset['id'],
             dataset['name'], user_id, message=message)
 
         # Send notification email
-        #
+        if curation['state'] == 'submitted':
+            recipient = curation['contacts']['depositor']
+        elif curation['state'] == 'review':
+            recipient = curation['contacts']['curator']
+        if recipient:
+            subj = mailer.compose_curation_email_subj(dataset)
+            body = mailer.compose_curation_email_body(
+                dataset, curation, recipient['title'], 'approve')
+            mailer.mail_user_by_id(recipient['name'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" approved and moved to the destination data container'
@@ -91,9 +99,19 @@ class DepositedDatasetController(toolkit.BaseController):
             helpers.create_curation_activity('curator_removed', dataset['id'],
                 dataset['name'], user_id)
 
-
         # Send notification email
-        #
+        recipient = None
+        if curator_id:
+            action = 'assign'
+            recipient = {'name': curator['id'], 'title': curator['display_name']}
+        elif curation['contacts']['curator']:
+            action = 'assign_remove'
+            recipient = curation['contacts']['curator']
+        if recipient:
+            subj = mailer.compose_curation_email_subj(dataset)
+            body = mailer.compose_curation_email_body(
+                dataset, curation, recipient['title'], action)
+            mailer.mail_user_by_id(recipient['name'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" curator updated'
@@ -123,14 +141,21 @@ class DepositedDatasetController(toolkit.BaseController):
             dataset['curation_state'] = 'draft'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
-        message = toolkit.request.params.get('message')
-
         # Update activity stream
+        message = toolkit.request.params.get('message')
         helpers.create_curation_activity('changes_requested', dataset['id'],
                 dataset['name'], user_id, message=message)
 
         # Send notification email
-        #
+        if curation['state'] == 'submitted':
+            recipient = curation['contacts']['depositor']
+        elif curation['state'] == 'review':
+            recipient = curation['contacts']['curator']
+        if recipient:
+            subj = mailer.compose_curation_email_subj(dataset)
+            body = mailer.compose_curation_email_body(
+                dataset, curation, recipient['title'], 'request_changes')
+            mailer.mail_user_by_id(recipient['name'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" changes requested'
@@ -157,18 +182,19 @@ class DepositedDatasetController(toolkit.BaseController):
         dataset['curation_state'] = 'review'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
-        message = toolkit.request.params.get('message')
-
         # Update activity stream
+        message = toolkit.request.params.get('message')
         context = _get_context(ignore_auth=True)
         depositor = toolkit.get_action('user_show')(context, {'id': dataset['creator_user_id']})
-
         helpers.create_curation_activity('final_review_requested', dataset['id'],
             dataset['name'], user_id, message=message, depositor_name=depositor['name'])
 
-
         # Send notification email
-        #
+        depositor = curation['contacts']['depositor']
+        subj = mailer.compose_curation_email_subj(dataset)
+        body = mailer.compose_curation_email_body(
+            dataset, curation, depositor['title'], 'request_review')
+        mailer.mail_user_by_id(depositor['name'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" review requested'
@@ -196,15 +222,17 @@ class DepositedDatasetController(toolkit.BaseController):
         toolkit.get_action('package_patch')(context, {'id': dataset_id, 'name': new_name})
         toolkit.get_action('package_delete')(context, {'id': dataset_id})
 
-        message = toolkit.request.params.get('message')
-
         # Update activity stream
+        message = toolkit.request.params.get('message')
         helpers.create_curation_activity('dataset_rejected', dataset['id'],
             dataset['name'], user_id, message=message)
 
-
         # Send notification email
-        #
+        depositor = curation['contacts']['depositor']
+        subj = mailer.compose_curation_email_subj(dataset)
+        body = mailer.compose_curation_email_body(
+            dataset, curation, depositor['title'], 'reject')
+        mailer.mail_user_by_id(depositor['name'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" rejected'
@@ -231,14 +259,17 @@ class DepositedDatasetController(toolkit.BaseController):
         dataset['curation_state'] = 'submitted'
         dataset = toolkit.get_action('package_update')(context, dataset)
 
-        message = toolkit.request.params.get('message')
-
         # Update activity stream
+        message = toolkit.request.params.get('message')
         helpers.create_curation_activity('dataset_submitted', dataset['id'],
             dataset['name'], user_id, message=message)
 
         # Send notification email
-        #
+        for user in helpers.get_data_curation_users():
+            subj = mailer.compose_curation_email_subj(dataset)
+            body = mailer.compose_curation_email_body(
+                dataset, curation, user['display_name'], 'submit')
+            mailer.mail_user_by_id(user['id'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" submitted'
@@ -266,19 +297,24 @@ class DepositedDatasetController(toolkit.BaseController):
         toolkit.get_action('package_patch')(context, {'id': dataset_id, 'name': new_name})
         toolkit.get_action('package_delete')(context, {'id': dataset_id})
 
-        message = toolkit.request.params.get('message')
-
         # Update activity stream
+        message = toolkit.request.params.get('message')
         helpers.create_curation_activity('dataset_withdrawn', dataset['id'],
             dataset['name'], user_id, message=message)
 
         # Send notification email
-        #
+        for user in helpers.get_data_curation_users():
+            subj = mailer.compose_curation_email_subj(dataset)
+            body = mailer.compose_curation_email_body(
+                dataset, curation, user['display_name'], 'withdraw')
+            mailer.mail_user_by_id(user['id'], subj, body)
 
         # Show flash message and redirect
         message = 'Datasest "%s" withdrawn'
         toolkit.h.flash_error(message % dataset['title'])
         toolkit.redirect_to('data-container_read', id='data-deposit')
+
+    # Activity
 
     def activity(self, dataset_id):
         '''Render package's curation activity stream page.'''
@@ -336,6 +372,7 @@ def _get_rejected_dataset_name(name):
 
 def _get_withdrawn_dataset_name(name):
     return _get_deleted_dataset_name(name, 'withdrawn')
+
 
 def _get_deleted_dataset_name(name, operation='rejected'):
     rand_chars = ''.join(

@@ -81,6 +81,13 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
                 self.dataset = None
         return resp
 
+    def assert_mail(self, mail, users, subject, texts):
+        for index, user in enumerate(users):
+            assert_equals(mail.call_args_list[index][0][0], user)
+            assert_equals(mail.call_args_list[index][0][1], subject)
+            for text in texts:
+                assert_in(text, mail.call_args_list[index][0][2])
+
     # General
 
     def test_all_actions_anonimous(self):
@@ -122,7 +129,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin', 'curator']:
             yield self.check_approve_submitted, user
 
-    def check_approve_submitted(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_approve_submitted(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
@@ -137,6 +145,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Approve dataset
         self.make_request('approve', user=user, status=302)
         assert_equals(self.dataset['type'], 'dataset')
+        self.assert_mail(mail,
+            users=['creator'],
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['This dataset has been approved'],
+        )
 
     def test_approve_submitted_not_valid(self):
         for user in ['sysadmin', 'depadmin', 'curator']:
@@ -168,11 +181,12 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     # Approve (review)
 
-    def test_approve_review(self):
+    def test_approve_review_without_curator(self):
         for user in ['creator']:
-            yield self.check_approve_review, user
+            yield self.check_approve_review_without_curator, user
 
-    def check_approve_review(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_approve_review_without_curator(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
@@ -188,6 +202,35 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.make_request('approve', user=user, status=302)
         assert_equals(self.dataset['type'], 'dataset')
         assert_equals(self.dataset['owner_org'], 'data-target')
+        mail.assert_not_called()
+
+    def test_approve_review_with_curator(self):
+        for user in ['creator']:
+            yield self.check_approve_review_with_curator, user
+
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_approve_review_with_curator(self, user, mail):
+
+        # Prepare dataset
+        self.patch_dataset({
+            'curator_id': 'curator',
+            'curation_state': 'review',
+            'unit_of_measurement': 'individual',
+            'keywords': ['shelter', 'health'],
+            'archived': 'False',
+            'data_collector': ['acf'],
+            'data_collection_technique': 'f2f',
+        })
+
+        # Approve dataset
+        self.make_request('approve', user=user, status=302)
+        assert_equals(self.dataset['type'], 'dataset')
+        assert_equals(self.dataset['owner_org'], 'data-target')
+        self.assert_mail(mail,
+            users=['curator'],
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['This dataset has been approved'],
+        )
 
     def test_approve_review_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'depositor']:
@@ -221,7 +264,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin']:
             yield self.check_assign_submitted, user
 
-    def check_assign_submitted(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_assign_submitted(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
@@ -232,12 +276,41 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         params = {'curator_id': self.curator['id']}
         self.make_request('assign', user=user, params=params, status=302)
         assert_equals(self.dataset['curator_id'], self.curator['id'])
+        self.assert_mail(mail,
+            users=['curator'],
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['A new dataset has been assigned to you for curation'],
+        )
 
-    def test_assign_submitted_no_one(self):
+    def test_assign_submitted_remove(self):
         for user in ['sysadmin', 'depadmin']:
-            yield self.check_assign_submitted_no_one, user
+            yield self.check_assign_submitted_remove, user
 
-    def check_assign_submitted_no_one(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_assign_submitted_remove(self, user, mail):
+
+        # Prepare dataset
+        self.patch_dataset({
+            'curator_id': 'curator',
+            'curation_state': 'submitted',
+        })
+
+        # Assign curator
+        params = {'curator_id': ''}
+        self.make_request('assign', user=user, params=params, status=302)
+        assert_equals(self.dataset.get('curator_id'), None)
+        self.assert_mail(mail,
+            users=['curator'],
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['You have been removed as curator of the following dataset'],
+        )
+
+    def test_assign_submitted_remove_not_assigned(self):
+        for user in ['sysadmin', 'depadmin']:
+            yield self.check_assign_submitted_remove_not_assigned, user
+
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_assign_submitted_remove_not_assigned(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
@@ -248,6 +321,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         params = {'curator_id': ''}
         self.make_request('assign', user=user, params=params, status=302)
         assert_equals(self.dataset.get('curator_id'), None)
+        mail.assert_not_called()
 
     # TODO: it breaks sessions for all following tests
     #  def test_assign_submitted_bad_curator_id(self):
@@ -314,7 +388,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin', 'curator']:
             yield self.check_request_changes_submitted, user
 
-    def check_request_changes_submitted(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_request_changes_submitted(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
@@ -324,6 +399,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Request changes
         self.make_request('request_changes', user=user, status=302)
         assert_equals(self.dataset['curation_state'], 'draft')
+        self.assert_mail(mail,
+            users=['creator'],
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['The reviewer has requested changes on the following dataset'],
+        )
 
     def test_request_changes_submitted_not_granted(self):
         for user in ['creator', 'depositor']:
@@ -345,10 +425,12 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['creator']:
             yield self.check_request_changes_review, user
 
-    def check_request_changes_review(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_request_changes_review(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
+            'curator_id': 'curator',
             'curation_state': 'review',
             'unit_of_measurement': 'individual',
             'keywords': ['shelter', 'health'],
@@ -360,6 +442,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Request changes
         self.make_request('request_changes', user=user, status=302)
         assert_equals(self.dataset['curation_state'], 'submitted')
+        self.assert_mail(mail,
+            users=['curator'],
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['The reviewer has requested changes on the following dataset'],
+        )
 
     def test_request_changes_review_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'depositor']:
@@ -401,7 +488,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin', 'curator']:
             yield self.check_request_review_submitted, user
 
-    def check_request_review_submitted(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_request_review_submitted(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
@@ -416,6 +504,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Request review
         self.make_request('request_review', user=user, status=302)
         assert_equals(self.dataset['curation_state'], 'review')
+        self.assert_mail(mail,
+            users=['creator'],
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['As depositor of this dataset, the curator assigned to it has requested your final review before publication'],
+        )
 
     def test_request_review_submitted_not_valid(self):
         for user in ['sysadmin', 'depadmin', 'curator']:
@@ -478,7 +571,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin', 'curator']:
             yield self.check_reject_submitted, user
 
-    def check_reject_submitted(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_reject_submitted(self, user, mail):
 
         # Prepare dataset
         self.patch_dataset({
@@ -489,6 +583,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.make_request('reject', user=user, status=302)
         assert_equals(self.dataset['state'], 'deleted')
         assert_in('-rejected-', self.dataset['name'])
+        self.assert_mail(mail,
+            users=['creator'],
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['This dataset has been rejected'],
+        )
 
     def test_reject_submitted_not_granted(self):
         for user in ['creator', 'depositor']:
@@ -526,11 +625,17 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['creator']:
             yield self.check_submit_draft, user
 
-    def check_submit_draft(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_submit_draft(self, user, mail):
 
         # Submit dataset
         self.make_request('submit', user=user, status=302)
         assert_equals(self.dataset['curation_state'], 'submitted')
+        self.assert_mail(mail,
+            users=['depadmin', 'curator'],
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['A new dataset has been submitted for curation by %s' % self.creator['display_name']],
+        )
 
     def test_submit_draft_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'depositor']:
@@ -579,12 +684,18 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['creator']:
             yield self.check_withdraw_draft, user
 
-    def check_withdraw_draft(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_withdraw_draft(self, user, mail):
 
         # Withdraw dataset
         self.make_request('withdraw', user=user, status=302)
         assert_equals(self.dataset['state'], 'deleted')
         assert_in('-withdrawn-', self.dataset['name'])
+        self.assert_mail(mail,
+            users=['depadmin', 'curator'],
+            subject='[UNHCR RIDL] Curation: Test Dataset',
+            texts=['This dataset has been withdrawn from curation by %s' % self.creator['display_name']],
+        )
 
     def test_withdraw_draft_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'depositor']:
@@ -641,7 +752,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         self.make_request('approve', user='sysadmin', status=302)
 
-    def test_activites_shown_on_deposited_dataset(self):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def test_activites_shown_on_deposited_dataset(self, mail):
 
         env = {'REMOTE_USER': self.creator['name'].encode('ascii')}
         resp = self.app.get(
@@ -652,7 +764,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'editor']:
             yield self.check_activities_shown, user
 
-    def check_activities_shown(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_activities_shown(self, user, mail):
 
         self._approve_dataset()
 
@@ -667,7 +780,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['depositor', 'curator']:
             yield self.check_activities_not_shown, user
 
-    def check_activities_not_shown(self, user):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def check_activities_not_shown(self, user, mail):
 
         self._approve_dataset()
 
@@ -677,7 +791,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         assert_not_in('Curation Activity', resp.body)
 
-    def test_activity_created_in_deposited_dataset(self):
+    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    def test_activity_created_in_deposited_dataset(self, mail):
 
 
         self.make_request('submit', user=self.creator['name'], status=302)
