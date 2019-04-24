@@ -807,3 +807,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         assert_in('submitted dataset', resp.body)
         assert_in('assigned', resp.body)
         assert_in('as curator', resp.body)
+
+
+# TODO: implement
+class TestExtendedPackageController(base.FunctionalTestBase):
+    pass

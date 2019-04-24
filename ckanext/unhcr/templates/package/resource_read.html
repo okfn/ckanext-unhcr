@@ -8,9 +8,14 @@
     <div class="dropdown-menu" role="menu">
       {% snippet "package/snippets/resources.html", pkg=pkg, active=res.id %}
     </div>
-
   </div>
+{% endblock %}
 
+{% block resource_actions_inner %}
+  {% if h.check_access('package_update', {'id': pkg.id}) %}
+    <li>{% link_for _('Copy'), controller='ckanext.unhcr.controllers.extended_package:ExtendedPackageController', action='resource_copy', id=pkg.name, resource_id=res.id, class_='btn', icon='copy' %}</li>
+  {% endif %}
+  {{ super() }}
 {% endblock %}
 
 {% block secondary_content %}

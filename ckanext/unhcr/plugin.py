@@ -67,6 +67,11 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         _map.connect('deposited-dataset_curation_activity', '/deposited-dataset/curation_activity/{dataset_id}', controller=controller, action='activity')
         _map.connect('dataset_curation_activity','/dataset/curation_activity/{dataset_id}', controller=controller, action='activity')
 
+        # package
+        controller = 'ckanext.unhcr.controllers.extended_package:ExtendedPackageController'
+        _map.connect('/dataset/copy/{id}', controller=controller, action='copy')
+        _map.connect('/dataset/{id}/resource_copy/{resource_id}', controller=controller, action='resource_copy')
+
         # user
         controller = 'ckanext.unhcr.controllers.extended_user:ExtendedUserController'
         _map.connect('user_dashboard_requests', '/dashboard/requests', controller=controller, action='list_requests', ckan_icon='spinner')

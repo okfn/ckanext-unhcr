@@ -19,9 +19,11 @@
   {% endif %}
 {% endblock %}
 
-{% block package_resources %}
-  {% snippet "package/snippets/resources_list.html", pkg=pkg, type='data' %}
-  {% snippet "package/snippets/resources_list.html", pkg=pkg, type='attachment' %}
+{% block content_action %}
+  {% if h.check_access('package_create', {'owner_org': pkg.owner_org }) %}
+    {% link_for _('Copy'), controller='ckanext.unhcr.controllers.extended_package:ExtendedPackageController', action='copy', id=pkg.name, class_='btn', icon='copy' %}
+  {% endif %}
+  {{ super() }}
 {% endblock %}
 
 {% block secondary_content %}
