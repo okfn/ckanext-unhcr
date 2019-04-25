@@ -431,3 +431,7 @@ def custom_activity_renderer(context, activity):
         output = output + ' with the following message: <q class="curation-message">%s</q>' % activity['data']['message']
 
     return output
+
+
+def current_path():
+    return toolkit.request.path

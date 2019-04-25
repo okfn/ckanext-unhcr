@@ -128,6 +128,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'get_deposited_dataset_user_curation_role': helpers.get_deposited_dataset_user_curation_role,
             'get_dataset_validation_report': helpers.get_dataset_validation_report,
             'get_field_pretty_name': helpers.get_field_pretty_name,
+            'current_path': helpers.current_path,
         }
 
     # IPackageController
