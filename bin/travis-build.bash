@@ -61,7 +61,7 @@ cd -
 
 echo "Installing ckanext-unhcr and its requirements..."
 python setup.py develop
-pip install -r requirements.txt
+pip install --upgrade -r requirements.txt
 # Change the path the core test ini file as the docker compose scripts change this
 # locally
 sed -i -e 's/config:..\/..\/src\/ckan\/test-core.ini/config:..\/ckan\/test-core.ini/' test.ini
