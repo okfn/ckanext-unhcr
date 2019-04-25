@@ -4,17 +4,9 @@
 
 {% block page_primary_action %}
   {% if c.group_dict.state == 'approval_needed' %}
-    <div class="alert alert-warning" role="alert">
-        <p>{% trans %}This data container is waiting for an administrator approval{% endtrans %}</p>
+    <div class="alert alert-info" role="alert">
+      <p>{% trans %}This data container is waiting for an administrator approval{% endtrans %}</p>
     </div>
-    {% if h.check_access('sysadmin') %}
-      <a href="/data-container/{{ c.group_dict.id }}/approve" class="btn btn-primary">
-        {% trans %}Approve Data Container{% endtrans %}
-      </a>
-      <a href="/data-container/{{ c.group_dict.id }}/reject" class="btn btn-danger">
-        {% trans %}Reject Data Container{% endtrans %}
-      </a>
-     {% endif %}
   {% else %}
     {% if c.group_dict.id != deposit.id %}
       {% if h.check_access('package_create', {'owner_org': c.group_dict.id}) %}

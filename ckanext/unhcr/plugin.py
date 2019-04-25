@@ -67,6 +67,10 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         _map.connect('deposited-dataset_curation_activity', '/deposited-dataset/curation_activity/{dataset_id}', controller=controller, action='activity')
         _map.connect('dataset_curation_activity','/dataset/curation_activity/{dataset_id}', controller=controller, action='activity')
 
+        # user
+        controller = 'ckanext.unhcr.controllers.extended_user:ExtendedUserController'
+        _map.connect('user_dashboard_requests', '/dashboard/requests', controller=controller, action='list_requests', ckan_icon='spinner')
+
         return _map
 
     # IFacets
@@ -121,6 +125,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             # Lined datasets
             'get_linked_datasets_for_form': helpers.get_linked_datasets_for_form,
             'get_linked_datasets_for_display': helpers.get_linked_datasets_for_display,
+            # Pending requests
+            'get_pending_requests': helpers.get_pending_requests,
             # Deposited datasets
             'get_data_deposit': helpers.get_data_deposit,
             'get_data_curation_users': helpers.get_data_curation_users,
@@ -259,6 +265,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
     def get_actions(self):
         return {
             'organization_create': actions.organization_create,
+            'pending_requests_list': actions.pending_requests_list,
             'package_activity_list': actions.package_activity_list,
             'dashboard_activity_list': actions.dashboard_activity_list,
             'group_activity_list': actions.group_activity_list,

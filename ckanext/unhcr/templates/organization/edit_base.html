@@ -11,6 +11,8 @@
 {% block secondary_content %}
   {% if c.group_dict.id == deposit.id %}
     {% snippet "organization/snippets/curation_sidebar.html", deposit=deposit, facet_titles=c.facet_titles, editing=True %}
+  {% elif c.group_dict.state == 'approval_needed' %}
+    {% snippet "organization/snippets/pending_sidebar.html", group_dict=group_dict %}
   {% else %}
     {{ super() }}
   {% endif %}

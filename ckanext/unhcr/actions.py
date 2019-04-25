@@ -1,4 +1,5 @@
 import logging
+from ckan import model
 from urlparse import urljoin
 from ckan.plugins import toolkit
 from ckan.lib.mailer import MailerException
@@ -10,6 +11,8 @@ import ckan.lib.activity_streams as activity_streams
 from ckanext.unhcr.mailer import mail_data_container_request_to_sysadmins
 log = logging.getLogger(__name__)
 
+
+# Organization
 
 def organization_create(context, data_dict):
 
@@ -41,6 +44,36 @@ def organization_create(context, data_dict):
 
     return org_dict
 
+
+# Pending requests
+
+def pending_requests_list(context, data_dict):
+    all_fields = data_dict.get('all_fields', False)
+
+    # Check permissions
+    toolkit.check_access('sysadmin', context)
+
+    # Containers
+    containers = []
+    query = (model.Session
+        .query(model.Group.id)
+        .filter(model.Group.state == 'approval_needed')
+        .filter(model.Group.is_organization == True)
+        .order_by(model.Group.name))
+    for item in query.all():
+        if all_fields:
+            container = toolkit.get_action('organization_show')(context, {'id': item.id})
+        else:
+            container = item.id
+        containers.append(container)
+
+    return {
+        'containers': containers,
+        'count': len(containers),
+    }
+
+
+# Activity
 
 @toolkit.side_effect_free
 def package_activity_list(context, data_dict):

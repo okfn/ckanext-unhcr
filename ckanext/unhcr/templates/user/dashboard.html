@@ -9,6 +9,12 @@
 	  {{ h.build_nav_icon('user_dashboard', _('News feed')) }}
 	  {{ h.build_nav_icon('user_dashboard_datasets', _('My Datasets')) }}
 	  {{ h.build_nav_icon('user_dashboard_organizations', _('My Organizations')) }}
+    {% if h.check_access('sysadmin') %}
+      {% set requests = h.get_pending_requests() %}
+      {% set prefix = ' (%s)' % requests.count %}
+      {% set icon = 'exclamation' if requests.count else 'check' %}
+      {{ h.build_nav_icon('user_dashboard_requests', _('Pending Requests') + prefix, icon=icon) }}
+    {% endif %}
 	</ul>
   </header>
 {% endblock %}

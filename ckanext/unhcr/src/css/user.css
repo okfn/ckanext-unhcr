@@ -1,0 +1,10 @@
+.pending-requests-list {
+   & h3 {
+     & small {
+       & a {
+         color: #999 !important;
+         /* text-decoration: underline; */
+       }
+     }
+   }
+}

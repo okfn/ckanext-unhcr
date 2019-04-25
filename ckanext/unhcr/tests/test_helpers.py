@@ -133,6 +133,50 @@ class TestHelpers(FunctionalTestBase):
             {'href': '%s/dataset/name2' % url, 'text': 'title2'},
         ])
 
+    # Pending Requests
+
+    def test_get_pending_requests(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        container1 = factories.DataContainer(
+            name='container1',
+            id='container1',
+            state='approval_needed',
+        )
+        container2 = factories.DataContainer(
+            name='container2',
+            id='container2',
+            state='approval_needed',
+        )
+        context = {'model': model, 'user': 'sysadmin'}
+        requests = helpers.get_pending_requests(context=context)
+        assert_equals(requests['count'], 2)
+        assert_equals(requests['containers'], [container1['id'], container2['id']])
+
+    def test_get_pending_requests_all_fields(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        container1 = factories.DataContainer(
+            name='container1',
+            id='container1',
+            state='approval_needed',
+        )
+        context = {'model': model, 'user': 'sysadmin'}
+        requests = helpers.get_pending_requests(all_fields=True, context=context)
+        assert_equals(requests['count'], 1)
+        assert_equals(requests['containers'][0]['name'], 'container1')
+
+    def test_get_pending_requests_empty(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        context = {'model': model, 'user': 'sysadmin'}
+        requests = helpers.get_pending_requests(all_fields=True, context=context)
+        assert_equals(requests['count'], 0)
+        assert_equals(requests['containers'], [])
+
+    def test_get_pending_requests_not_authorized(self):
+        user = core_factories.User(name='user', id='user')
+        context = {'model': model, 'user': 'user'}
+        with assert_raises(toolkit.NotAuthorized):
+            requests = helpers.get_pending_requests(all_fields=True)
+
     # Deposited Datasets
 
     def test_get_data_deposit(self):

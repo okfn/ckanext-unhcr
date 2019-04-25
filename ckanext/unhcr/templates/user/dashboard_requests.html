@@ -1,0 +1,50 @@
+{% extends "user/dashboard.html" %}
+
+{% block dashboard_activity_stream_context %}
+{% endblock %}
+
+{% block primary_content_inner %}
+  <h2>{{ _('Requested Data Containers') }}</h2>
+  {% if requests.containers %}
+    <hr>
+    <ul class="dataset-list unstyled pending-requests-list">
+      {% for container in requests.containers %}
+        <li class="dataset-item">
+          <div class="dataset-content">
+            <h3 class="dataset-heading">
+              {% if container.groups %}
+                <a href="/data-container/{{ container.groups[0].name }}" title="Parent data container">{{ container.groups[0].name|capitalize }}</a>
+                /
+              {% endif %}
+              <a href="/data-container/{{ container.name }}" title="Requested data container">{{ container.display_name }}</a>
+              {% if container.users and container.users[0] %}
+                {% set creator = container.users[0] %}
+                <small>
+                  (created by <a href="/user/{{ creator.name }}">{{ creator.display_name }}</a>
+                  on {{ h.render_datetime(container.created, '%Y-%m-%d') }})
+                </small>
+              {% endif %}
+            </h3>
+            {% if container.notes %}
+              <p>{{ container.notes|urlize }}</p>
+            {% else %}
+              <p class="empty">{{ _("This data container has no description") }}</p>
+            {% endif %}
+          </div>
+          <p>
+            <a href="/data-container/{{ container.id }}/approve" class="btn btn-primary">
+              {% trans %}Approve{% endtrans %}
+            </a>
+            <a href="/data-container/{{ container.id }}/reject" class="btn btn-danger">
+              {% trans %}Reject{% endtrans %}
+            </a>
+          </p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="empty">
+      {{ _('No Pending Data Containers') }}
+    </p>
+  {% endif %}
+{% endblock %}

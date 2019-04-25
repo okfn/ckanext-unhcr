@@ -151,6 +151,13 @@ def get_linked_datasets_for_display(value, context=None):
     return datasets
 
 
+# Pending requests
+
+def get_pending_requests(all_fields=False, context=None):
+    context = context or {'model': model, 'user': toolkit.c.user}
+    return toolkit.get_action('pending_requests_list')(context, {'all_fields': all_fields})
+
+
 # Deposited datasets
 
 #  deposit = None
