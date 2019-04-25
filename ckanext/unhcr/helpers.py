@@ -352,10 +352,14 @@ def get_dataset_validation_report(pkg_dict, error_dict):
     # Resources
     report['resources'] = []
     for index, resource in enumerate(pkg_dict.get('resources', [])):
+        try:
+            fields = sorted(error_dict['resources'][index])
+        except KeyError, IndexError:
+            continue
         report['resources'].append({
             'id': resource['id'],
             'name': resource['name'],
-            'fields': sorted(error_dict['resources'][index]),
+            'fields': fields,
         })
 
     return report
