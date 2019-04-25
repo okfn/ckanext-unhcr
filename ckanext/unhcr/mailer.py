@@ -76,4 +76,5 @@ def compose_curation_email_body(dataset, curation, recipient, event, message=Non
 
 def mail_user_by_id(user_id, subj, body):
     user = model.User.get(user_id)
-    return mail_user(user, subj, body)
+    headers = {'Content-Type': 'text/html; charset=UTF-8'}
+    return mail_user(user, subj, body, headers=headers)
