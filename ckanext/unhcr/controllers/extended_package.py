@@ -11,14 +11,22 @@ class ExtendedPackageController(PackageController):
     def copy(self, id):
         context = {'model': model}
 
-        # TODO: check package_create access
+        # Get organizations
+        orgs = toolkit.get_action('organization_list_for_user')(
+            context, {'permission': 'package_create'})
+        org_ids = [org['id'] for org in orgs]
+
+        # Check access
+        if not orgs:
+            message = 'Not authorized to copy dataset "%s"'
+            return toolkit.abort(403, message % id)
 
         # Get dataset
         try:
             dataset = toolkit.get_action('package_show')(context, {'id': id})
-        except toolkit.ObjectNotFound, toolkit.NotAuthorized:
-            message = 'Not authorized to copy dataset "%s"'
-            return toolkit.abort(403, message % id)
+        except toolkit.NotAuthorized, toolkit.ObjectNotFound:
+            message = 'Not found py dataset "%s"'
+            return toolkit.abort(404, message % id)
 
         # Extract data
         data = {}
@@ -33,6 +41,7 @@ class ExtendedPackageController(PackageController):
         data['name'] = '%s-copy' % dataset.get('name')
         data['title'] = '%s (copy)' % dataset.get('title')
         data['private'] = bool(dataset.get('private'))
+        data['owner_org'] = data['owner_org'] if data['owner_org'] in org_ids else None
 
         return self.new(data=data)
 
@@ -49,7 +58,7 @@ class ExtendedPackageController(PackageController):
         # Get resource
         try:
             resource = toolkit.get_action('resource_show')(context, {'id': resource_id})
-        except toolkit.ObjectNotFound:
+        except toolkit.NotAuthorized, toolkit.ObjectNotFound:
             message = 'Not found resource "%s" of dataset "%s"'
             return toolkit.abort(404, message % (resource_id, id))
 

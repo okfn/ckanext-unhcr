@@ -20,7 +20,7 @@
 {% endblock %}
 
 {% block content_action %}
-  {% if h.check_access('package_create', {'owner_org': pkg.owner_org }) %}
+  {% if h.organizations_available('package_create') %}
     {% link_for _('Copy'), controller='ckanext.unhcr.controllers.extended_package:ExtendedPackageController', action='copy', id=pkg.name, class_='btn', icon='copy' %}
   {% endif %}
   {{ super() }}
