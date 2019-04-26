@@ -39,14 +39,19 @@ class ExtendedPackageController(PackageController):
     def resource_copy(self, id, resource_id):
         context = {'model': model}
 
-        # TODO: check package_update access
+        # Check access
+        try:
+            toolkit.check_access('package_update', context, {'id': id})
+        except toolkit.NotAuthorized:
+            message = 'Not authorized to copy resource of dataset "%s"'
+            return toolkit.abort(403, message % id)
 
-        # Get dataset
+        # Get resource
         try:
             resource = toolkit.get_action('resource_show')(context, {'id': resource_id})
-        except toolkit.ObjectNotFound, toolkit.NotAuthorized:
-            message = 'Not authorized to copy dataset "%s"'
-            return toolkit.abort(403, message % id)
+        except toolkit.ObjectNotFound:
+            message = 'Not found resource "%s" of dataset "%s"'
+            return toolkit.abort(404, message % (resource_id, id))
 
         # Extract data
         data = {}
