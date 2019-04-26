@@ -20,6 +20,17 @@ class Dataset(factories.Dataset):
     operational_purpose_of_data = 'cartography'
 
 
+class Resource(factories.Resource):
+
+    type = 'data'
+    file_type = 'microdata'
+    identifiability = 'anonymized_public'
+    date_range_start = '2018-01-01'
+    date_range_end = '2019-01-01'
+    process_status = 'anonymized'
+    version = '1'
+
+
 class DepositedDataset(factories.Dataset):
 
     type = 'deposited-dataset'

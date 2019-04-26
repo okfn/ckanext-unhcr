@@ -839,13 +839,18 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         )
 
         # Datasets
-        self.dataset = factories.Dataset(
+        self.dataset1 = factories.Dataset(
             name='dataset1',
             owner_org='container1',
             data_collection_technique = 'f2f',
             sampling_procedure = 'nonprobability',
             operational_purpose_of_data = 'cartography',
             user=self.user1)
+
+        # Resources
+        self.resource1 = factories.Resource(
+            name='resource1',
+            package_id='dataset1')
 
     # Helpers
 
@@ -866,6 +871,7 @@ class TestExtendedPackageController(base.FunctionalTestBase):
     def test_dataset_copy(self):
         resp = self.make_dataset_request(dataset_id='dataset1', user='user1')
         assert_in('action="/dataset/new"', resp.body)
+        assert_in('dataset1-copy', resp.body)
         assert_in('f2f', resp.body)
         assert_in('nonprobability', resp.body)
         assert_in('cartography', resp.body)
@@ -875,6 +881,7 @@ class TestExtendedPackageController(base.FunctionalTestBase):
     def test_dataset_copy_to_other_org(self):
         resp = self.make_dataset_request(dataset_id='dataset1', user='user2')
         assert_in('action="/dataset/new"', resp.body)
+        assert_in('dataset1-copy', resp.body)
         assert_in('f2f', resp.body)
         assert_in('nonprobability', resp.body)
         assert_in('cartography', resp.body)
@@ -886,3 +893,21 @@ class TestExtendedPackageController(base.FunctionalTestBase):
 
     def test_dataset_copy_bad_dataset(self):
         resp = self.make_dataset_request(dataset_id='bad', user='user1', status=404)
+
+    # Resource
+
+    def test_resource_copy(self):
+        resp = self.make_resource_request(
+            dataset_id='dataset1', resource_id=self.resource1['id'], user='user1')
+        assert_in('action="/dataset/new_resource/dataset1"', resp.body)
+        assert_in('resource1 (copy)', resp.body)
+        assert_in('anonymized_public', resp.body)
+        assert_in('Add', resp.body)
+
+    def test_resource_copy_no_access(self):
+        resp = self.make_resource_request(
+            dataset_id='dataset1', resource_id=self.resource1['id'], user='user2', status=403)
+
+    def test_resource_copy_bad_resource(self):
+        resp = self.make_resource_request(
+            dataset_id='dataset1', resource_id='bad', user='user1', status=404)

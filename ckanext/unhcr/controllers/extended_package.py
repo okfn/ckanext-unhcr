@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 class ExtendedPackageController(PackageController):
 
     def copy(self, id):
-        context = {'model': model}
+        context = {'model': model, 'user': toolkit.c.user}
 
         # Get organizations
         orgs = toolkit.get_action('organization_list_for_user')(
@@ -46,7 +46,7 @@ class ExtendedPackageController(PackageController):
         return self.new(data=data)
 
     def resource_copy(self, id, resource_id):
-        context = {'model': model}
+        context = {'model': model, 'user': toolkit.c.user}
 
         # Check access
         try:
