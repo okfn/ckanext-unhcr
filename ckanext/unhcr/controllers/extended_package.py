@@ -24,7 +24,7 @@ class ExtendedPackageController(PackageController):
         # Get dataset
         try:
             dataset = toolkit.get_action('package_show')(context, {'id': id})
-        except toolkit.NotAuthorized, toolkit.ObjectNotFound:
+        except (toolkit.NotAuthorized, toolkit.ObjectNotFound):
             message = 'Not found py dataset "%s"'
             return toolkit.abort(404, message % id)
 
@@ -58,7 +58,7 @@ class ExtendedPackageController(PackageController):
         # Get resource
         try:
             resource = toolkit.get_action('resource_show')(context, {'id': resource_id})
-        except toolkit.NotAuthorized, toolkit.ObjectNotFound:
+        except (toolkit.NotAuthorized, toolkit.ObjectNotFound):
             message = 'Not found resource "%s" of dataset "%s"'
             return toolkit.abort(404, message % (resource_id, id))
 

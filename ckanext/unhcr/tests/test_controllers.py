@@ -809,6 +809,80 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         assert_in('as curator', resp.body)
 
 
-# TODO: implement
 class TestExtendedPackageController(base.FunctionalTestBase):
-    pass
+
+    # Config
+
+    def setup(self):
+        super(TestExtendedPackageController, self).setup()
+
+        # Users
+        self.sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        self.user1 = core_factories.User(name='user1', id='user1')
+        self.user2 = core_factories.User(name='user2', id='user2')
+        self.user3 = core_factories.User(name='user3', id='user3')
+
+        # Containers
+        self.container1 = factories.DataContainer(
+            name='container1',
+            id='container1',
+            users=[
+                {'name': 'user1', 'capacity': 'admin'},
+            ],
+        )
+        self.container2 = factories.DataContainer(
+            name='container2',
+            id='container2',
+            users=[
+                {'name': 'user2', 'capacity': 'admin'},
+            ],
+        )
+
+        # Datasets
+        self.dataset = factories.Dataset(
+            name='dataset1',
+            owner_org='container1',
+            data_collection_technique = 'f2f',
+            sampling_procedure = 'nonprobability',
+            operational_purpose_of_data = 'cartography',
+            user=self.user1)
+
+    # Helpers
+
+    def make_dataset_request(self, dataset_id=None, user=None, **kwargs):
+        url = '/dataset/copy/%s' % dataset_id
+        env = {'REMOTE_USER': user.encode('ascii')} if user else {}
+        resp = self.app.get(url=url, extra_environ=env, **kwargs)
+        return resp
+
+    def make_resource_request(self, dataset_id=None, resource_id=None, user=None, **kwargs):
+        url = '/dataset/%s/resource_copy/%s' % (dataset_id, resource_id)
+        env = {'REMOTE_USER': user.encode('ascii')} if user else {}
+        resp = self.app.get(url=url, extra_environ=env, **kwargs)
+        return resp
+
+    # Dataset
+
+    def test_dataset_copy(self):
+        resp = self.make_dataset_request(dataset_id='dataset1', user='user1')
+        assert_in('action="/dataset/new"', resp.body)
+        assert_in('f2f', resp.body)
+        assert_in('nonprobability', resp.body)
+        assert_in('cartography', resp.body)
+        assert_in('Add Data', resp.body)
+        assert_in('container1', resp.body)
+
+    def test_dataset_copy_to_other_org(self):
+        resp = self.make_dataset_request(dataset_id='dataset1', user='user2')
+        assert_in('action="/dataset/new"', resp.body)
+        assert_in('f2f', resp.body)
+        assert_in('nonprobability', resp.body)
+        assert_in('cartography', resp.body)
+        assert_in('Add Data', resp.body)
+        assert_not_in('container1', resp.body)
+
+    def test_dataset_copy_no_orgs(self):
+        resp = self.make_dataset_request(dataset_id='dataset1', user='user3', status=403)
+
+    def test_dataset_copy_bad_dataset(self):
+        resp = self.make_dataset_request(dataset_id='bad', user='user1', status=404)
