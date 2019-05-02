@@ -445,4 +445,7 @@ def custom_activity_renderer(context, activity):
 
 
 def current_path():
-    return toolkit.request.path
+    path = toolkit.request.path
+    if path.startswith('/dataset/copy'):
+        path = '/dataset/new'
+    return path

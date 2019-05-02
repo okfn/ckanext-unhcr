@@ -52,3 +52,7 @@
 
 {% endblock %}
 
+{% block package_resources %}
+  {% snippet "package/snippets/resources_list.html", pkg=pkg, type='data' %}
+  {% snippet "package/snippets/resources_list.html", pkg=pkg, type='attachment' %}
+{% endblock %}
