@@ -41,7 +41,8 @@ class ExtendedPackageController(PackageController):
         data['name'] = '%s-copy' % dataset.get('name')
         data['title'] = '%s (copy)' % dataset.get('title')
         data['private'] = bool(dataset.get('private'))
-        data['owner_org'] = data['owner_org'] if data['owner_org'] in org_ids else None
+        if data.get('owner_org'):
+            data['owner_org'] = data['owner_org'] if data['owner_org'] in org_ids else None
 
         return self.new(data=data)
 
