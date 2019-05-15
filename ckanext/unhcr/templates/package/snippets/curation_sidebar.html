@@ -37,6 +37,9 @@
         <a href="/deposited-dataset/edit/{{ pkg.id }}" class="btn btn-warning {% if editing %}disabled{% endif %}" {% if not editing %}title="{{ link_help }}"{% endif %}>
           {% trans %}Edit Dataset{% endtrans %}
         </a>
+        <a href="/dataset/resources/{{ pkg.id }}" class="btn btn-warning {% if editing %}disabled{% endif %}" {% if not editing %}title="{{ link_help }}"{% endif %}>
+          {% trans %}Edit Resources{% endtrans %}
+        </a>
       {% endif %}
 
       {% if 'submit' in curation.actions %}
