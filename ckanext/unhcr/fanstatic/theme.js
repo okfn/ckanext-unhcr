@@ -120,6 +120,7 @@ this.ckan.module('resource-type', function ($) {
       this.field.hide()
       this.field.nextAll().show()
       this.input.val('data')
+      this._fixUploadButton()
     },
 
     _onAttachmentButtonClick: function (ev) {
@@ -128,12 +129,21 @@ this.ckan.module('resource-type', function ($) {
       this.field.nextAll().show()
       $('#field-format').parents('.control-group').nextAll('.control-group').hide()
       this.input.val('attachment')
+      this._fixUploadButton()
     },
 
     _onPreviousButtonClick: function (ev) {
       if (ev) ev.preventDefault()
       this._onIntialized()
     },
+
+    _fixUploadButton: function () {
+      // https://github.com/ckan/ckan/blob/master/ckan/public/base/javascript/modules/image-upload.js#L88
+      // Ckan just uses an input field behind a button to mimic uploading after a click
+      // Our resources setup breakes the width calcucations so we fix it here
+      var input = $('#field-image-upload')
+      input.css('width', input.next().outerWidth()).css('cursor', 'pointer')
+    }
 
   };
 });
