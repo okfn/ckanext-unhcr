@@ -18,7 +18,7 @@ def get_data_container(id, context=None):
     return toolkit.get_action('organization_show')(context, {'id': id})
 
 
-def get_all_data_containers(exclude_ids=[]):
+def get_all_data_containers(exclude_ids=[], include_unknown=False):
     data_containers = []
     context = {'model': model, 'ignore_auth': True}
     orgs = toolkit.get_action('organization_list')(context,
@@ -26,6 +26,13 @@ def get_all_data_containers(exclude_ids=[]):
     for org in orgs:
         if org['id'] not in exclude_ids:
             data_containers.append(org)
+    if include_unknown:
+        data_containers.insert(0, {
+            'id': 'unknown',
+            'name': 'unknown',
+            'title': 'Unknown',
+            'display_name': 'Unknown',
+        })
     return data_containers
 
 
@@ -329,6 +336,8 @@ def get_dataset_validation_error_or_none(pkg_dict, context=None):
     data, errors = lib_plugins.plugin_validate(
         package_plugin, context, pkg_dict, schema, 'package_update')
     errors.pop('owner_org', None)
+    if data.get('owner_org') == 'unknown':
+        errors['owner_org_dest'] = ['Missing Value']
 
     return ValidationError(errors) if errors else None
 

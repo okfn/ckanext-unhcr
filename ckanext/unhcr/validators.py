@@ -103,7 +103,7 @@ def deposited_dataset_owner_org_dest(value, context):
 
     # Pass validation if data container exists and NOT for depositing
     deposit = helpers.get_data_deposit()
-    orgs = helpers.get_all_data_containers(exclude_ids=[deposit['id']])
+    orgs = helpers.get_all_data_containers(exclude_ids=[deposit['id']], include_unknown=True)
     for org in orgs:
         if value == org['id']:
             return value

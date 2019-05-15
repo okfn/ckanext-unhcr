@@ -1,2 +1,7 @@
-{% set data_container = h.get_data_container(data[field.field_name]) %}
-<a href="{{ h.url_for('data-container_read', id=data_container.name) }}">{{ data_container.title }}</a>
+{% set value = data[field.field_name] %}
+{% if value == 'unknown' %}
+  Unknown
+{% else %}
+  {% set data_container = h.get_data_container(value) %}
+  <a href="{{ h.url_for('data-container_read', id=data_container.name) }}">{{ data_container.title }}</a>
+{% endif %}
