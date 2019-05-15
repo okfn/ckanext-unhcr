@@ -229,6 +229,14 @@
     }
   }
 
+  /* Flickering fix */
+  & .nav > li > a:focus {
+    color: inherit;
+  }
+  & .nav > li > a:hover:focus {
+    color: white;
+  }
+
   & .nav-collapse {
     padding: 0;
 

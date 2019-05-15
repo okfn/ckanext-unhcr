@@ -700,6 +700,18 @@ body {
   }
 }
 
+.masthead {
+  /* Flickering fix */
+}
+
+.masthead .nav > li > a:focus {
+  color: inherit;
+}
+
+.masthead .nav > li > a:hover:focus {
+  color: white;
+}
+
 .masthead .nav-collapse {
   padding: 0;
 }
