@@ -72,4 +72,20 @@
     </section>
   {% endif %}
 
+  {# Roles #}
+  {% if show_roles %}
+    <div class="module module-narrow module-shallow">
+      <h2 class="module-heading">
+        <i class="fa fa-lg fa-info-circle"></i>
+        {{ _('What are the available roles?') }}
+      </h2>
+      <div class="module-content">
+        {% trans %}
+          <p><strong>Admin:</strong> Can curate deposited datasets, as well as
+            manage curators.</p>
+          <p><strong>Editor:</strong> Can curate deposited datasets.</p>
+        {% endtrans %}
+      </div>
+  {% endif %}
+
 </div>
