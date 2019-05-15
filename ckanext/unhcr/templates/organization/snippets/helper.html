@@ -1,0 +1,47 @@
+{# Actions #}
+{% if h.check_access('sysadmin') %}
+  <section class="module module-narrow module-shallow curation-actions">
+    <h2 class="module-heading"><i class="fa fa-medium fa-bars"></i>Actions</h2>
+
+    {# Manage Membership #}
+    {% if not membership %}
+      <p class="module-content">
+        As an administrator you can manage containers' members.
+      </p>
+      <div class="module-content curation-buttons">
+        <a href="/data-container/membership" class="btn btn-warning">
+          {% trans %}Manage Membership{% endtrans %}
+        </a>
+      </div>
+
+    {# Return to Containers #}
+    {% else %}
+      <p class="module-content">
+        Click on the button below to return to containers.
+      </p>
+      <div class="module-content curation-buttons">
+        <a href="/data-container/" class="btn btn-warning">
+          {% trans %}Return To Containers{% endtrans %}
+        </a>
+      </div>
+    {% endif %}
+
+  </section>
+{% endif %}
+
+{# Info #}
+<div class="module module-narrow module-shallow">
+  <h2 class="module-heading">
+    <i class="fa fa-info-circle"></i>
+    {{ _('What are Organizations?') }}
+  </h2>
+  <div class="module-content">
+    <p>
+      {% trans %}
+        CKAN Organizations are used to create, manage and publish collections
+        of datasets. Users can have different roles within an Organization,
+        depending on their level of authorisation to create, edit and publish.
+      {% endtrans %}
+    </p>
+  </div>
+</div>

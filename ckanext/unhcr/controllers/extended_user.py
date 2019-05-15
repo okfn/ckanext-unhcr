@@ -8,7 +8,11 @@ log = logging.getLogger(__name__)
 
 class ExtendedUserController(UserController):
 
+    # Requests
+
     def list_requests(self):
+        context = {'model': model, 'user': toolkit.c.user}
+        self._custom_setup_template_variables(context)
 
         # Get requests
         try:
@@ -17,13 +21,15 @@ class ExtendedUserController(UserController):
             message = 'Not authorized to see pending requests'
             return toolkit.abort(403, message)
 
-        # Setup template variables
+        return toolkit.render('user/dashboard_requests.html', {
+            'requests': requests,
+        })
+
+    # Private
+
+    def _custom_setup_template_variables(self, context):
         context = {'model': model, 'session': model.Session,
                    'user': toolkit.c.user, 'auth_user_obj': toolkit.c.userobj,
                    'for_view': True}
         data_dict = {'id': toolkit.c.userobj.id, 'user_obj': toolkit.c.userobj, 'offset': 0}
         self._setup_template_variables(context, data_dict)
-
-        return toolkit.render('user/dashboard_requests.html', {
-            'requests': requests,
-        })

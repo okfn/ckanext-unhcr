@@ -5,10 +5,13 @@ import ckan.logic.action.get as get_core
 import ckan.logic.action.patch as patch_core
 import ckan.logic.action.delete as delete_core
 from ckanext.unhcr.mailer import mail_data_container_update_to_user
+from ckanext.unhcr import helpers
 log = logging.getLogger(__name__)
 
 
 class DataContainerController(toolkit.BaseController):
+
+    # Requests
 
     def approve(self, id):
 
@@ -40,6 +43,122 @@ class DataContainerController(toolkit.BaseController):
         # show flash message and redirect
         toolkit.h.flash_error('Data container "{}" rejected'.format(org_dict['title']))
         toolkit.redirect_to('data-container_index')
+
+    # Membership
+
+    def membership(self):
+        context = {'model': model, 'user': toolkit.c.user}
+        username = toolkit.request.params.get('username')
+
+        # Check access
+        try:
+            toolkit.check_access('sysadmin', context)
+        except toolkit.NotAuthorized:
+            message = 'Not authorized to manage membership'
+            return toolkit.abort(403, message)
+
+        # Get users
+        users = toolkit.get_action('user_list')(
+            context, {'order_by': 'display_name'})
+
+        # Get user
+        user = None
+        if username:
+            try:
+                user = toolkit.get_action('user_show')(context, {'id': username})
+                deposit = helpers.get_data_deposit()
+            except toolkit.ObjectNotFound:
+                message = 'User "%s" not found'
+                toolkit.h.flash_success(message % username)
+                toolkit.redirect_to('data_container_membership')
+
+        # Containers
+        containers = []
+        if user:
+            action = 'organization_list'
+            data_dict = {'type': 'data-container', 'order_by': 'title', 'all_fields': True}
+            containers = toolkit.get_action(action)(context, data_dict)
+            containers = filter(lambda cont: cont['name'] != deposit['name'], containers)
+
+        # Roles
+        roles = []
+        if user:
+            roles = [
+                {'name': 'admin', 'title': 'Admin'},
+                {'name': 'editor', 'title': 'Editor'},
+                {'name': 'member', 'title': 'Member'},
+            ]
+
+        # Get user containers
+        user_containers = []
+        if user:
+            action = 'organization_list_for_user'
+            user_containers = toolkit.get_action(action)(context, {'id': username})
+            user_containers = filter(
+                lambda cont: cont['name'] != deposit['name'], user_containers)
+
+        return toolkit.render('organization/membership.html', {
+            'membership': {
+                'users': users,
+                'user': user,
+                'containers': containers,
+                'roles': roles,
+                'user_containers': user_containers,
+            }
+        })
+
+    def membership_add(self):
+        context = {'model': model, 'user': toolkit.c.user}
+        username = toolkit.request.params.get('username')
+        contnames = helpers.normalize_list(toolkit.request.params.getall('contnames'))
+        role = toolkit.request.params.get('role')
+
+        # Check access
+        try:
+            toolkit.check_access('sysadmin', context)
+        except toolkit.NotAuthorized:
+            message = 'Not authorized to add membership'
+            return toolkit.abort(403, message)
+
+        # Add membership
+        for contname in contnames:
+            try:
+                data_dict = {'id': contname, 'username': username, 'role': role}
+                container = toolkit.get_action('group_member_create')(context, data_dict)
+                message = 'User "%s" added to the data container "%s"'
+                toolkit.h.flash_success(message % (username, contname))
+            except (toolkit.ObjectNotFound, toolkit.ValidationError):
+                message = 'User "%s" NOT added to the data container "%s"'
+                toolkit.h.flash_error(message % (username, contname))
+
+        # Redirect
+        toolkit.redirect_to('data_container_membership', username=username)
+
+    def membership_remove(self):
+        context = {'model': model, 'user': toolkit.c.user}
+        username = toolkit.request.params.get('username')
+        contname = toolkit.request.params.get('contname')
+
+        # Check access
+        try:
+            toolkit.check_access('sysadmin', context)
+        except toolkit.NotAuthorized:
+            message = 'Not authorized to remove membership'
+            return toolkit.abort(403, message)
+
+        # Remove membership
+        try:
+            data_dict = {'id': contname, 'username': username}
+            container = toolkit.get_action('group_member_delete')(context, data_dict)
+        except (toolkit.ObjectNotFound, toolkit.ValidationError):
+            message = 'User, container or role not found'
+            toolkit.h.flash_error(message)
+            toolkit.redirect_to('data_container_membership', username=username)
+
+        # Show flash message and redirect
+        message = 'User "%s" removed from the data container "%s"'
+        toolkit.h.flash_success(message % (username, contname))
+        toolkit.redirect_to('data_container_membership', username=username)
 
 
 def _raise_not_authz_or_not_pending(id):

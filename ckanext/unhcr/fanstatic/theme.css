@@ -2061,3 +2061,51 @@ i {
   color: #999 !important;
   /* text-decoration: underline; */
 }
+
+.membership hr {
+  margin: 0;
+}
+
+.membership .control-group {
+  margin-bottom: 0;
+}
+
+.membership .select2-container {
+  width: 100%;
+}
+
+.membership .add-member-form .info-block {
+  margin-top: 0;
+}
+
+.membership select {
+  width: 100%;
+}
+
+.membership button {
+  margin-top: 1em;
+}
+
+.membership hr {
+  margin: 0;
+}
+
+.membership .control-group {
+  margin-bottom: 0;
+}
+
+.membership .select2-container {
+  width: 100%;
+}
+
+.membership .add-member-form .info-block {
+  margin-top: 0;
+}
+
+.membership select {
+  width: 100%;
+}
+
+.membership button {
+  margin-top: 1em;
+}

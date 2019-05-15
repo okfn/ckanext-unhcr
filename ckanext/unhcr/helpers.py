@@ -185,7 +185,7 @@ def get_data_deposit():
         return toolkit.get_action('organization_show')(context, {'id': 'data-deposit'})
     except toolkit.ObjectNotFound:
         log.error('Data Deposit is not created')
-        return {'id': 'data-deposit'}
+        return {'id': 'data-deposit', 'name': 'data-deposit'}
 
 
 def get_data_curation_users(context=None):
@@ -444,8 +444,19 @@ def custom_activity_renderer(context, activity):
     return output
 
 
+# Misc
+
 def current_path():
     path = toolkit.request.path
     if path.startswith('/dataset/copy'):
         path = '/dataset/new'
     return path
+
+
+def normalize_list(value):
+    # It takes into account that ''.split(',') == ['']
+    if not value:
+        return []
+    if isinstance(value, list):
+        return value
+    return value.strip('{}').split(',')

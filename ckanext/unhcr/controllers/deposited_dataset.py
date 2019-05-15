@@ -14,6 +14,8 @@ log = logging.getLogger(__name__)
 # TODO: extract duplication (get_curation/authorize) from methods
 class DepositedDatasetController(toolkit.BaseController):
 
+    # Curation
+
     def approve(self, dataset_id):
         user_id = getattr(toolkit.c.userobj, 'id', None)
 

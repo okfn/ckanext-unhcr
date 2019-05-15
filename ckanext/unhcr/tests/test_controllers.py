@@ -911,3 +911,120 @@ class TestExtendedPackageController(base.FunctionalTestBase):
     def test_resource_copy_bad_resource(self):
         resp = self.make_resource_request(
             dataset_id='dataset1', resource_id='bad', user='user1', status=404)
+
+
+class TestDataContainerController(base.FunctionalTestBase):
+
+    # Config
+
+    def setup(self):
+        super(TestDataContainerController, self).setup()
+
+        # Users
+        self.sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        self.user1 = core_factories.User(name='user1', id='user1')
+        self.user2 = core_factories.User(name='user2', id='user2')
+        self.user3 = core_factories.User(name='user3', id='user3')
+
+        # Containers
+        self.container1 = factories.DataContainer(
+            name='container1',
+            id='container1',
+        )
+        self.container2 = factories.DataContainer(
+            name='container2',
+            id='container2',
+        )
+
+    # Helpers
+
+    def get_request(self, url, user=None, **kwargs):
+        env = {'REMOTE_USER': user.encode('ascii')} if user else {}
+        resp = self.app.get(url, extra_environ=env, **kwargs)
+        self.update_containers()
+        return resp
+
+    def post_request(self, url, data, user=None, **kwargs):
+        env = {'REMOTE_USER': user.encode('ascii')} if user else {}
+        resp = self.app.post(url, data, extra_environ=env, **kwargs)
+        self.update_containers()
+        return resp
+
+    def update_containers(self):
+        self.container1 = core_helpers.call_action(
+            'organization_show', {'user': 'sysadmin'}, id='container1')
+        self.container2 = core_helpers.call_action(
+            'organization_show', {'user': 'sysadmin'}, id='container2')
+
+    # General
+
+    def test_membership(self):
+        resp = self.get_request('/data-container/membership', user='sysadmin')
+        assert_in('Manage Membership', resp.body)
+
+    def test_membership_no_access(self):
+        resp = self.get_request('/data-container/membership', user='user1', status=403)
+
+    def test_membership_user(self):
+        resp = self.get_request('/data-container/membership?username=user1', user='sysadmin')
+        assert_in('Manage Membership', resp.body)
+        assert_in('Add Containers', resp.body)
+        assert_in('Current Containers', resp.body)
+
+    # Add Containers
+
+    def test_membership_add(self):
+        data = {
+            'username': 'user1',
+            'contnames': 'container1',
+            'role': 'editor',
+        }
+        resp = self.post_request('/data-container/membership_add', data, user='sysadmin')
+        assert_equals(resp.status_int, 302)
+        assert_equals(len(self.container1['users']), 2)
+        #  assert_equals(self.container1['users'][0]['name'], 'default_test')
+        assert_equals(self.container1['users'][0]['capacity'], 'admin')
+        assert_equals(self.container1['users'][1]['name'], 'user1')
+        assert_equals(self.container1['users'][1]['capacity'], 'editor')
+
+    def test_membership_add_multiple_containers(self):
+        data = {
+            'username': 'user1',
+            'contnames': ['container1', 'container2'],
+            'role': 'editor',
+        }
+        resp = self.post_request('/data-container/membership_add', data, user='sysadmin')
+        assert_equals(resp.status_int, 302)
+        assert_equals(len(self.container1['users']), 2)
+        #  assert_equals(self.container1['users'][0]['name'], 'default_test')
+        assert_equals(self.container1['users'][0]['capacity'], 'admin')
+        assert_equals(self.container1['users'][1]['name'], 'user1')
+        assert_equals(self.container1['users'][1]['capacity'], 'editor')
+        assert_equals(len(self.container2['users']), 2)
+        #  assert_equals(self.container2['users'][0]['name'], 'default_test')
+        assert_equals(self.container2['users'][0]['capacity'], 'admin')
+        assert_equals(self.container2['users'][1]['name'], 'user1')
+        assert_equals(self.container2['users'][1]['capacity'], 'editor')
+
+    def test_membership_add_no_access(self):
+        data = {
+            'username': 'user1',
+            'contnames': 'container1',
+            'role': 'editor',
+        }
+        resp = self.post_request('/data-container/membership_add', data, user='user3', status=403)
+
+    # Remove Container
+
+    def test_membership_remove(self):
+        self.test_membership_add()
+        url = '/data-container/membership_remove?username=user1&contname=container1'
+        resp = self.get_request(url, user='sysadmin')
+        assert_equals(resp.status_int, 302)
+        assert_equals(len(self.container1['users']), 1)
+        #  assert_equals(self.container1['users'][0]['name'], 'default_test')
+        assert_equals(self.container1['users'][0]['capacity'], 'admin')
+
+    def test_membership_remove_no_access(self):
+        url = '/data-container/membership_remove?username=default_test&contname=container1'
+        resp = self.get_request(url, user='user3', status=403)

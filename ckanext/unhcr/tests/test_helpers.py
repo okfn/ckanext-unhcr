@@ -186,7 +186,7 @@ class TestHelpers(FunctionalTestBase):
 
     def test_get_data_deposit_not_created(self):
         result = helpers.get_data_deposit()
-        assert_equals(result, {'id': 'data-deposit'})
+        assert_equals(result, {'id': 'data-deposit', 'name': 'data-deposit'})
 
     def test_get_data_curation_users(self):
         depadmin = core_factories.User(name='depadmin')

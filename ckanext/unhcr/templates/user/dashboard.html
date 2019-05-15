@@ -9,6 +9,7 @@
 	  {{ h.build_nav_icon('user_dashboard', _('News feed')) }}
 	  {{ h.build_nav_icon('user_dashboard_datasets', _('My Datasets')) }}
 	  {{ h.build_nav_icon('user_dashboard_organizations', _('My Organizations')) }}
+    {# Pending Requests #}
     {% if h.check_access('sysadmin') %}
       {% set requests = h.get_pending_requests() %}
       {% set prefix = ' (%s)' % requests.count %}

@@ -54,6 +54,9 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         controller = 'ckanext.unhcr.controllers.data_container:DataContainerController'
         _map.connect('/data-container/{id}/approve', controller=controller, action='approve')
         _map.connect('/data-container/{id}/reject', controller=controller, action='reject')
+        _map.connect('data_container_membership', '/data-container/membership', controller=controller, action='membership', ckan_icon='user')
+        _map.connect('data_container_membership_add', '/data-container/membership_add', controller=controller, action='membership_add', ckan_icon='user')
+        _map.connect('data_container_membership_remove', '/data-container/membership_remove', controller=controller, action='membership_remove', ckan_icon='user')
 
         # deposited dataset
         controller = 'ckanext.unhcr.controllers.deposited_dataset:DepositedDatasetController'
