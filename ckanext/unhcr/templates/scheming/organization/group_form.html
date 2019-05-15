@@ -1,0 +1,9 @@
+{% ckan_extends %}
+
+{% block save_text %}
+  {% if not h.check_access('sysadmin') %}
+    Request Data Container
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
