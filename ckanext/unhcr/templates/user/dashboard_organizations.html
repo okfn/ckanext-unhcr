@@ -5,10 +5,13 @@
   {% set organizations = h.organizations_available(permission='manage_group',
      include_dataset_count=True) %}
   {% if organizations %}
+    {% set deposit = h.get_data_deposit() %}
     <div class="wide">
       <ul class="media-grid" data-module="media-grid">
         {% for organization in organizations %}
-          {% snippet "organization/snippets/organization_item.html", organization=organization, position=loop.index, show_capacity=True %}
+          {% if organization.name != deposit.name %}
+            {% snippet "organization/snippets/organization_item.html", organization=organization, position=loop.index, show_capacity=True %}
+          {% endif %}
         {% endfor %}
       </ul>
     </div>
