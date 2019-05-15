@@ -269,6 +269,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
 
     def get_actions(self):
         return {
+            'package_create': actions.package_create,
             'organization_create': actions.organization_create,
             'pending_requests_list': actions.pending_requests_list,
             'package_activity_list': actions.package_activity_list,

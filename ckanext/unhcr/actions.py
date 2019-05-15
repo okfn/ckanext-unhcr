@@ -8,8 +8,28 @@ import ckan.logic.action.create as create_core
 import ckan.logic.action.update as update_core
 import ckan.logic.action.patch as patch_core
 import ckan.lib.activity_streams as activity_streams
-from ckanext.unhcr.mailer import mail_data_container_request_to_sysadmins
+from ckanext.unhcr import helpers, mailer
 log = logging.getLogger(__name__)
+
+
+# Package
+
+def package_create(context, data_dict):
+    userobj = toolkit.c.userobj
+
+    # Create dataset
+    dataset = create_core.package_create(context, data_dict)
+
+    # Send notification if it's deposited and it's not testing env
+    if dataset.get('type') == 'deposited-dataset' and hasattr(userobj, 'id'):
+        dataset['url'] = toolkit.url_for('dataset_read', id=dataset.get('name'), qualified=True)
+        curation = helpers.get_deposited_dataset_user_curation_status(dataset, userobj.id)
+        subj = mailer.compose_curation_email_subj(dataset)
+        body = mailer.compose_curation_email_body(
+            dataset, curation, userobj.display_name, 'deposit')
+        mailer.mail_user_by_id(userobj.id, subj, body)
+
+    return dataset
 
 
 # Organization
@@ -37,7 +57,7 @@ def organization_create(context, data_dict):
 
     if notify_sysadmins:
         try:
-            mail_data_container_request_to_sysadmins(context, org_dict)
+            mailer.mail_data_container_request_to_sysadmins(context, org_dict)
         except MailerException:
             message = '[email] Data container request notification is not sent: {0}'
             log.critical(message.format(org_dict['title']))
