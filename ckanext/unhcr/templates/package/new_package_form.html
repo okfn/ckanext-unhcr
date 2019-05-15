@@ -1,0 +1,12 @@
+{% ckan_extends %}
+
+{% block stages %}
+  {{ super() }}
+  {% if dataset_type == 'deposited-dataset' %}
+	  <div class="review alert alert-info" role="alert">
+      You are depositing a dataset.
+      After depositing, additional changes can still be made until
+      it is submitted for further documentation and curation.
+    </div>
+  {% endif %}
+{% endblock %}

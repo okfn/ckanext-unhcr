@@ -1,0 +1,25 @@
+{% ckan_extends %}
+
+{% block secondary_content %}
+  {% if dataset_type == 'deposited-dataset' %}
+    <div class="curation curation-sidebar curation-data-deposit">
+      <section class="module module-narrow module-shallow">
+        <h2 class="module-heading"><i class="fa fa-info-circle"></i> {{ _('What is the Data Deposit?') }}</h2>
+        <div class="module-content">
+          <p>
+            {% trans %}
+            The Data Deposit allows users to submit a dataset that doesn't meet
+            the metadata requirements needed for publication in RIDL.
+            After submission, the Curation team will improve and complete
+            the necessary fields before publication.
+            While in the Data Deposit, datasets will only be visible to the Depositor,
+            the Curation Team and to RIDL administrators.
+            {% endtrans %}
+          </p>
+        </div>
+      </section>
+    </div>
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
