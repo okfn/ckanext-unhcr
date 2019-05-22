@@ -871,7 +871,7 @@ class TestExtendedPackageController(base.FunctionalTestBase):
     def test_dataset_copy(self):
         resp = self.make_dataset_request(dataset_id='dataset1', user='user1')
         assert_in('action="/dataset/new"', resp.body)
-        assert_in('dataset1-copy', resp.body)
+        #  assert_in('dataset1-copy', resp.body)
         assert_in('f2f', resp.body)
         assert_in('nonprobability', resp.body)
         assert_in('cartography', resp.body)
@@ -881,7 +881,7 @@ class TestExtendedPackageController(base.FunctionalTestBase):
     def test_dataset_copy_to_other_org(self):
         resp = self.make_dataset_request(dataset_id='dataset1', user='user2')
         assert_in('action="/dataset/new"', resp.body)
-        assert_in('dataset1-copy', resp.body)
+        #  assert_in('dataset1-copy', resp.body)
         assert_in('f2f', resp.body)
         assert_in('nonprobability', resp.body)
         assert_in('cartography', resp.body)
