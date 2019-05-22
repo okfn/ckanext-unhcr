@@ -144,9 +144,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'get_dataset_validation_report': helpers.get_dataset_validation_report,
             'get_user_deposited_drafts': helpers.get_user_deposited_drafts,
             # Misc
-            'get_field_label': helpers.get_field_label,
             'current_path': helpers.current_path,
-            'get_field_pretty_name': helpers.get_field_pretty_name,
+            'get_field_label': helpers.get_field_label,
         }
 
     # IPackageController

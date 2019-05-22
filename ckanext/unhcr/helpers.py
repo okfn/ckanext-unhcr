@@ -406,13 +406,6 @@ def get_user_deposited_drafts():
 
     return datasets
 
-  
-def get_field_label(name, is_resource=False):
-    schema = scheming_get_dataset_schema('deposited-dataset')
-    fields = schema['resource_fields'] if is_resource else schema['dataset_fields']
-    field = scheming_field_by_name(fields, name)
-    return field.get('label', name)
-
 
 # Curation activity
 
@@ -492,6 +485,13 @@ def current_path(action=None):
     return path
 
 
+def get_field_label(name, is_resource=False):
+    schema = scheming_get_dataset_schema('deposited-dataset')
+    fields = schema['resource_fields'] if is_resource else schema['dataset_fields']
+    field = scheming_field_by_name(fields, name)
+    return field.get('label', name)
+
+
 def normalize_list(value):
     # It takes into account that ''.split(',') == ['']
     if not value:
@@ -499,10 +499,3 @@ def normalize_list(value):
     if isinstance(value, list):
         return value
     return value.strip('{}').split(',')
-
-
-def get_field_pretty_name(field_name):
-    # https://github.com/ckan/ckan/blob/master/ckan/logic/__init__.py#L90
-    field_name = field_name.replace('_', ' ').capitalize()
-    field_name = re.sub('(?<!\w)[Uu]rl(?!\w)', 'URL', field_name)
-    return field_name.replace('_', ' ')
