@@ -33,6 +33,12 @@
         </a>
       {% endif %}
 
+      {% if 'request_review' in curation.actions %}
+        <a href="#curation-request-review" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
+          {% trans %}Request Final Review{% endtrans %}
+        </a>
+      {% endif %}
+
       {% if 'edit' in curation.actions %}
         <a href="/deposited-dataset/edit/{{ pkg.id }}" class="btn btn-warning {% if editing %}disabled{% endif %}" {% if not editing %}title="{{ link_help }}"{% endif %}>
           {% trans %}Edit Dataset{% endtrans %}
@@ -57,12 +63,6 @@
       {% if 'request_changes' in curation.actions %}
         <a href="#curation-request-changes" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
           {% trans %}Request Changes{% endtrans %}
-        </a>
-      {% endif %}
-
-      {% if 'request_review' in curation.actions %}
-        <a href="#curation-request-review" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
-          {% trans %}Request Final Review{% endtrans %}
         </a>
       {% endif %}
 

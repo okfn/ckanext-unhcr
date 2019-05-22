@@ -18,9 +18,9 @@
         If the dataset is fully documented, the Curator can submit it for the Depositor’s approval or publish it on RIDL directly . Please select the suggested destination Data Container and the Access Level for the dataset below.
         </p>
         <div class="control-group control-select">
-          <label for="field-private" class="control-label">Destination Data Container</label>
+          <label for="field-owner_org_dest" class="control-label">Destination Data Container</label>
           <div class="controls">
-            <select name="owner_org_dest">
+            <select id="field-owner_org_dest" name="owner_org_dest">
               {% set orgs = h.get_all_data_containers(exclude_ids=[deposit.id], include_unknown=True) %}
               {% for org in orgs %}
                 <option value="{{ org.id }}">{{ org.title }}</option>
@@ -32,9 +32,17 @@
           <label for="field-private" class="control-label">Raw Data Access Level</label>
           <div class="controls">
             <select id="field-private" name="private">
-              <option value="True">Private</option>
               <option value="False">Internally Visible</option>
+              <option value="True">Private</option>
             </select>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="controls">
+            <label class="checkbox" for="field-curation_final_review">
+              <input id="field-curation_final_review" name="curation_final_review" type="checkbox" value="True">
+              I want to do a final review of the dataset before it is published
+            </label>
           </div>
         </div>
       </div>

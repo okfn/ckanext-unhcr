@@ -55,6 +55,13 @@ def generate_deposited_dataset_schema():
                 'required': True,
             })
 
+            # curation_final_review
+            schema['dataset_fields'].insert(index + 1, {
+                'field_name': 'curation_final_review',
+                'form_snippet': 'hidden.html',
+                'display_snippet': None,
+            })
+
             # curator_id
             schema['dataset_fields'].insert(index + 1, {
                 'field_name': 'curator_id',

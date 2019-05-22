@@ -11,17 +11,17 @@
             "label": "Title"
         }, 
         {
-            "form_placeholder": "eg. Short title for the project", 
-            "required": false, 
-            "field_name": "short_title", 
-            "label": "Short title"
-        }, 
-        {
             "form_placeholder": "eg. my-dataset", 
             "required": false, 
             "preset": "dataset_slug", 
             "field_name": "name", 
             "label": "URL"
+        }, 
+        {
+            "form_placeholder": "eg. Short title for the project", 
+            "required": false, 
+            "field_name": "short_title", 
+            "label": "Short title"
         }, 
         {
             "form_placeholder": "Some useful notes about the data", 
@@ -66,6 +66,11 @@
             "form_snippet": "hidden.html", 
             "validators": "ignore_missing deposited_dataset_curator_id", 
             "field_name": "curator_id", 
+            "display_snippet": null
+        }, 
+        {
+            "form_snippet": "hidden.html", 
+            "field_name": "curation_final_review", 
             "display_snippet": null
         }, 
         {

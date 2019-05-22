@@ -424,6 +424,10 @@ body {
   flex-grow: 1;
 }
 
+.modal-body {
+  max-height: 500px;
+}
+
 .account-masthead,
 .masthead {
   background-color: #0072BC;

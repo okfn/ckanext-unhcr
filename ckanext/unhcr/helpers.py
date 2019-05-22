@@ -243,6 +243,7 @@ def get_deposited_dataset_user_curation_status(dataset, user_id):
     status['error'] = get_dataset_validation_error_or_none(dataset)
     status['role'] = get_deposited_dataset_user_curation_role(user_id)
     status['state'] = dataset['curation_state']
+    status['final_review'] = dataset.get('curation_final_review')
     status['active'] = dataset['state'] == 'active'
 
     # is_depositor/curator
@@ -299,8 +300,10 @@ def get_deposited_dataset_user_curation_actions(status):
             if status['error']:
                 actions.extend(['request_changes'])
             else:
-                actions.extend(['request_review'])
-                actions.extend(['approve'])
+                if status['final_review']:
+                    actions.extend(['request_review'])
+                else:
+                    actions.extend(['approve'])
 
     # Review
     if status['state'] == 'review':

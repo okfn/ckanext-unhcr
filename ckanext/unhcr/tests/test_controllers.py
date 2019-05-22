@@ -151,6 +151,21 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             texts=['This dataset has been approved'],
         )
 
+    def test_approve_submitted_final_review_requested(self):
+        for user in ['sysadmin', 'depadmin', 'curator']:
+            yield self.check_approve_submitted_final_review_requested, user
+
+    def check_approve_submitted_final_review_requested(self, user):
+
+        # Prepare dataset
+        self.patch_dataset({
+            'curation_final_review': 'True',
+            'curation_state': 'submitted',
+        })
+
+        # Approve dataset
+        self.make_request('approve', user=user, status=403)
+
     def test_approve_submitted_not_valid(self):
         for user in ['sysadmin', 'depadmin', 'curator']:
             yield self.check_approve_submitted_not_valid, user
@@ -493,6 +508,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Prepare dataset
         self.patch_dataset({
+            'curation_final_review': 'True',
             'curation_state': 'submitted',
             'unit_of_measurement': 'individual',
             'keywords': ['shelter', 'health'],
@@ -510,6 +526,25 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             texts=['As depositor of this dataset, the curator assigned to it has requested your final review before publication'],
         )
 
+    def test_request_review_submitted_not_final_review_requested(self):
+        for user in ['sysadmin', 'depadmin', 'curator']:
+            yield self.check_request_review_submitted_not_final_review_requested, user
+
+    def check_request_review_submitted_not_final_review_requested(self, user):
+
+        # Prepare dataset
+        self.patch_dataset({
+            'curation_state': 'submitted',
+            'unit_of_measurement': 'individual',
+            'keywords': ['shelter', 'health'],
+            'archived': 'False',
+            'data_collector': ['acf'],
+            'data_collection_technique': 'f2f',
+        })
+
+        # Request review
+        self.make_request('request_review', user=user, status=403)
+
     def test_request_review_submitted_not_valid(self):
         for user in ['sysadmin', 'depadmin', 'curator']:
             yield self.check_request_review_submitted_not_valid, user
@@ -518,6 +553,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Prepare dataset
         self.patch_dataset({
+            'curation_final_review': 'True',
             'curation_state': 'submitted',
         })
 
@@ -532,6 +568,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Prepare dataset
         self.patch_dataset({
+            'curation_final_review': 'True',
             'curation_state': 'submitted',
         })
 
