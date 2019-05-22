@@ -1,8 +1,6 @@
 {% ckan_extends %}
 
-
 {% block search_input %}
-
     <div class="search-input control-group {{ search_class }}">
       <input type="text" class="search" name="q" value="{{ query }}" autocomplete="off" placeholder="{{ placeholder }}">
       {% block search_input_button %}
@@ -12,8 +10,33 @@
       </button>
       {% endblock %}
     </div>
-
      {% if include_children_option %}
        {{ form.checkbox('include_children', label="Include Children Data Containers", checked=(h.is_include_children_selected(c.fields)), value=True, error=error) }}
      {% endif %}
+{% endblock %}
+
+{% block search_facets %}
+  {% if c.group_dict %}
+    {% if facets %}
+      <p class="filter-list">
+        {% for field in facets.fields %}
+          {% set search_facets_items = facets.search.get(field)['items'] %}
+          <span class="facet">{{ facets.titles.get(field) }}:</span>
+          {% for value in facets.fields[field] %}
+            <span class="filtered pill">
+              {%- if facets.translated_fields and facets.translated_fields.has_key((field,value)) -%}
+                {{ facets.translated_fields[(field,value)] }}
+              {%- else -%}
+                {{ h.list_dict_filter(search_facets_items, 'name', 'display_name', value) }}
+              {%- endif %}
+              <a href="{{ h.remove_url_param(field, value, alternative_url='/data-container/%s' % c.group_dict.name) }}" class="remove" title="{{ _('Remove') }}"><i class="fa fa-times"></i></a>
+            </span>
+          {% endfor %}
+        {% endfor %}
+      </p>
+      <a class="show-filters btn btn-default">{{ _('Filter Results') }}</a>
+    {% endif %}
+  {% else %}
+    {{ super() }}
+  {% endif %}
 {% endblock %}
