@@ -18,8 +18,7 @@ def mail_data_container_request_to_sysadmins(context, org_dict):
         if user.email:
             subj = _compose_email_subj(org_dict, event='request')
             body = _compose_email_body(org_dict, user, event='request')
-            mail_user(user, subj, body)
-            log.debug('[email] Data container request email sent to {0}'.format(user.name))
+            mail_user_handling_errors(user, subj, body)
 
 
 def mail_data_container_update_to_user(context, org_dict, event='approval'):
@@ -31,8 +30,7 @@ def mail_data_container_update_to_user(context, org_dict, event='approval'):
         if user and user.email:
             subj = _compose_email_subj(org_dict, event=event)
             body = _compose_email_body(org_dict, user, event=event)
-            mail_user(user, subj, body)
-            log.debug('[email] Data container update email sent to {0}'.format(user.name))
+            mail_user_handling_errors(user, subj, body)
 
 
 def _get_sysadmins(context):
@@ -77,4 +75,13 @@ def compose_curation_email_body(dataset, curation, recipient, event, message=Non
 def mail_user_by_id(user_id, subj, body):
     user = model.User.get(user_id)
     headers = {'Content-Type': 'text/html; charset=UTF-8'}
-    return mail_user(user, subj, body, headers=headers)
+    return mail_user_handling_errors(user, subj, body, headers=headers)
+
+
+# General
+
+def mail_user_handling_errors(user, subj, body, headers={}):
+    try:
+        mail_user(user, subj, body, headers=headers)
+    except Exception as exception:
+        log.exception(exception)
