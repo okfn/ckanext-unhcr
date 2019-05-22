@@ -1,6 +1,8 @@
+import os
 import re
 import logging
 from ckan import model
+from ckan.common import config
 from operator import itemgetter
 from collections import OrderedDict
 from ckan.logic import ValidationError
@@ -176,32 +178,30 @@ def get_pending_requests(all_fields=False, context=None):
 
 # Deposited datasets
 
-#  deposit = None
-#  def get_data_deposit():
-
-    #  # TODO: it's hack; update
-    #  import os
-    #  from ckan.lib.app_globals import app_globals
-    #  testing = 'test' in os.environ['CKAN_SQLALCHEMY_URL']
-
-    #  global deposit
-    #  if not deposit or testing:
-        #  try:
-            #  deposit =  toolkit.get_action('organization_show')(
-                #  {'model': model, 'ignore_auth': True}, {'id': 'data-deposit'})
-        #  except toolkit.ObjectNotFound:
-            #  log.error('Data deposit is not created')
-            #  return {'id': 'data-deposit'}
-    #  return deposit
-
-
+cached_deposit = None
 def get_data_deposit():
-    try:
-        context = {'model': model, 'ignore_auth': True}
-        return toolkit.get_action('organization_show')(context, {'id': 'data-deposit'})
-    except toolkit.ObjectNotFound:
-        log.error('Data Deposit is not created')
-        return {'id': 'data-deposit', 'name': 'data-deposit'}
+    """This function uses a cache so it's OK to call it multiple times
+    """
+
+    # Check cache
+    deposit = None
+    global cached_deposit
+    if not config.get('testing'):
+        deposit = cached_deposit
+
+    # Load from db
+    if deposit is None:
+        try:
+            context = {'model': model, 'ignore_auth': True}
+            deposit = toolkit.get_action('organization_show')(
+                context, {'id': 'data-deposit'})
+            if not config.get('testing'):
+                cached_deposit = deposit
+        except toolkit.ObjectNotFound:
+            log.error('Data Deposit is not created')
+            deposit = {'id': 'data-deposit', 'name': 'data-deposit'}
+
+    return deposit
 
 
 def get_data_curation_users(context=None):
