@@ -7,6 +7,7 @@ from ckan.logic import ValidationError
 from ckan.plugins import toolkit
 import ckan.lib.helpers as core_helpers
 import ckan.lib.plugins as lib_plugins
+from ckanext.hierarchy import helpers as hierarchy_helpers
 from ckanext.scheming.helpers import scheming_get_dataset_schema, scheming_field_by_name
 from ckanext.unhcr import utils
 log = logging.getLogger(__name__)
@@ -43,6 +44,13 @@ def get_dataset_count():
 
 
 # Hierarchy
+
+def get_allowable_parent_groups(group_id):
+    deposit = get_data_deposit()
+    groups = hierarchy_helpers.get_allowable_parent_groups(group_id)
+    groups = filter(lambda group: group.name != deposit.get('name'), groups)
+    return groups
+
 
 def render_tree(top_nodes=None):
     '''Returns HTML for a hierarchy of all data containers'''
