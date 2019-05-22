@@ -243,6 +243,7 @@ def get_deposited_dataset_user_curation_status(dataset, user_id):
     status['error'] = get_dataset_validation_error_or_none(dataset)
     status['role'] = get_deposited_dataset_user_curation_role(user_id)
     status['state'] = dataset['curation_state']
+    status['active'] = dataset['state'] == 'active'
 
     # is_depositor/curator
     status['is_depositor'] = dataset.get('creator_user_id') == user_id
@@ -285,7 +286,9 @@ def get_deposited_dataset_user_curation_actions(status):
     # Draft
     if status['state'] == 'draft':
         if status['is_depositor']:
-            actions.extend(['edit', 'submit', 'withdraw'])
+            actions.extend(['edit'])
+            if status['active']:
+                actions.extend(['submit', 'withdraw'])
 
     # Submitted
     if status['state'] == 'submitted':
@@ -390,12 +393,28 @@ def get_dataset_validation_report(pkg_dict, error_dict):
     return report
 
 
+def get_user_deposited_drafts():
+    context = {'model': model, 'user': toolkit.c.user}
+
+    # Get datasets
+    fq_list = []
+    fq_list.append('state:draft')
+    fq_list.append('dataset_type:deposited-dataset')
+    fq_list.append('creator_user_id:%s' % toolkit.c.userobj.id)
+    data_dict = {'fq':  ' AND '.join(fq_list), 'include_drafts': True}
+    datasets = toolkit.get_action('package_search')(context, data_dict)['results']
+
+    return datasets
+
+  
 def get_field_label(name, is_resource=False):
     schema = scheming_get_dataset_schema('deposited-dataset')
     fields = schema['resource_fields'] if is_resource else schema['dataset_fields']
     field = scheming_field_by_name(fields, name)
     return field.get('label', name)
 
+
+# Curation activity
 
 def create_curation_activity(
         activity_type, dataset_id, dataset_name, user_id,
@@ -464,8 +483,10 @@ def custom_activity_renderer(context, activity):
 
 # Misc
 
-def current_path():
+def current_path(action=None):
     path = toolkit.request.path
+    if action == '/dataset/new':
+        path = '/dataset/new'
     if path.startswith('/dataset/copy'):
         path = '/dataset/new'
     return path
@@ -478,3 +499,10 @@ def normalize_list(value):
     if isinstance(value, list):
         return value
     return value.strip('{}').split(',')
+
+
+def get_field_pretty_name(field_name):
+    # https://github.com/ckan/ckan/blob/master/ckan/logic/__init__.py#L90
+    field_name = field_name.replace('_', ' ').capitalize()
+    field_name = re.sub('(?<!\w)[Uu]rl(?!\w)', 'URL', field_name)
+    return field_name.replace('_', ' ')

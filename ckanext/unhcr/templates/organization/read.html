@@ -17,6 +17,21 @@
 {% endblock %}
 
 {% block groups_search_form %}
+
+  {# Drafts #}
+  {% set drafts = h.get_user_deposited_drafts() %}
+  {% if drafts %}
+    <div class="review alert alert-info" role="alert">
+      <p>{% trans %}You have datasets which are not deposited yet:{% endtrans %}</p>
+      <ul>
+        {% for draft in drafts %}
+        <li><a href="/dataset/{{ draft.name }}">{{ draft.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {# Search #}
   {% set facets = {
     'fields': c.fields_grouped,
     'search': c.search_facets,
@@ -33,6 +48,7 @@
   %}
   {% set include_children_option = c.group_dict.id != deposit.id %}
   {% snippet 'snippets/search_form.html', form_id='organization-datasets-search-form', type='dataset', query=c.q, sorting=sorting, sorting_selected=c.sort_by_selected, count=c.page.item_count, facets=facets, placeholder=_('Search datasets...'), show_empty=request.params, fields=c.fields, include_children_option=include_children_option %}
+
 {% endblock %}
 
 {% block primary_content_inner %}
