@@ -76,7 +76,7 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Authorize context
         if 'assign' not in curation['actions']:
-            message = 'Not authorized to assign curator to dataset "%s"'
+            message = 'Not authorized to assign Curator to dataset "%s"'
             return toolkit.abort(403, message % dataset_id)
         context['ignore_auth'] = True
 
@@ -117,7 +117,7 @@ class DepositedDatasetController(toolkit.BaseController):
             mailer.mail_user_by_id(recipient['name'], subj, body)
 
         # Show flash message and redirect
-        message = 'Datasest "%s" curator updated'
+        message = 'Datasest "%s" Curator updated'
         toolkit.h.flash_error(message % dataset['title'])
         toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 

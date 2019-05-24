@@ -73,7 +73,7 @@ def unhcr_choices(field, schema):
         msg = '''
 Unexpected choice "{value}". It must be either the label or the code in
 brackets of one of the following: {allowed}. If you want to add another
-value please contact the site administrators.
+value please contact the Site Administrators.
 '''
         raise Invalid(_(
             msg.format(
@@ -131,6 +131,6 @@ def deposited_dataset_curator_id(value, context):
     if value:
         curation_role = helpers.get_deposited_dataset_user_curation_role(value)
         if curation_role not in ['admin', 'curator']:
-            raise Invalid('Ivalid curator id')
+            raise Invalid('Ivalid Curator id')
 
     return value

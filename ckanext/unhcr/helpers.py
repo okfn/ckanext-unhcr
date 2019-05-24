@@ -457,13 +457,13 @@ def custom_activity_renderer(context, activity):
             toolkit.url_for(
                 controller='user', action='read', id=activity['data']['curator_name'])
 	)
-        output =  toolkit._("{actor} assigned %s as curator for dataset {dataset}" % curator_link)
+        output =  toolkit._("{actor} assigned %s as Curator for dataset {dataset}" % curator_link)
     elif activity_name == 'curator_removed':
-        output =  toolkit._("{actor} removed the assigned curator from dataset {dataset}")
+        output =  toolkit._("{actor} removed the assigned Curator from dataset {dataset}")
     elif activity_name == 'changes_requested':
-        output =  toolkit._("{actor} unlocked {dataset} for further changes by the depositor")
+        output =  toolkit._("{actor} unlocked {dataset} for further changes by the Depositor")
     elif activity_name == 'final_review_requested':
-        output =  toolkit._("{actor} requested a final review of {dataset} from the depositor")
+        output =  toolkit._("{actor} requested a final review of {dataset} from the Depositor")
     elif activity_name == 'dataset_rejected':
         output = toolkit._("{actor} rejected dataset {dataset} for publication")
     elif activity_name == 'dataset_withdrawn':

@@ -5,7 +5,7 @@
 {% block page_primary_action %}
   {% if c.group_dict.state == 'approval_needed' %}
     <div class="alert alert-info" role="alert">
-      <p>{% trans %}This data container is waiting for an administrator approval{% endtrans %}</p>
+      <p>{% trans %}This data container is waiting for an Administrator approval{% endtrans %}</p>
     </div>
   {% else %}
     {% if c.group_dict.id != deposit.id %}

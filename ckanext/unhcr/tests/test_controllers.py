@@ -317,7 +317,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.assert_mail(mail,
             users=['curator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
-            texts=['You have been removed as curator of the following dataset'],
+            texts=['You have been removed as Curator of the following dataset'],
         )
 
     def test_assign_submitted_remove_not_assigned(self):
@@ -417,7 +417,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.assert_mail(mail,
             users=['creator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
-            texts=['The reviewer has requested changes on the following dataset'],
+            texts=['The Reviewer has requested changes on the following dataset'],
         )
 
     def test_request_changes_submitted_not_granted(self):
@@ -460,7 +460,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.assert_mail(mail,
             users=['curator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
-            texts=['The reviewer has requested changes on the following dataset'],
+            texts=['The Reviewer has requested changes on the following dataset'],
         )
 
     def test_request_changes_review_not_granted(self):
@@ -523,7 +523,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.assert_mail(mail,
             users=['creator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
-            texts=['As depositor of this dataset, the curator assigned to it has requested your final review before publication'],
+            texts=['As Depositor of this dataset, the Curator assigned to it has requested your final review before publication'],
         )
 
     def test_request_review_submitted_not_final_review_requested(self):
