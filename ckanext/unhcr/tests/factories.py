@@ -12,7 +12,7 @@ class DataContainer(factories.Organization):
 class Dataset(factories.Dataset):
 
     unit_of_measurement = 'individual'
-    keywords = ['shelter', 'health']
+    keywords = ['3', '4']
     archived = 'False'
     data_collector = ['acf']
     data_collection_technique = 'f2f'
