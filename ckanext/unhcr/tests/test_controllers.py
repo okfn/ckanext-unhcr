@@ -1,4 +1,5 @@
 import mock
+
 from nose.plugins.attrib import attr
 from ckan.lib.helpers import url_for
 from ckan.logic import NotFound
@@ -114,7 +115,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Prepare dataset
         self.patch_dataset({
             'unit_of_measurement': 'individual',
-            'keywords': ['shelter', 'health'],
+            'keywords': ['3', '4'],
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
@@ -136,7 +137,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.patch_dataset({
             'curation_state': 'submitted',
             'unit_of_measurement': 'individual',
-            'keywords': ['shelter', 'health'],
+            'keywords': ['3', '4'],
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
@@ -207,7 +208,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.patch_dataset({
             'curation_state': 'review',
             'unit_of_measurement': 'individual',
-            'keywords': ['shelter', 'health'],
+            'keywords': ['3', '4'],
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
@@ -231,7 +232,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             'curator_id': 'curator',
             'curation_state': 'review',
             'unit_of_measurement': 'individual',
-            'keywords': ['shelter', 'health'],
+            'keywords': ['3', '4'],
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
@@ -448,7 +449,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             'curator_id': 'curator',
             'curation_state': 'review',
             'unit_of_measurement': 'individual',
-            'keywords': ['shelter', 'health'],
+            'keywords': ['3', '4'],
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
@@ -488,7 +489,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Prepare dataset
         self.patch_dataset({
             'unit_of_measurement': 'individual',
-            'keywords': ['shelter', 'health'],
+            'keywords': ['3', '4'],
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
@@ -511,7 +512,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             'curation_final_review': 'True',
             'curation_state': 'submitted',
             'unit_of_measurement': 'individual',
-            'keywords': ['shelter', 'health'],
+            'keywords': ['3', '4'],
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
@@ -536,7 +537,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.patch_dataset({
             'curation_state': 'submitted',
             'unit_of_measurement': 'individual',
-            'keywords': ['shelter', 'health'],
+            'keywords': ['3', '4'],
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
@@ -781,7 +782,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         self.patch_dataset({
             'curation_state': 'submitted',
             'unit_of_measurement': 'individual',
-            'keywords': ['shelter', 'health'],
+            'keywords': ['3', '4'],
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
