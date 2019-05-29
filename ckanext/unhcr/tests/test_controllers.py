@@ -844,7 +844,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         assert_in('deposited dataset', resp.body)
         assert_in('submitted dataset', resp.body)
         assert_in('assigned', resp.body)
-        assert_in('as curator', resp.body)
+        assert_in('as Curator', resp.body)
 
 
 class TestExtendedPackageController(base.FunctionalTestBase):

@@ -34,7 +34,7 @@
           {% if curator.name == c.user %}
             <p>You have been assigned as Curator of this dataset.</p>
           {% else %}
-            <p><a href="/user/{{ curator.name }}">{{ curator.title }}</a> <a href="mailto:{{ curator.email }}">(email)</a> has been assigned as curator of this dataset.</p>
+            <p><a href="/user/{{ curator.name }}">{{ curator.title }}</a> <a href="mailto:{{ curator.email }}">(email)</a> has been assigned as Curator of this dataset.</p>
           {% endif %}
         {% else %}
           <p>{% trans %}A Curator for this dataset has not yet been assigned.{% endtrans %}</p>
