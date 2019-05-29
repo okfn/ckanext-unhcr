@@ -258,51 +258,240 @@
         {
             "field_name": "keywords",
             "help_text": "Tags useful for searching for the datasets. Multiple values are allowed.",
-            "label": "Keywords",
+            "label": "Topic classifications",
             "preset": "multiple_select",
             "required": true,
             "choices": [
                 {
-                    "label": "Protection",
-                    "value": "protection"
-                },
-                {
-                    "label": "WASH",
-                    "value": "wash"
-                },
-                {
-                    "label": "Shelter",
-                    "value": "shelter"
+                    "label": "Health and Nutrition",
+                    "value": "1"
                 },
                 {
                     "label": "Health",
-                    "value": "health"
+                    "value": "3"
                 },
                 {
-                    "label": "Nutrition",
-                    "value": "nutrition"
+                    "label": "Water Sanitation Hygiene",
+                    "value": "4"
                 },
                 {
-                    "label": "Food",
-                    "value": "food"
+                    "label": "Protection",
+                    "value": "5"
                 },
                 {
-                    "label": "Livelihoods",
-                    "value": "livelihoods"
+                    "label": "Food Security",
+                    "value": "6"
                 },
                 {
-                    "label": "Camp Management",
-                    "value": "camp_management"
+                    "label": "Emergency Shelter and NFI",
+                    "value": "7"
                 },
                 {
-                    "label": "Cross-Operational",
-                    "value": "cross_operational"
+                    "label": "Community Services",
+                    "value": "9"
                 },
                 {
-                    "label": "Sectoral",
-                    "value": "sectoral"
+                    "label": "Education",
+                    "value": "10"
+                },
+                {
+                    "label": "Environment",
+                    "value": "11"
+                },
+                {
+                    "label": "Livelihood & Social cohesion",
+                    "value": "12"
+                },
+                {
+                    "label": "Core Relief Items (CRIs)",
+                    "value": "13"
+                },
+                {
+                    "label": "Registration",
+                    "value": "14"
+                },
+                {
+                    "label": "Gender Based Violence",
+                    "value": "15"
+                },
+                {
+                    "label": "HIV/AIDS",
+                    "value": "16"
+                },
+                {
+                    "label": "Logistics",
+                    "value": "17"
+                },
+                {
+                    "label": "Child Protection",
+                    "value": "18"
+                },
+                {
+                    "label": "Agriculture",
+                    "value": "19"
+                },
+                {
+                    "label": "Telecom",
+                    "value": "20"
+                },
+                {
+                    "label": "Coordination",
+                    "value": "21"
+                },
+                {
+                    "label": "Transportation",
+                    "value": "22"
+                },
+                {
+                    "label": "Return",
+                    "value": "23"
+                },
+                {
+                    "label": "Reproductive Health",
+                    "value": "24"
+                },
+                {
+                    "label": "Mental Health and Psychosocial Support",
+                    "value": "25"
+                },
+                {
+                    "label": "Information Management",
+                    "value": "26"
+                },
+                {
+                    "label": "Cash Assistance",
+                    "value": "27"
+                },
+                {
+                    "label": "Mine Action",
+                    "value": "29"
+                },
+                {
+                    "label": "Disaster Risk Reduction",
+                    "value": "31"
+                },
+                {
+                    "label": "Camp Coordination and Camp Management (CCCM)",
+                    "value": "32"
+                },
+                {
+                    "label": "Governance",
+                    "value": "33"
+                },
+                {
+                    "label": "Peace Building / Conflict Prevention Sector",
+                    "value": "35"
+                },
+                {
+                    "label": "Early Recovery",
+                    "value": "36"
+                },
+                {
+                    "label": "Legal Assistance",
+                    "value": "37"
+                },
+                {
+                    "label": "Food Distribution",
+                    "value": "38"
+                },
+                {
+                    "label": "Mental Health",
+                    "value": "39"
+                },
+                {
+                    "label": "Malaria Prevention and Control",
+                    "value": "40"
+                },
+                {
+                    "label": "Emergency Telecommunications",
+                    "value": "41"
+                },
+                {
+                    "label": "Housing, Land and Property",
+                    "value": "42"
+                },
+                {
+                    "label": "Legal Assistance / Protection",
+                    "value": "43"
+                },
+                {
+                    "label": "Shelter / Other Infrastructure",
+                    "value": "44"
+                },
+                {
+                    "label": "Transport / Logistics",
+                    "value": "45"
+                },
+                {
+                    "label": "Health Care Referral Services",
+                    "value": "46"
+                },
+                {
+                    "label": "Domestic Needs / Household Support",
+                    "value": "47"
+                },
+                {
+                    "label": "Crop Production",
+                    "value": "48"
+                },
+                {
+                    "label": "Livestock / Animal Husbandry",
+                    "value": "49"
+                },
+                {
+                    "label": "Fisheries",
+                    "value": "50"
+                },
+                {
+                    "label": "Forestry",
+                    "value": "51"
+                },
+                {
+                    "label": "Income Generation",
+                    "value": "52"
+                },
+                {
+                    "label": "Agency Operational Support",
+                    "value": "53"
+                },
+                {
+                    "label": "Other",
+                    "value": "54"
+                },
+                {
+                    "label": "Outstanding Instalments",
+                    "value": "55"
+                },
+                {
+                    "label": "Settlement",
+                    "value": "56"
+                },
+                {
+                    "label": "Capacity Building / Training",
+                    "value": "57"
+                },
+                {
+                    "label": "Access to Energy",
+                    "value": "58"
+                },
+                {
+                    "label": "Elderly and Disabled",
+                    "value": "59"
+                },
+                {
+                    "label": "Connectivity",
+                    "value": "60"
+                },
+                {
+                    "label": "Solutions",
+                    "value": "61"
+                },
+                {
+                    "label": "Basic Needs",
+                    "value": "62"
                 }
             ]
+
         },
         {
             "field_name": "unit_of_measurement",
