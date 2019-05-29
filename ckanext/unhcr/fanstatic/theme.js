@@ -70,51 +70,52 @@ $( document ).ready(function() {
   $(".hierarchy-tree-top .highlighted").parents(".closed").removeClass("closed").addClass("open").children(".hierarchy-tree").removeClass("collapse");
 });
 
-$( document ).ready(function() {
-
-  // Activate select2 widget
-  $('#field-linked-datasets').select2({
-    placeholder: 'Click to get a drop-down list or start typing a dataset title'
-  });
-
-});
 
 $( document ).ready(function() {
 
-  // Activate select2 widget
-  $('#membership-username')
-    .on('change', function(ev) {
-      $(ev.target.form).submit();
-    })
-    .select2({
-      placeholder: 'Click or start typing a user name',
-    });
+  if ($('#membership-username').length) {
+    // Activate select2 widget
+    $('#membership-username')
+      .on('change', function(ev) {
+        $(ev.target.form).submit();
+      })
+      .select2({
+        placeholder: 'Click or start typing a user name',
+      });
 
-  // Activate select2 widget
-  $('#membership-contnames')
-    .on('change', function(ev) {
-      toggleAddMembershipButton();
-    })
-    .select2({
-      placeholder: 'Click or start typing a container name',
-    });
+    // Activate select2 widget
+    $('#membership-contnames')
+      .on('change', function(ev) {
+        toggleAddMembershipButton();
+      })
+      .select2({
+        placeholder: 'Click or start typing a container name',
+      });
 
-  // Activate select2 widget
-  $('#membership-role')
-    .on('change', function(ev) {
-      toggleAddMembershipButton();
-    })
-    .select2({
-      placeholder: 'Click or start typing a role name',
-    });
+    // Activate select2 widget
+    $('#membership-role')
+      .on('change', function(ev) {
+        toggleAddMembershipButton();
+      })
+      .select2({
+        placeholder: 'Click or start typing a role name',
+      });
 
-  function toggleAddMembershipButton() {
-    if ($('#membership-contnames').val() && $('#membership-role').val()) {
-      $('#membership-button').attr('disabled', false)
-    } else {
-      $('#membership-button').attr('disabled', true)
+    function toggleAddMembershipButton() {
+      if ($('#membership-contnames').val() && $('#membership-role').val()) {
+        $('#membership-button').attr('disabled', false)
+      } else {
+        $('#membership-button').attr('disabled', true)
+      }
     }
   }
+
+  if ($('#field-linked-datasets').length) {
+    $('#field-linked-datasets').select2({
+      placeholder: 'Click to get a drop-down list or start typing a dataset title'
+    });
+  }
+
 
 });
 
