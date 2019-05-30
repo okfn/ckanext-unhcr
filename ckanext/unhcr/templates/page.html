@@ -1,10 +1,20 @@
 {% ckan_extends %}
 
+{% block title %}
+  {% if h.page_authorized() %}
+    {{ super() }}
+  {% else %}
+    Please login to access this page - RIDL
+  {% endif %}
+{% endblock %}
+
+
 {% block page %}
 <div class="page">
   {% if h.page_authorized() %}
   {{ super() }}
   {% else %}
+
     <div class="container">
       {{ self.flash() }}
     </div>
