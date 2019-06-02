@@ -881,6 +881,7 @@
             "label": "Date collection first date",
             "preset": "date",
             "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date",
+            "help_text": "Expected format: mm/dd/yyyy",
             "required": true
         },
         {
@@ -888,6 +889,7 @@
             "label": "Date collection last date",
             "preset": "date",
             "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date",
+            "help_text": "Expected format: mm/dd/yyyy",
             "required": true
         },
         {
