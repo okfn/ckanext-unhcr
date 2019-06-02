@@ -1,0 +1,14 @@
+{% ckan_extends %}
+
+{% block package_metadata_fields_visibility %}
+  <div class="control-group">
+    <label for="field-private" class="control-label">{{ _('Internal Access Level') }}</label>
+    <div class="controls">
+      <select id="field-private" name="private">
+        {% for option in [('False', _('Internally Visible')), ('True', _('Private'))] %}
+        <option value="{{ option[0] }}" {% if option[0] == data.private|trim %}selected="selected"{% endif %}>{{ option[1] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+{% endblock %}

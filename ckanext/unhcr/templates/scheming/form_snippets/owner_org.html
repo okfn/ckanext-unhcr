@@ -29,7 +29,7 @@
 
   {% block package_metadata_fields_visibility %}
     <div class="control-group form-group control-medium">
-      <label for="field-private" class="control-label">Raw Data Access Level</label>
+      <label for="field-private" class="control-label">Internal Access Level</label>
       <div class="controls">
         <select id="field-private" name="private" class="form-control">
           {% for option in [('True', _('Private')), ('False', 'Internally Visible')] %}
