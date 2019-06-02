@@ -35,12 +35,6 @@
             "preset": "tag_string_autocomplete"
         },
         {
-            "field_name": "license_id",
-            "form_snippet": "license.html",
-            "help_text": "License definitions and additional information can be found at http://opendefinition.org/",
-            "label": "License"
-        },
-        {
             "display_property": "foaf:homepage",
             "display_snippet": "link.html",
             "field_name": "url",
@@ -835,6 +829,12 @@
             "help_text": "Determines if a dataset was imported from a DDI XML file",
             "form_snippet": null,
             "display_snippet": null
+        },
+        {
+            "field_name": "license_id",
+            "form_snippet": "license.html",
+            "help_text": "License definitions and additional information can be found at http://opendefinition.org/. it will be applicable only to datasets published in the Microdata Library",
+            "label": "External access level"
         }
     ],
     "resource_fields": [
