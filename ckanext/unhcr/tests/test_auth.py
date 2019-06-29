@@ -84,7 +84,7 @@ class TestAuthUI(AuthTestBase):
         )
         dataset = factories.Dataset(
             owner_org=data_container['id'],
-            private=True
+            visibility='private'
         )
 
         environ = {
