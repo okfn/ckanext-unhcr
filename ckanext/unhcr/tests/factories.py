@@ -18,6 +18,7 @@ class Dataset(factories.Dataset):
     data_collection_technique = 'f2f'
     sampling_procedure = 'nonprobability'
     operational_purpose_of_data = 'cartography'
+    visibility = 'public'
 
 
 class Resource(factories.Resource):
@@ -34,6 +35,6 @@ class Resource(factories.Resource):
 class DepositedDataset(factories.Dataset):
 
     type = 'deposited-dataset'
-
     owner_org = 'id-data-deposit'
     owner_org_dest = 'id-data-target'
+    visibility = 'public'
