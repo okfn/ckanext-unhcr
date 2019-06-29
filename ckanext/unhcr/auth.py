@@ -2,7 +2,7 @@ import logging
 from ckan.plugins import toolkit
 import ckan.logic.auth.create as auth_create_core
 import ckan.logic.auth.update as auth_update_core
-from ckan.logic.auth import get as core_get
+from ckan.logic.auth import get as core_get, get_resource_object
 from ckanext.unhcr import helpers
 log = logging.getLogger(__name__)
 
@@ -154,3 +154,52 @@ def package_activity_list(context, data_dict):
         # for now we check if the user can edit the dataset
         return auth_update_core.package_update(context, data_dict)
     return {'success': True}
+
+
+# Resource
+
+def resource_download(context, data_dict):
+    '''
+    This is a new auth function that specifically controls access to the download
+    of a resource file, as opposed to seeing the metadata of a resource (handled
+    by `resource_show`
+
+    If the parent dataset is marked as public or private in the custom visibility
+    field, the authorization check is deferred to `resource_show` as the standard
+    logic applies (we assume that the necessary validators are applied to keep
+    `visibility` and `private` fields in sync).
+
+    If the parent dataset is marked as `restricted` then  only users belonging to
+    the dataset organization can download the file.
+    '''
+    model = context.get('model') or model
+    user = context.get('user')
+    resource = get_resource_object(context, data_dict)
+
+    dataset = toolkit.get_action('package_show')(
+        {'ignore_auth': True}, {'id': resource.package_id})
+
+    visibility = dataset.get('visibility')
+
+    if not user or not visibility or visibility != 'restricted':
+        return {
+            'success': toolkit.check_access('resource_show', context, data_dict)}
+
+    # Restricted visibility (public metadata but private downloads)
+    user_orgs = toolkit.get_action('organization_list_for_user')(
+        {'ignore_auth': True}, {'id': user})
+
+    user_in_owner_org = any(
+        org['id'] == dataset['owner_org'] for org in user_orgs)
+
+    if user_in_owner_org:
+        return {'success': True}
+
+    # Support for ckanext-collaborators style auth
+    action = toolkit.get_action('dataset_collaborator_list_for_user')
+    if user and action:
+        datasets = action(context, {'id': user})
+        return {'success': resource.package_id in [
+            d['dataset_id'] for d in datasets]}
+
+    return {'success': False}

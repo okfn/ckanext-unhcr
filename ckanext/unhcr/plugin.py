@@ -268,8 +268,9 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
     # IAuthFunctions
 
     def get_auth_functions(self):
-
-        return auth.restrict_access_to_get_auth_functions()
+        functions = auth.restrict_access_to_get_auth_functions()
+        functions['resource_download'] = auth.resource_download
+        return functions
 
     # IActions
 
