@@ -301,6 +301,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'deposited_dataset_owner_org_dest': validators.deposited_dataset_owner_org_dest,
             'deposited_dataset_curation_state': validators.deposited_dataset_curation_state,
             'deposited_dataset_curator_id': validators.deposited_dataset_curator_id,
+            'always_false_if_not_sysadmin': validators.always_false_if_not_sysadmin,
+            'visibility_validator': validators.visibility_validator,
         }
 
     def get_dataset_labels(self, dataset_obj):
