@@ -196,10 +196,10 @@ def resource_download(context, data_dict):
         return {'success': True}
 
     # Support for ckanext-collaborators style auth
-    action = toolkit.get_action('dataset_collaborator_list_for_user')
-    if user and action:
-        datasets = action(context, {'id': user})
-        return {'success': resource.package_id in [
-            d['dataset_id'] for d in datasets]}
+    #  action = toolkit.get_action('dataset_collaborator_list_for_user')
+    #  if user and action:
+        #  datasets = action(context, {'id': user})
+        #  return {'success': resource.package_id in [
+            #  d['dataset_id'] for d in datasets]}
 
     return {'success': False}
