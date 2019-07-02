@@ -94,8 +94,8 @@ class ExtendedPackageController(PackageController):
         # Check resource_download access
         try:
             toolkit.check_access('resource_download', {'id': resource_id})
-        except (NotFound, NotAuthorized):
-            abort(403, _('Not Authorized to download the resource'))
+        except (toolkit.ObjectNotFound, toolkit.NotAuthorized):
+            toolkit.abort(403, toolkit._('Not Authorized to download the resource'))
 
         return super(ExtendedPackageController, self).resource_download(
             id, resource_id, filename=filename)
