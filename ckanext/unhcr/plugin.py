@@ -74,6 +74,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         controller = 'ckanext.unhcr.controllers.extended_package:ExtendedPackageController'
         _map.connect('/dataset/copy/{id}', controller=controller, action='copy')
         _map.connect('/dataset/{id}/resource_copy/{resource_id}', controller=controller, action='resource_copy')
+        _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
+        _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
 
         # user
         controller = 'ckanext.unhcr.controllers.extended_user:ExtendedUserController'

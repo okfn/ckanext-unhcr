@@ -82,3 +82,20 @@ class ExtendedPackageController(PackageController):
         data['name'] = '%s (copy)' % resource.get('name')
 
         return self.new_resource(id, data=data)
+
+    def resource_download(self, id, resource_id, filename=None):
+        """
+        Wraps default `resource_download` endpoint checking
+        the custom `resoruce_download` auth function
+        """
+        context = {'model': model, 'session': model.Session,
+                   'user': toolkit.c.user, 'auth_user_obj': toolkit.c.userobj}
+
+        # Check resource_download access
+        try:
+            toolkit.check_access('resource_download', {'id': resource_id})
+        except (NotFound, NotAuthorized):
+            abort(403, _('Not Authorized to download the resource'))
+
+        return super(ExtendedPackageController, self).resource_download(
+            id, resource_id, filename=filename)
