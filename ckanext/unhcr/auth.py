@@ -2,6 +2,7 @@ import logging
 from ckan.plugins import toolkit
 import ckan.logic.auth.create as auth_create_core
 import ckan.logic.auth.update as auth_update_core
+import ckanext.datastore.logic.auth as auth_datastore_core
 from ckan.logic.auth import get as core_get, get_resource_object
 from ckanext.unhcr import helpers
 log = logging.getLogger(__name__)
@@ -203,3 +204,24 @@ def resource_download(context, data_dict):
             #  d['dataset_id'] for d in datasets]}
 
     return {'success': False}
+
+
+@toolkit.auth_allow_anonymous_access
+def datastore_search(context, data_dict):
+    return auth_datastore_core.datastore_auth(context, data_dict, 'resource_download')
+
+
+@toolkit.auth_allow_anonymous_access
+def datastore_search_sql(context, data_dict):
+    '''need access to view all tables in query'''
+
+    for name in context['table_names']:
+        name_auth = auth_datastore_core.datastore_auth(
+            dict(context),  # required because check_access mutates context
+            {'id': name},
+            'resource_download')
+        if not name_auth['success']:
+            return {
+                'success': False,
+                'msg': 'Not authorized to read resource.'}
+    return {'success': True}
