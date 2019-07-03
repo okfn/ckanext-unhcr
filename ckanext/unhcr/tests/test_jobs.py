@@ -120,57 +120,57 @@ class TestJobs(FunctionalTestBase):
     def test_modify_package_privacy(self):
         package = _modify_package({
             'identifiability': None,
-            'private': False,
+            'visibility': 'public',
             'resources': [
                 {'identifiability': 'anonymized_public'},
             ]
         })
         assert_equals(package['identifiability'], 'anonymized_public')
-        assert_equals(package['private'], False)
+        assert_equals(package['visibility'], 'public')
 
 
     def test_modify_package_privacy_private_false(self):
         package = _modify_package({
             'identifiability': None,
-            'private': False,
+            'visibility': 'public',
             'resources': [
                 {'identifiability': 'anonymized_public'},
             ]
         })
         assert_equals(package['identifiability'], 'anonymized_public')
-        assert_equals(package['private'], False)
+        assert_equals(package['visibility'], 'public')
 
 
     def test_modify_package_privacy_resource_addition(self):
         package = _modify_package({
             'identifiability': 'anonymized_public',
-            'private': False,
+            'visibility': 'public',
             'resources': [
                 {'identifiability': 'anonymized_public'},
                 {'identifiability': 'personally_identifiable'},
             ]
         })
         assert_equals(package['identifiability'], 'personally_identifiable')
-        assert_equals(package['private'], True)
+        assert_equals(package['visibility'], 'restricted')
 
 
     def test_modify_package_privacy_package_none(self):
         package = _modify_package({
             'identifiability': None,
-            'private': False,
+            'visibility': 'public',
             'resources': [
                 {'identifiability': 'personally_identifiable'},
             ]
         })
         assert_equals(package['identifiability'], 'personally_identifiable')
-        assert_equals(package['private'], True)
+        assert_equals(package['visibility'], 'restricted')
 
 
     def test_modify_package_privacy_default(self):
         package = _modify_package({
             'identifiability': None,
-            'private': False,
+            'visibility': 'public',
             'resources': []
         })
         assert_equals(package['identifiability'], None)
-        assert_equals(package['private'], False)
+        assert_equals(package['visibility'], 'public')
