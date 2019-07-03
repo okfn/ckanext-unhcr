@@ -207,12 +207,17 @@ def resource_download(context, data_dict):
 
 
 @toolkit.auth_allow_anonymous_access
-def datastore_search(context, data_dict):
+def unhcr_datastore_info(context, data_dict):
     return auth_datastore_core.datastore_auth(context, data_dict, 'resource_download')
 
 
 @toolkit.auth_allow_anonymous_access
-def datastore_search_sql(context, data_dict):
+def unhcr_datastore_search(context, data_dict):
+    return auth_datastore_core.datastore_auth(context, data_dict, 'resource_download')
+
+
+@toolkit.auth_allow_anonymous_access
+def unhcr_datastore_search_sql(context, data_dict):
     '''need access to view all tables in query'''
 
     for name in context['table_names']:

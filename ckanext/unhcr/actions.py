@@ -218,3 +218,25 @@ def recently_changed_packages_activity_list_html(context, data_dict):
     }
     return activity_streams.activity_list_to_html(
         context, activity_stream, extra_vars)
+
+
+# Datastore
+
+@toolkit.chained_action
+def datastore_info(action, context, data_dict):
+    toolkit.check_access('unhcr_datastore_info', context, data_dict)
+    return action(context, data_dict)
+
+
+@toolkit.chained_action
+#  @toolkit.side_effect_free
+def datastore_search(action, context, data_dict):
+    toolkit.check_access('unhcr_datastore_search', context, data_dict)
+    return action(context, data_dict)
+
+
+@toolkit.chained_action
+#  @toolkit.side_effect_free
+def datastore_search_sql(action, context, data_dict):
+    toolkit.check_access('unhcr_datastore_search_sql', context, data_dict)
+    return action(context, data_dict)

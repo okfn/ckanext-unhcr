@@ -272,9 +272,9 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
     def get_auth_functions(self):
         functions = auth.restrict_access_to_get_auth_functions()
         functions['resource_download'] = auth.resource_download
-        # TODO: enable and fix
-        #  functions['datastore_search'] = auth.datastore_search
-        #  functions['datastore_search_sql'] = auth.datastore_search_sql
+        functions['unhcr_datastore_info'] = auth.unhcr_datastore_info
+        functions['unhcr_datastore_search'] = auth.unhcr_datastore_search
+        functions['unhcr_datastore_search_sql'] = auth.unhcr_datastore_search_sql
         return functions
 
     # IActions
@@ -294,6 +294,9 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'group_activity_list_html': actions.group_activity_list_html,
             'organization_activity_list_html': actions.organization_activity_list_html,
             'recently_changed_packages_activity_list_html': actions.recently_changed_packages_activity_list_html,
+            'datastore_info': actions.datastore_info,
+            'datastore_search': actions.datastore_search,
+            'datastore_search_sql': actions.datastore_search_sql,
         }
 
     # IValidators
