@@ -272,8 +272,9 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
     def get_auth_functions(self):
         functions = auth.restrict_access_to_get_auth_functions()
         functions['resource_download'] = auth.resource_download
-        functions['datastore_search'] = auth.datastore_search
-        functions['datastore_search_sql'] = auth.datastore_search_sql
+        # TODO: enable and fix
+        #  functions['datastore_search'] = auth.datastore_search
+        #  functions['datastore_search_sql'] = auth.datastore_search_sql
         return functions
 
     # IActions
