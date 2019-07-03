@@ -148,6 +148,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             # Misc
             'current_path': helpers.current_path,
             'get_field_label': helpers.get_field_label,
+            'can_download': helpers.can_download,
         }
 
     # IPackageController

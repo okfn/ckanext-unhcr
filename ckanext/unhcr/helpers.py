@@ -502,3 +502,13 @@ def normalize_list(value):
     if isinstance(value, list):
         return value
     return value.strip('{}').split(',')
+
+
+def can_download(package_dict):
+    try:
+        context = {'user': toolkit.c.user}
+        resource_dict = package_dict.get('resources', [])[0]
+        toolkit.check_access('resource_download', context, resource_dict)
+        return True
+    except (toolkit.NotAuthorized, toolkit.ObjectNotFound):
+        return False

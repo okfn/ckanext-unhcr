@@ -13,7 +13,7 @@
     </a>
   </li>
   {% if res.url and h.is_url(res.url) %}
-    {% if h.check_access('resource_download', {'id': res.id}) %}
+    {% if h.can_download(pkg) %}
       <li>
         <a href="{{ res.url }}" class="resource-url-analytics" target="_blank">
           {% if res.has_views or res.url_type == 'upload' %}
