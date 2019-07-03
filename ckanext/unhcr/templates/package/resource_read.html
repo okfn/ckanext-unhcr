@@ -37,5 +37,11 @@
   {% endif %}
 {% endblock %}
 
+{% block data_preview %}
+  {% if h.can_download(pkg) %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
 {% block secondary_content %}
 {% endblock %}
