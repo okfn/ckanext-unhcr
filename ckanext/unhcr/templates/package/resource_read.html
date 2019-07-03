@@ -19,8 +19,8 @@
     <li>{% link_for _('Manage'), controller='package', action='resource_edit', id=pkg.name, resource_id=res.id, class_='btn', icon='wrench' %}</li>
   {% endif %}
   {% if res.url and h.is_url(res.url) %}
-    <li>
-      {% if h.check_access('resource_download', {'id': res.id}) %}
+    {% if h.check_access('resource_download', {'id': res.id}) %}
+      <li>
         <a class="btn btn-primary resource-url-analytics resource-type-{{ res.resource_type }}" href="{{ res.url }}">
           {% if res.resource_type in ('listing', 'service') %}
             <i class="fa fa-eye"></i> {{ _('View') }}
@@ -32,8 +32,8 @@
             <i class="fa fa-arrow-circle-o-down"></i> {{ _('Download') }}
           {% endif %}
         </a>
-      {% endif %}
-    </li>
+      </li>
+    {% endif %}
   {% endif %}
 {% endblock %}
 

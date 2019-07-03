@@ -13,19 +13,19 @@
     </a>
   </li>
   {% if res.url and h.is_url(res.url) %}
-  <li>
-    <a href="{{ res.url }}" class="resource-url-analytics" target="_blank">
-      {% if res.has_views or res.url_type == 'upload' %}
-        {% if h.check_access('resource_download', {'id': res.id}) %}
-          <i class="fa fa-arrow-circle-o-down"></i>
-          {{ _('Download') }}
-        {% endif %}
-      {% else %}
-        <i class="fa fa-external-link"></i>
-        {{ _('Go to resource') }}
-      {% endif %}
-    </a>
-  </li>
+    {% if h.check_access('resource_download', {'id': res.id}) %}
+      <li>
+        <a href="{{ res.url }}" class="resource-url-analytics" target="_blank">
+          {% if res.has_views or res.url_type == 'upload' %}
+            <i class="fa fa-arrow-circle-o-down"></i>
+            {{ _('Download') }}
+          {% else %}
+            <i class="fa fa-external-link"></i>
+            {{ _('Go to resource') }}
+          {% endif %}
+        </a>
+      </li>
+    {% endif %}
   {% endif %}
   {% if can_edit %}
   <li>
