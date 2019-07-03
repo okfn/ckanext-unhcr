@@ -1,0 +1,10 @@
+{% ckan_extends %}
+
+{% block heading_private %}
+  {% if package.visibility == 'restricted' %}
+    <span class="dataset-private label label-inverse">
+      <i class="fa fa-lock"></i>
+      {{ _('Private') }}
+    </span>
+  {% endif %}
+{% endblock %}
