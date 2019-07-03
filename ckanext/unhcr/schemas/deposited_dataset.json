@@ -38,13 +38,6 @@
             "label": "Tags"
         }, 
         {
-            "help_text": "License definitions and additional information can be found at http://opendefinition.org/", 
-            "form_snippet": "license.html", 
-            "required": false, 
-            "field_name": "license_id", 
-            "label": "License"
-        }, 
-        {
             "display_snippet": "link.html", 
             "required": false, 
             "label": "Project URL", 
@@ -87,6 +80,32 @@
             "label": "Data Container", 
             "validators": "deposited_dataset_owner_org_dest", 
             "field_name": "owner_org_dest"
+        }, 
+        {
+            "display_snippet": null, 
+            "required": false, 
+            "form_snippet": null, 
+            "label": "Visibility (Private/Public)", 
+            "validators": "always_false_if_not_sysadmin", 
+            "field_name": "private"
+        }, 
+        {
+            "display_snippet": null, 
+            "required": true, 
+            "label": "Internal Access Level", 
+            "preset": "select", 
+            "validators": "not_missing visibility_validator", 
+            "choices": [
+                {
+                    "value": "restricted", 
+                    "label": "Private"
+                }, 
+                {
+                    "value": "public", 
+                    "label": "Internally Visible"
+                }
+            ], 
+            "field_name": "visibility"
         }, 
         {
             "required": false, 
@@ -296,237 +315,237 @@
             "required": false, 
             "choices": [
                 {
-                    "label": "Health and Nutrition",
-                    "value": "1"
-                },
+                    "value": "1", 
+                    "label": "Health and Nutrition"
+                }, 
                 {
-                    "label": "Health",
-                    "value": "3"
-                },
+                    "value": "3", 
+                    "label": "Health"
+                }, 
                 {
-                    "label": "Water Sanitation Hygiene",
-                    "value": "4"
-                },
+                    "value": "4", 
+                    "label": "Water Sanitation Hygiene"
+                }, 
                 {
-                    "label": "Protection",
-                    "value": "5"
-                },
+                    "value": "5", 
+                    "label": "Protection"
+                }, 
                 {
-                    "label": "Food Security",
-                    "value": "6"
-                },
+                    "value": "6", 
+                    "label": "Food Security"
+                }, 
                 {
-                    "label": "Emergency Shelter and NFI",
-                    "value": "7"
-                },
+                    "value": "7", 
+                    "label": "Emergency Shelter and NFI"
+                }, 
                 {
-                    "label": "Community Services",
-                    "value": "9"
-                },
+                    "value": "9", 
+                    "label": "Community Services"
+                }, 
                 {
-                    "label": "Education",
-                    "value": "10"
-                },
+                    "value": "10", 
+                    "label": "Education"
+                }, 
                 {
-                    "label": "Environment",
-                    "value": "11"
-                },
+                    "value": "11", 
+                    "label": "Environment"
+                }, 
                 {
-                    "label": "Livelihood & Social cohesion",
-                    "value": "12"
-                },
+                    "value": "12", 
+                    "label": "Livelihood & Social cohesion"
+                }, 
                 {
-                    "label": "Core Relief Items (CRIs)",
-                    "value": "13"
-                },
+                    "value": "13", 
+                    "label": "Core Relief Items (CRIs)"
+                }, 
                 {
-                    "label": "Registration",
-                    "value": "14"
-                },
+                    "value": "14", 
+                    "label": "Registration"
+                }, 
                 {
-                    "label": "Gender Based Violence",
-                    "value": "15"
-                },
+                    "value": "15", 
+                    "label": "Gender Based Violence"
+                }, 
                 {
-                    "label": "HIV/AIDS",
-                    "value": "16"
-                },
+                    "value": "16", 
+                    "label": "HIV/AIDS"
+                }, 
                 {
-                    "label": "Logistics",
-                    "value": "17"
-                },
+                    "value": "17", 
+                    "label": "Logistics"
+                }, 
                 {
-                    "label": "Child Protection",
-                    "value": "18"
-                },
+                    "value": "18", 
+                    "label": "Child Protection"
+                }, 
                 {
-                    "label": "Agriculture",
-                    "value": "19"
-                },
+                    "value": "19", 
+                    "label": "Agriculture"
+                }, 
                 {
-                    "label": "Telecom",
-                    "value": "20"
-                },
+                    "value": "20", 
+                    "label": "Telecom"
+                }, 
                 {
-                    "label": "Coordination",
-                    "value": "21"
-                },
+                    "value": "21", 
+                    "label": "Coordination"
+                }, 
                 {
-                    "label": "Transportation",
-                    "value": "22"
-                },
+                    "value": "22", 
+                    "label": "Transportation"
+                }, 
                 {
-                    "label": "Return",
-                    "value": "23"
-                },
+                    "value": "23", 
+                    "label": "Return"
+                }, 
                 {
-                    "label": "Reproductive Health",
-                    "value": "24"
-                },
+                    "value": "24", 
+                    "label": "Reproductive Health"
+                }, 
                 {
-                    "label": "Mental Health and Psychosocial Support",
-                    "value": "25"
-                },
+                    "value": "25", 
+                    "label": "Mental Health and Psychosocial Support"
+                }, 
                 {
-                    "label": "Information Management",
-                    "value": "26"
-                },
+                    "value": "26", 
+                    "label": "Information Management"
+                }, 
                 {
-                    "label": "Cash Assistance",
-                    "value": "27"
-                },
+                    "value": "27", 
+                    "label": "Cash Assistance"
+                }, 
                 {
-                    "label": "Mine Action",
-                    "value": "29"
-                },
+                    "value": "29", 
+                    "label": "Mine Action"
+                }, 
                 {
-                    "label": "Disaster Risk Reduction",
-                    "value": "31"
-                },
+                    "value": "31", 
+                    "label": "Disaster Risk Reduction"
+                }, 
                 {
-                    "label": "Camp Coordination and Camp Management (CCCM)",
-                    "value": "32"
-                },
+                    "value": "32", 
+                    "label": "Camp Coordination and Camp Management (CCCM)"
+                }, 
                 {
-                    "label": "Governance",
-                    "value": "33"
-                },
+                    "value": "33", 
+                    "label": "Governance"
+                }, 
                 {
-                    "label": "Peace Building / Conflict Prevention Sector",
-                    "value": "35"
-                },
+                    "value": "35", 
+                    "label": "Peace Building / Conflict Prevention Sector"
+                }, 
                 {
-                    "label": "Early Recovery",
-                    "value": "36"
-                },
+                    "value": "36", 
+                    "label": "Early Recovery"
+                }, 
                 {
-                    "label": "Legal Assistance",
-                    "value": "37"
-                },
+                    "value": "37", 
+                    "label": "Legal Assistance"
+                }, 
                 {
-                    "label": "Food Distribution",
-                    "value": "38"
-                },
+                    "value": "38", 
+                    "label": "Food Distribution"
+                }, 
                 {
-                    "label": "Mental Health",
-                    "value": "39"
-                },
+                    "value": "39", 
+                    "label": "Mental Health"
+                }, 
                 {
-                    "label": "Malaria Prevention and Control",
-                    "value": "40"
-                },
+                    "value": "40", 
+                    "label": "Malaria Prevention and Control"
+                }, 
                 {
-                    "label": "Emergency Telecommunications",
-                    "value": "41"
-                },
+                    "value": "41", 
+                    "label": "Emergency Telecommunications"
+                }, 
                 {
-                    "label": "Housing, Land and Property",
-                    "value": "42"
-                },
+                    "value": "42", 
+                    "label": "Housing, Land and Property"
+                }, 
                 {
-                    "label": "Legal Assistance / Protection",
-                    "value": "43"
-                },
+                    "value": "43", 
+                    "label": "Legal Assistance / Protection"
+                }, 
                 {
-                    "label": "Shelter / Other Infrastructure",
-                    "value": "44"
-                },
+                    "value": "44", 
+                    "label": "Shelter / Other Infrastructure"
+                }, 
                 {
-                    "label": "Transport / Logistics",
-                    "value": "45"
-                },
+                    "value": "45", 
+                    "label": "Transport / Logistics"
+                }, 
                 {
-                    "label": "Health Care Referral Services",
-                    "value": "46"
-                },
+                    "value": "46", 
+                    "label": "Health Care Referral Services"
+                }, 
                 {
-                    "label": "Domestic Needs / Household Support",
-                    "value": "47"
-                },
+                    "value": "47", 
+                    "label": "Domestic Needs / Household Support"
+                }, 
                 {
-                    "label": "Crop Production",
-                    "value": "48"
-                },
+                    "value": "48", 
+                    "label": "Crop Production"
+                }, 
                 {
-                    "label": "Livestock / Animal Husbandry",
-                    "value": "49"
-                },
+                    "value": "49", 
+                    "label": "Livestock / Animal Husbandry"
+                }, 
                 {
-                    "label": "Fisheries",
-                    "value": "50"
-                },
+                    "value": "50", 
+                    "label": "Fisheries"
+                }, 
                 {
-                    "label": "Forestry",
-                    "value": "51"
-                },
+                    "value": "51", 
+                    "label": "Forestry"
+                }, 
                 {
-                    "label": "Income Generation",
-                    "value": "52"
-                },
+                    "value": "52", 
+                    "label": "Income Generation"
+                }, 
                 {
-                    "label": "Agency Operational Support",
-                    "value": "53"
-                },
+                    "value": "53", 
+                    "label": "Agency Operational Support"
+                }, 
                 {
-                    "label": "Other",
-                    "value": "54"
-                },
+                    "value": "54", 
+                    "label": "Other"
+                }, 
                 {
-                    "label": "Outstanding Instalments",
-                    "value": "55"
-                },
+                    "value": "55", 
+                    "label": "Outstanding Instalments"
+                }, 
                 {
-                    "label": "Settlement",
-                    "value": "56"
-                },
+                    "value": "56", 
+                    "label": "Settlement"
+                }, 
                 {
-                    "label": "Capacity Building / Training",
-                    "value": "57"
-                },
+                    "value": "57", 
+                    "label": "Capacity Building / Training"
+                }, 
                 {
-                    "label": "Access to Energy",
-                    "value": "58"
-                },
+                    "value": "58", 
+                    "label": "Access to Energy"
+                }, 
                 {
-                    "label": "Elderly and Disabled",
-                    "value": "59"
-                },
+                    "value": "59", 
+                    "label": "Elderly and Disabled"
+                }, 
                 {
-                    "label": "Connectivity",
-                    "value": "60"
-                },
+                    "value": "60", 
+                    "label": "Connectivity"
+                }, 
                 {
-                    "label": "Solutions",
-                    "value": "61"
-                },
+                    "value": "61", 
+                    "label": "Solutions"
+                }, 
                 {
-                    "label": "Basic Needs",
-                    "value": "62"
+                    "value": "62", 
+                    "label": "Basic Needs"
                 }
-            ],
+            ], 
             "preset": "multiple_select", 
             "help_text": "Tags useful for searching for the datasets. Multiple values are allowed.", 
-            "label": "Keywords", 
+            "label": "Topic classifications", 
             "field_name": "keywords"
         }, 
         {
@@ -884,6 +903,13 @@
             "label": "DDI", 
             "help_text": "Determines if a dataset was imported from a DDI XML file", 
             "field_name": "ddi"
+        }, 
+        {
+            "help_text": "License definitions and additional information can be found at http://opendefinition.org/. it will be applicable only to datasets published in the Microdata Library", 
+            "form_snippet": "license.html", 
+            "required": false, 
+            "field_name": "license_id", 
+            "label": "External access level"
         }
     ], 
     "resource_fields": [
@@ -930,18 +956,20 @@
             "label": "Format"
         }, 
         {
-            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date", 
             "required": false, 
+            "label": "Date collection first date", 
             "preset": "date", 
-            "field_name": "date_range_start", 
-            "label": "Date collection first date"
+            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date", 
+            "help_text": "Expected format: mm/dd/yyyy", 
+            "field_name": "date_range_start"
         }, 
         {
-            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date", 
             "required": false, 
+            "label": "Date collection last date", 
             "preset": "date", 
-            "field_name": "date_range_end", 
-            "label": "Date collection last date"
+            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date", 
+            "help_text": "Expected format: mm/dd/yyyy", 
+            "field_name": "date_range_end"
         }, 
         {
             "form_placeholder": "0", 

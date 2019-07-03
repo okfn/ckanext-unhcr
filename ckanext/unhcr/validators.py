@@ -134,3 +134,33 @@ def deposited_dataset_curator_id(value, context):
             raise Invalid('Ivalid Curator id')
 
     return value
+
+
+# Private datasets
+
+def always_false_if_not_sysadmin(value, context):
+    user_name = context.get('user')
+    user = model.User.get(user_name)
+    if value is not None and value is not toolkit.missing and user and user.sysadmin:
+        return value
+    else:
+        return False
+
+
+def visibility_validator(key, data, error, context):
+    ''' Validates visibility has a correct value.
+
+    Visibility only has two values in the schema, 'restricted' and 'public'. The
+    value 'private' is used only to setup the actual private field if needed.
+    '''
+    value = data.get(key)
+
+    if value not in ('private', 'restricted', 'public'):
+        raise Invalid('Invalid value for the visibility field')
+
+    # Set the actual private field
+    if value == 'private':
+        data[('private',)] = True
+        data[('visibility',)] = 'restricted'
+    else:
+        data[('private',)] = False

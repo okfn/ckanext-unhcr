@@ -49,6 +49,31 @@
             "form_snippet": "owner_org.html"
         },
         {
+            "field_name": "private",
+            "label": "Visibility (Private/Public)",
+            "validators": "always_false_if_not_sysadmin",
+            "form_snippet": null,
+            "display_snippet": null
+        },
+        {
+          "field_name": "visibility",
+          "label": "Internal Access Level",
+          "validators": "not_missing visibility_validator",
+          "preset": "select",
+          "display_snippet": null,
+          "required": true,
+          "choices": [
+            {
+              "value": "restricted",
+              "label": "Private"
+            },
+            {
+              "value": "public",
+              "label": "Internally Visible"
+            }
+          ]
+        },
+        {
             "field_name": "data_sensitivity",
             "help_text": "Apply to both Anonymized and  Personally identifiable data",
             "label": "Data sensitivity",

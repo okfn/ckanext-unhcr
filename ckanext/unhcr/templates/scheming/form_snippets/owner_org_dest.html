@@ -51,17 +51,4 @@
 
   <input type="hidden" name="owner_org" value="{{ deposit.id }}">
 
-  {% block package_metadata_fields_visibility %}
-    <div class="control-group form-group control-medium">
-      <label for="field-private" class="control-label">Internal Access Level</label>
-      <div class="controls">
-        <select id="field-private" name="private" class="form-control">
-          {% for option in [('True', _('Private')), ('False', 'Internally Visible')] %}
-          <option value="{{ option[0] }}" {% if option[0] == data.private|trim %}selected="selected"{% endif %}>{{ option[1] }}</option>
-          {% endfor %}
-        </select>
-      </div>
-    </div>
-  {% endblock %}
-
 </div>

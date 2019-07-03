@@ -74,6 +74,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         controller = 'ckanext.unhcr.controllers.extended_package:ExtendedPackageController'
         _map.connect('/dataset/copy/{id}', controller=controller, action='copy')
         _map.connect('/dataset/{id}/resource_copy/{resource_id}', controller=controller, action='resource_copy')
+        _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
+        _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
 
         # user
         controller = 'ckanext.unhcr.controllers.extended_user:ExtendedUserController'
@@ -146,6 +148,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             # Misc
             'current_path': helpers.current_path,
             'get_field_label': helpers.get_field_label,
+            'can_download': helpers.can_download,
+            'get_org_admins_email_link': helpers.get_org_admins_email_link,
         }
 
     # IPackageController
@@ -268,8 +272,12 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
     # IAuthFunctions
 
     def get_auth_functions(self):
-
-        return auth.restrict_access_to_get_auth_functions()
+        functions = auth.restrict_access_to_get_auth_functions()
+        functions['resource_download'] = auth.resource_download
+        functions['unhcr_datastore_info'] = auth.unhcr_datastore_info
+        functions['unhcr_datastore_search'] = auth.unhcr_datastore_search
+        functions['unhcr_datastore_search_sql'] = auth.unhcr_datastore_search_sql
+        return functions
 
     # IActions
 
@@ -288,6 +296,9 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'group_activity_list_html': actions.group_activity_list_html,
             'organization_activity_list_html': actions.organization_activity_list_html,
             'recently_changed_packages_activity_list_html': actions.recently_changed_packages_activity_list_html,
+            'datastore_info': actions.datastore_info,
+            'datastore_search': actions.datastore_search,
+            'datastore_search_sql': actions.datastore_search_sql,
         }
 
     # IValidators
@@ -301,6 +312,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'deposited_dataset_owner_org_dest': validators.deposited_dataset_owner_org_dest,
             'deposited_dataset_curation_state': validators.deposited_dataset_curation_state,
             'deposited_dataset_curator_id': validators.deposited_dataset_curator_id,
+            'always_false_if_not_sysadmin': validators.always_false_if_not_sysadmin,
+            'visibility_validator': validators.visibility_validator,
         }
 
     def get_dataset_labels(self, dataset_obj):

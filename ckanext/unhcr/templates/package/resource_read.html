@@ -15,7 +15,40 @@
   {% if h.check_access('package_update', {'id': pkg.id}) %}
     <li>{% link_for _('Copy'), controller='ckanext.unhcr.controllers.extended_package:ExtendedPackageController', action='resource_copy', id=pkg.name, resource_id=res.id, class_='btn', icon='copy' %}</li>
   {% endif %}
-  {{ super() }}
+  {% if h.check_access('package_update', {'id':pkg.id }) %}
+    <li>{% link_for _('Manage'), controller='package', action='resource_edit', id=pkg.name, resource_id=res.id, class_='btn', icon='wrench' %}</li>
+  {% endif %}
+  {% if res.url and h.is_url(res.url) %}
+    {% if h.can_download(pkg) %}
+      <li>
+        <a class="btn btn-primary resource-url-analytics resource-type-{{ res.resource_type }}" href="{{ res.url }}">
+          {% if res.resource_type in ('listing', 'service') %}
+            <i class="fa fa-eye"></i> {{ _('View') }}
+          {% elif  res.resource_type == 'api' %}
+            <i class="fa fa-key"></i> {{ _('API Endpoint') }}
+          {% elif (not res.has_views or not res.can_be_previewed) and not res.url_type == 'upload' %}
+            <i class="fa fa-external-link"></i> {{ _('Go to resource') }}
+          {% else %}
+            <i class="fa fa-arrow-circle-o-down"></i> {{ _('Download') }}
+          {% endif %}
+        </a>
+      </li>
+    {% endif %}
+  {% endif %}
+{% endblock %}
+
+{% block resource_read_url %}
+  {% if h.can_download(pkg) %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
+{% block data_preview %}
+  {% if h.can_download(pkg) %}
+    {{ super() }}
+  {% else %}
+    {% snippet "snippets/not_authorized_to_download.html", pkg=pkg %}
+  {% endif %}
 {% endblock %}
 
 {% block secondary_content %}

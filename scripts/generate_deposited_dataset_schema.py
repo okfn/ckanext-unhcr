@@ -18,7 +18,7 @@ def generate_deposited_dataset_schema():
 
     # Remove dataset required flags
     for field in schema['dataset_fields'] + schema['resource_fields']:
-        if field['field_name'] not in ['title']:
+        if field['field_name'] not in ['title', 'visibility']:
             field['required'] = False
 
     # Remove resource required flags
