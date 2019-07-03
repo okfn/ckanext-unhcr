@@ -46,6 +46,8 @@
 {% block data_preview %}
   {% if h.can_download(pkg) %}
     {{ super() }}
+  {% else %}
+    {% snippet "snippets/not_authorized_to_download.html", pkg=pkg %}
   {% endif %}
 {% endblock %}
 

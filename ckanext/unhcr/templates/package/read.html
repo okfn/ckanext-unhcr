@@ -79,6 +79,12 @@
       </div>
     {% endif %}
   {% endblock %}
+
+  {% if not h.can_download(pkg) %}
+    {% snippet "snippets/not_authorized_to_download.html", pkg=pkg %}
+  {% endif %}
+
+
   {# FIXME why is this here? seems wrong #}
   <span class="insert-comment-thread"></span>
 

@@ -1,6 +1,7 @@
 import os
 import re
 import logging
+from urllib import quote
 from ckan import model
 from ckan.common import config
 from operator import itemgetter
@@ -512,3 +513,35 @@ def can_download(package_dict):
         return True
     except (toolkit.NotAuthorized, toolkit.ObjectNotFound):
         return False
+
+def get_org_admins_email_link(package_dict):
+    try:
+        context = {'ignore_auth': True}
+        data_dict = {'id': package_dict['owner_org'], 'include_users': True}
+        org = toolkit.get_action('organization_show')(context, data_dict)
+    except toolkit.ObjectNotFound:
+        return False
+
+    org_admins = [user for user in org['users'] if user['capacity'] == 'admin']
+
+    emails = []
+    for admin in org_admins:
+
+        context = {'ignore_auth': True, 'keep_email': True}
+        user_dict = toolkit.get_action('user_show')(context, {'id': admin['id']})
+        if user_dict.get('email'):
+            emails.append(user_dict['email'])
+
+    if emails:
+        subject = '{} - Access to dataset "{}"'.format(
+            toolkit.config.get('ckan.site_title'),
+            package_dict['name'])
+        dataset_url = toolkit.url_for('dataset_read', id=package_dict['id'],
+                                        qualified=True)
+        body = 'Request access to the dataset "{}": {}'.format(
+            package_dict['name'], quote(dataset_url, safe=''))
+
+        return 'mailto:{}?subject={}&body={}'.format(
+            ';'.join(emails), subject, body)
+
+    return False
