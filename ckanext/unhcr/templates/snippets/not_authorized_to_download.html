@@ -1,0 +1,7 @@
+<div class="alert alert-warning">
+  <p>{{ _("You are not authorized to access the resources from this dataset.") }}</p>
+  {% if pkg.owner_org %}
+    <p>{{ _("If you need access to the dataset please contact the <a href='{}'>Data Container Administrators</a>.").format(h.get_org_admins_email_link(pkg))|safe }}</p>
+  {% endif %}
+</div>
+
