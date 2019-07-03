@@ -187,21 +187,15 @@ def resource_download(context, data_dict):
             'success': toolkit.check_access('resource_show', context, data_dict)}
 
     # Restricted visibility (public metadata but private downloads)
-    user_orgs = toolkit.get_action('organization_list_for_user')(
-        {'ignore_auth': True}, {'id': user})
+    if dataset.get('owner_org'):
+        user_orgs = toolkit.get_action('organization_list_for_user')(
+            {'ignore_auth': True}, {'id': user})
 
-    user_in_owner_org = any(
-        org['id'] == dataset['owner_org'] for org in user_orgs)
+        user_in_owner_org = any(
+            org['id'] == dataset['owner_org'] for org in user_orgs)
 
-    if user_in_owner_org:
-        return {'success': True}
-
-    # Support for ckanext-collaborators style auth
-    #  action = toolkit.get_action('dataset_collaborator_list_for_user')
-    #  if user and action:
-        #  datasets = action(context, {'id': user})
-        #  return {'success': resource.package_id in [
-            #  d['dataset_id'] for d in datasets]}
+        if user_in_owner_org:
+            return {'success': True}
 
     return {'success': False}
 
