@@ -1,5 +1,4 @@
 import mock
-
 from nose.plugins.attrib import attr
 from ckan.lib.helpers import url_for
 from ckan.logic import NotFound
