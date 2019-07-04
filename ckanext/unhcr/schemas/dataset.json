@@ -694,7 +694,7 @@
                     "value": "anonymized_scientific"
                 },
                 {
-                    "label": "Anonymized 3st level: Public Use File (PUF)",
+                    "label": "Anonymized 3rd level: Public Use File (PUF)",
                     "value": "anonymized_public"
                 }
             ]
