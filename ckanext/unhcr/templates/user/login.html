@@ -1,7 +1,7 @@
 {% ckan_extends %}
 
 {% block form %}
-  {% snippet "user/snippets/login_form.html", action="/ldap_login_handler", error_summary=error_summary %}
+  {% snippet "user/snippets/login_form.html", action=c.login_handler, error_summary=error_summary %}
 {% endblock %}
 
 
