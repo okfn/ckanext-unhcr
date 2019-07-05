@@ -36,6 +36,10 @@ cd -
 echo "Creating the PostgreSQL user and database..."
 sudo -u postgres psql -c "CREATE USER ckan_default WITH PASSWORD 'pass';"
 sudo -u postgres psql -c 'CREATE DATABASE ckan_test WITH OWNER ckan_default;'
+sudo -u postgres psql -c "CREATE USER datastore_read WITH PASSWORD 'pass' NOSUPERUSER NOCREATEDB NOCREATEROLE;"
+sudo -u postgres psql -c "CREATE USER datastore_write WITH PASSWORD 'pass' NOSUPERUSER NOCREATEDB NOCREATEROLE;"
+sudo -u postgres psql -c 'CREATE DATABASE datastore_test WITH OWNER ckan_default;'
+
 
 echo "SOLR config..."
 # Solr is multicore for tests on ckan master, but it's easier to run tests on
@@ -45,6 +49,7 @@ sed -i -e 's/solr_url.*/solr_url = http:\/\/127.0.0.1:8983\/solr/' ckan/test-cor
 echo "Initialising the database..."
 cd ckan
 paster db init -c test-core.ini
+paster --plugin=ckanext-datastore datastore set-permissions -c test-core.ini | sudo -u postgres psql
 cd -
 
 echo "Installing other extensions required..."

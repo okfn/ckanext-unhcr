@@ -172,8 +172,6 @@ class TestPrivateResources(base.FunctionalTestBase):
         assert_equals(res.status_int, 200)
 
 
-# TODO: enable; datastore doesn't seem ready after `datastore_create`
-@nottest
 class TestDatastoreAuthRestrictedDownloads(base.FunctionalTestBase):
 
     def setup(self):
