@@ -691,7 +691,7 @@ def can_download(package_dict):
         resource_dict = package_dict.get('resources', [])[0]
         toolkit.check_access('resource_download', context, resource_dict)
         return True
-    except (toolkit.NotAuthorized, toolkit.ObjectNotFound):
+    except (toolkit.NotAuthorized, toolkit.ObjectNotFound, IndexError):
         return False
 
 def get_org_admins_email_link(package_dict):

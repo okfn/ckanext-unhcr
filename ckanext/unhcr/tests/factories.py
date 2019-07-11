@@ -4,7 +4,6 @@ from ckan.tests import factories
 class DataContainer(factories.Organization):
 
     type = 'data-container'
-
     country = ['SVN']
     geographic_area = 'southern_africa'
 

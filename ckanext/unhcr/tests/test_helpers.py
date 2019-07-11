@@ -269,12 +269,12 @@ class TestHelpers(FunctionalTestBase):
             clean_ops_notes = 'Notes about cleaning',
             response_rate_notes = 'Notes about response',
         )
-        survey = helpers.convert_dataset_to_microdata_survey(dataset, nation='nation')
+        survey = helpers.convert_dataset_to_microdata_survey(dataset, nation='nation', repoid='repoid')
         assert_equals(survey, {
-            'repositoryid': 'RIDL',
+            'repositoryid': 'REPOID',
             'access_policy': 'na',
             'published': 0,
-            'overwrite': 'yes',
+            'overwrite': 'no',
             'study_desc': {
                 'title_statement': {
                     'idno': u'DATASET',
@@ -339,12 +339,12 @@ class TestHelpers(FunctionalTestBase):
             data_collection_technique = 'f2f',
             sampling_procedure = 'nonprobability',
         )
-        survey = helpers.convert_dataset_to_microdata_survey(dataset, nation='nation')
+        survey = helpers.convert_dataset_to_microdata_survey(dataset, nation='nation', repoid='repoid')
         assert_equals(survey, {
-            'repositoryid': 'RIDL',
+            'repositoryid': 'REPOID',
             'access_policy': 'na',
             'published': 0,
-            'overwrite': 'yes',
+            'overwrite': 'no',
             'study_desc': {
                 'title_statement': {
                     'idno': u'DATASET',
