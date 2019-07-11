@@ -1,0 +1,56 @@
+<div class="curation curation-modals">
+
+  {# Microdata #}
+  <div id="publish-microdata" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <form action="/dataset/{{ pkg.id }}/publish_microdata">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>Publish to Microdata</h3>
+      </div>
+      <div class="modal-body">
+
+        {# helper #}
+        <p>
+          Please select a collection and countries
+          to be used for the Microdata library:
+        </p>
+
+        {# repoid #}
+        {% set collections = h.get_microdata_collections() %}
+        {% if collections %}
+          <div class="control-group control-select">
+            <div class="controls ">
+              <label for="field-repoid">Collection</label>
+              <select id="field-repoid" name="repoid" required="required">
+                {% for collection in collections %}
+                  <option value="{{ collection.repositoryid }}">{{ collection.title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        {% else %}
+          {% set error = True %}
+          <div class="alert alert-error" role="alert">
+            Error in getting Microdata collections. Please contact an administrator
+            and check that the Microdata API KEY is set on the
+            <a href="/ckan-admin/config"><strong>config page</strong></a>
+          </div>
+        {% endif %}
+
+        {# nation #}
+        <div class="control-group control-full">
+          <div class="controls ">
+            <label for="field-repoid">Countries</label>
+            <input id="field-nation" name="nation" required="required" placeholder="e.g. France, Germany">
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+        <button class="btn btn-primary" {% if error %}disabled{% endif %}>Confirm</button>
+      </div>
+    </form>
+  </div>
+
+</div>

@@ -9,6 +9,8 @@
 {% block secondary_content %}
   {% if pkg.type == 'deposited-dataset' %}
     {% snippet "package/snippets/curation_sidebar.html", pkg=pkg, curation=curation, editing=True %}
+  {% elif h.check_access('sysadmin') %}
+    {% snippet "package/snippets/publish_sidebar.html", pkg=pkg, editing=True %}
   {% else %}
     {{ super() }}
   {% endif %}
@@ -18,5 +20,7 @@
   {{ super() }}
   {% if pkg.type == 'deposited-dataset' %}
     {% snippet "package/snippets/curation_modals.html", pkg=pkg, curation=curation %}
+  {% elif h.check_access('sysadmin') %}
+    {% snippet "package/snippets/publish_modals.html", pkg=pkg, editing=True %}
   {% endif %}
 {% endblock %}

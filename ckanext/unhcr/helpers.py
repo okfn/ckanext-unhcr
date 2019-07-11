@@ -3,6 +3,7 @@ import re
 import logging
 from urllib import quote
 from ckan import model
+from ckan.lib import uploader
 from ckan.common import config
 from operator import itemgetter
 from collections import OrderedDict
@@ -478,6 +479,175 @@ def custom_activity_renderer(context, activity):
     return output
 
 
+# Publishing
+
+def convert_dataset_to_microdata_survey(dataset, nation, repoid):
+
+    # general
+    survey = {
+      'access_policy': 'na',
+      'published': 0,
+      'overwrite': 'no',
+      'study_desc': {
+          'study_info': {},
+          'method': {
+              'data_collection': {},
+          },
+      },
+    }
+
+    # repositoryid
+    if repoid:
+        survey['repositoryid'] = repoid.upper()
+
+    # title_statement
+    survey['study_desc']['title_statement'] = {
+        'idno': dataset['name'].upper(),
+        'title': dataset.get('title'),
+    }
+
+    # authority_entity
+    survey['study_desc']['authoring_entity'] = [
+        {
+            'name': 'Office of the High Commissioner for Refugees',
+            'affiliation': 'UNHCR'
+        }
+    ]
+
+    # distribution_statement
+    if dataset.get('maintainer'):
+        survey['study_desc']['distribution_statement'] = {
+            'contact': [{
+                'name': dataset.get('maintainer'),
+                'email': dataset.get('maintainer_email'),
+            }]
+        }
+
+    # version_statement
+    if dataset.get('version'):
+        survey['study_desc']['version_statement'] =  {
+            'version': dataset.get('version'),
+        }
+
+    # keywords
+    if dataset.get('tags', []):
+        survey['study_desc']['study_info']['keywords'] = []
+        for tag in dataset.get('tags', []):
+            survey['study_desc']['study_info']['keywords'].append(
+                {'keyword': tag.get('display_name')})
+
+    # topics
+    if dataset.get('keywords', []):
+        survey['study_desc']['study_info']['topics'] = []
+        for value in dataset.get('keywords', []):
+            survey['study_desc']['study_info']['topics'].append(
+                {'topic': get_choice_label('keywords', value)})
+
+    # abstract
+    if dataset.get('notes'):
+        survey['study_desc']['study_info']['abstract'] = dataset.get('notes').strip()
+
+    # coll_dates
+    if dataset.get('date_range_start') and dataset.get('date_range_end'):
+        survey['study_desc']['study_info']['coll_dates'] = [
+            {
+              'start': dataset.get('date_range_start'),
+              'end': dataset.get('date_range_end'),
+            }
+        ]
+
+    # nation
+    if nation:
+        survey['study_desc']['study_info']['nation'] = [
+            {'name': name.strip()} for name in nation.split(',')
+        ]
+
+    # geog_coverage
+    if dataset.get('geog_coverage'):
+        survey['study_desc']['study_info']['geog_coverage'] = dataset.get('geog_coverage')
+
+    # analysis_unit
+    if dataset.get('unit_of_measurement'):
+        survey['study_desc']['study_info']['analysis_unit'] = dataset.get('unit_of_measurement')
+
+    # data_collectors
+    if dataset.get('data_collector', []):
+        survey['study_desc']['method']['data_collection']['data_collectors'] = []
+        for value in dataset.get('data_collector', []):
+            survey['study_desc']['method']['data_collection']['data_collectors'].append(
+                {'name': get_choice_label('data_collector', value)})
+
+    # sampling_procedure
+    sampling_procedure = None
+    if dataset.get('sampling_procedure', []):
+        values = []
+        for value in dataset.get('sampling_procedure', []):
+            values.append(get_choice_label('sampling_procedure', value))
+        survey['study_desc']['method']['data_collection']['sampling_procedure'] = ', '.join(values)
+    elif dataset.get('sampling_procedure_notes'):
+        survey['study_desc']['method']['data_collection']['sampling_procedure'] = dataset.get('sampling_procedure_notes').strip()
+
+    # coll_mode
+    if dataset.get('data_collection_technique'):
+        survey['study_desc']['method']['data_collection']['coll_mode'] = get_choice_label(
+            'data_collection_technique', dataset.get('data_collection_technique'))
+
+    # coll_situation
+    if dataset.get('data_collection_notes'):
+        survey['study_desc']['method']['data_collection']['coll_situation'] = dataset.get('data_collection_notes').strip()
+
+    # weight
+    if dataset.get('weight_notes'):
+        survey['study_desc']['method']['data_collection']['weight'] = dataset.get('weight_notes').strip()
+
+    # cleaning_operations
+    if dataset.get('clean_ops_notes'):
+        survey['study_desc']['method']['data_collection']['cleaning_operations'] = dataset.get('clean_ops_notes').strip()
+
+    # analysis_info
+    if dataset.get('response_rate_notes'):
+        survey['study_desc']['method']['analysis_info'] = {
+            'response_rate': dataset.get('response_rate_notes').strip(),
+          }
+
+    return survey
+
+
+def convert_resource_to_microdata_resource(resource):
+    TYPES_MAPPING = {
+        'microdata': 'dat/micro',
+        'questionnaire': 'doc/qst',
+        'report': 'doc/rep',
+        'sampling_methodology': 'doc/oth',
+        'infographics': 'doc/oth',
+        'attachement': 'doc/oth',
+    }
+
+    # general
+    md_resource = {
+        'title': resource.get('name') or 'Unnamed resource',
+        'dctype': TYPES_MAPPING[resource.get('file_type', 'attachement')],
+    }
+
+    # dcformat
+    if resource.get('format'):
+        md_resource['dcformat'] = resource.get('format').lower()
+
+    # description
+    if resource.get('description'):
+        md_resource['description'] = resource.get('description')
+
+    return md_resource
+
+
+def get_microdata_collections():
+    context = {'user': toolkit.c.user}
+    try:
+        return toolkit.get_action('package_get_microdata_collections')(context, {})
+    except (toolkit.NotAuthorized, RuntimeError):
+        return None
+
+
 # Misc
 
 def current_path(action=None):
@@ -494,6 +664,16 @@ def get_field_label(name, is_resource=False):
     fields = schema['resource_fields'] if is_resource else schema['dataset_fields']
     field = scheming_field_by_name(fields, name)
     return field.get('label', name)
+
+
+def get_choice_label(name, value, is_resource=False):
+    schema = scheming_get_dataset_schema('deposited-dataset')
+    fields = schema['resource_fields'] if is_resource else schema['dataset_fields']
+    field = scheming_field_by_name(fields, name)
+    for choice in field.get('choices', []):
+        if choice.get('value') == value:
+            return choice.get('label')
+    return value
 
 
 def normalize_list(value):
@@ -545,3 +725,10 @@ def get_org_admins_email_link(package_dict):
             ';'.join(emails), subject, body)
 
     return False
+
+
+def get_resource_file_path(resource):
+    if resource.get(u'url_type') == u'upload':
+        upload = uploader.get_resource_uploader(resource)
+        return upload.get_path(resource[u'id'])
+    return None

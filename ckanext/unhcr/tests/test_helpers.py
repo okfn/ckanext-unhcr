@@ -245,3 +245,133 @@ class TestHelpers(FunctionalTestBase):
             'type': 'dataset',
             'owner_org': 'id-data-target',
         })
+
+    # Publishing
+
+    def test_convert_dataset_to_microdata_survey(self):
+        dataset = factories.Dataset(
+            operational_purpose_of_data = 'cartography',
+            name='dataset',
+            maintainer = 'maintainer',
+            maintainer_email = 'maintainer@email.com',
+            version = '1',
+            tags = [{'name': 'Keyword1'}, {'name': 'Keyword2'}],
+            unit_of_measurement = 'individual',
+            keywords = ['3', '4'],
+            date_range_start = '2015-01-01',
+            date_range_end = '2016-01-01',
+            geog_coverage = 'world',
+            data_collector = ['acf'],
+            data_collection_technique = 'f2f',
+            sampling_procedure = 'nonprobability',
+            data_collection_notes = 'Notes about data collection',
+            weight_notes = 'Notes about weight',
+            clean_ops_notes = 'Notes about cleaning',
+            response_rate_notes = 'Notes about response',
+        )
+        survey = helpers.convert_dataset_to_microdata_survey(dataset, nation='nation')
+        assert_equals(survey, {
+            'repositoryid': 'RIDL',
+            'access_policy': 'na',
+            'published': 0,
+            'overwrite': 'yes',
+            'study_desc': {
+                'title_statement': {
+                    'idno': u'DATASET',
+                    'title': u'Test Dataset'
+                },
+                'authoring_entity': [
+                    {'affiliation': 'UNHCR', 'name': 'Office of the High Commissioner for Refugees'}
+                ],
+                'distribution_statement': {
+                    'contact': [
+                        {'name': 'maintainer', 'email': 'maintainer@email.com'},
+                    ],
+                },
+                'version_statement': {
+                    'version': '1',
+                },
+                'study_info': {
+                    'keywords': [
+                        {'keyword': 'Keyword1'},
+                        {'keyword': 'Keyword2'},
+                    ],
+                    'topics': [
+                        {'topic': 'Health'},
+                        {'topic': 'Water Sanitation Hygiene'}
+                    ],
+                    'coll_dates': [
+                        {'start': '2015-01-01', 'end': '2016-01-01'},
+                    ],
+                    'nation': [
+                        {'name': 'nation'}
+                    ],
+                    'abstract': 'Just another test dataset.',
+                    'geog_coverage': 'world',
+                    'analysis_unit': 'individual',
+                },
+                'method': {
+                    'data_collection': {
+                        'data_collectors': [
+                            {'name': 'Action contre la faim'},
+                        ],
+                        'sampling_procedure': 'Non-probability',
+                        'coll_mode': 'Face-to-face interview',
+                        'coll_situation': 'Notes about data collection',
+                        'weight': 'Notes about weight',
+                        'cleaning_operations': 'Notes about cleaning',
+                    },
+                    'analysis_info': {
+                        'response_rate': 'Notes about response',
+                    }
+                },
+            },
+        })
+
+    def test_convert_dataset_to_microdata_survey_minimal(self):
+        dataset = factories.Dataset(
+            operational_purpose_of_data = 'cartography',
+            name='dataset',
+            unit_of_measurement = 'individual',
+            keywords = ['3', '4'],
+            archived = 'False',
+            data_collector = ['acf'],
+            data_collection_technique = 'f2f',
+            sampling_procedure = 'nonprobability',
+        )
+        survey = helpers.convert_dataset_to_microdata_survey(dataset, nation='nation')
+        assert_equals(survey, {
+            'repositoryid': 'RIDL',
+            'access_policy': 'na',
+            'published': 0,
+            'overwrite': 'yes',
+            'study_desc': {
+                'title_statement': {
+                    'idno': u'DATASET',
+                    'title': u'Test Dataset'
+                },
+                'authoring_entity': [
+                    {'affiliation': 'UNHCR', 'name': 'Office of the High Commissioner for Refugees'}
+                ],
+                'study_info': {
+                    'topics': [
+                        {'topic': 'Health'},
+                        {'topic': 'Water Sanitation Hygiene'}
+                    ],
+                    'nation': [
+                        {'name': 'nation'}
+                    ],
+                    'abstract': 'Just another test dataset.',
+                    'analysis_unit': 'individual',
+                },
+                'method': {
+                    'data_collection': {
+                        'data_collectors': [
+                            {'name': 'Action contre la faim'},
+                        ],
+                        'sampling_procedure': 'Non-probability',
+                        'coll_mode': 'Face-to-face interview',
+                    },
+                },
+            },
+        })

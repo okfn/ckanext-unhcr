@@ -1,6 +1,8 @@
 import logging
+import requests
 from ckan import model
 from urlparse import urljoin
+from ckan.common import config
 from ckan.plugins import toolkit
 from ckan.lib.mailer import MailerException
 import ckan.logic.action.get as get_core
@@ -30,6 +32,102 @@ def package_create(context, data_dict):
         mailer.mail_user_by_id(userobj.id, subj, body)
 
     return dataset
+
+
+def package_publish_microdata(context, data_dict):
+    default_error = 'Unknown microdata error'
+
+    # Get data
+    dataset_id = data_dict.get('id')
+    nation = data_dict.get('nation')
+    repoid = data_dict.get('repoid')
+
+    # Check access
+    toolkit.check_access('sysadmin', context)
+    api_key = config.get('ckanext.unhcr.microdata_api_key')
+    if not api_key:
+        raise toolkit.NotAuthorized('Microdata API Key is not set')
+
+    # Get dataset/survey
+    headers = {'X-Api-Key': api_key}
+    dataset = toolkit.get_action('package_show')(context, {'id': dataset_id})
+    survey = helpers.convert_dataset_to_microdata_survey(dataset, nation, repoid)
+    idno = survey['study_desc']['title_statement']['idno']
+
+    try:
+
+        # Publish dataset
+        url = 'https://microdata.unhcr.org/index.php/api/datasets/create/survey/%s' % idno
+        response = requests.post(url, headers=headers, json=survey).json()
+        if response.get('status') != 'success':
+            raise RuntimeError(str(response.get('errors', default_error)))
+        template = 'https://microdata.unhcr.org/index.php/catalog/%s'
+        survey['url'] = template % response['dataset']['id']
+        survey['resources'] = []
+        survey['files'] = []
+
+        # Pubish resources/files
+        if dataset.get('resources', []):
+            url = 'https://microdata.unhcr.org/index.php/api/datasets/%s/%s'
+            for resource in dataset.get('resources', []):
+
+                # resource
+                resouce_url = url % (idno, 'resources')
+                md_resource = helpers.convert_resource_to_microdata_resource(resource)
+                response = requests.post(
+                    resouce_url, headers=headers, json=md_resource).json()
+                if response.get('status') != 'success':
+                    raise RuntimeError(str(response.get('errors', default_error)))
+                survey['resources'].append(response['resource'])
+
+                # file
+                file_url = url % (idno, 'files')
+                file_name = resource['url'].split('/')[-1]
+                file_path = helpers.get_resource_file_path(resource)
+                file_mime = resource['mimetype']
+                if not file_path:
+                    continue
+                with open(file_path, 'rb') as file_obj:
+                    file = (file_name, file_obj, file_mime)
+                    response = requests.post(
+                        file_url, headers=headers, files={'file': file}).json()
+                if not isinstance(response, dict):
+                    raise RuntimeError(str(response))
+                if response.get('status') != 'success':
+                    raise RuntimeError(str(response.get('errors', default_error)))
+                survey['files'].append(response)
+
+    except requests.exceptions.HTTPError:
+        log.exception(exception)
+        raise RuntimeError('Microdata connection failed')
+
+    return survey
+
+
+def package_get_microdata_collections(context, data_dict):
+    default_error = 'Unknown microdata error'
+
+    # Check access
+    toolkit.check_access('sysadmin', context)
+    api_key = config.get('ckanext.unhcr.microdata_api_key')
+    if not api_key:
+        raise toolkit.NotAuthorized('Microdata API Key is not set')
+
+    try:
+
+        # Get collections
+        headers = {'X-Api-Key': api_key}
+        url = 'https://microdata.unhcr.org/index.php/api/collections'
+        response = requests.get(url, headers=headers).json()
+        if response.get('status') != 'success':
+            raise RuntimeError(str(response.get('errors', default_error)))
+        collections = response['collections']
+
+    except requests.exceptions.HTTPError:
+        log.exception(exception)
+        raise RuntimeError('Microdata connection failed')
+
+    return collections
 
 
 # Organization
