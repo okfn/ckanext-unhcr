@@ -67,6 +67,7 @@ def package_publish_microdata(context, data_dict):
         survey['files'] = []
 
         # Pubish resources/files
+        file_name_counter = {}
         if dataset.get('resources', []):
             url = 'https://microdata.unhcr.org/index.php/api/datasets/%s/%s'
             for resource in dataset.get('resources', []):
@@ -85,14 +86,22 @@ def package_publish_microdata(context, data_dict):
                 file_name = resource['url'].split('/')[-1]
                 file_path = helpers.get_resource_file_path(resource)
                 file_mime = resource['mimetype']
-                if not file_path:
+                if not file_name or not file_path:
                     continue
+                file_name_counter.setdefault(file_name, 0)
+                file_name_counter[file_name] += 1
+                if file_name_counter[file_name] > 1:
+                    file_name = helpers.add_file_name_suffix(
+                        file_name, file_name_counter[file_name] - 1)
                 with open(file_path, 'rb') as file_obj:
                     file = (file_name, file_obj, file_mime)
                     response = requests.post(
                         file_url, headers=headers, files={'file': file}).json()
+                # TODO: update
+                # it's a hack to overcome incorrect Microdata responses
+                # usopported file types fail this way and we are skipping them
                 if not isinstance(response, dict):
-                    raise RuntimeError(str(response))
+                    continue
                 if response.get('status') != 'success':
                     raise RuntimeError(str(response.get('errors', default_error)))
                 survey['files'].append(response)

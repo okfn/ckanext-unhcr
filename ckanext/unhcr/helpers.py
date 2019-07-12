@@ -732,3 +732,11 @@ def get_resource_file_path(resource):
         upload = uploader.get_resource_uploader(resource)
         return upload.get_path(resource[u'id'])
     return None
+
+
+def add_file_name_suffix(file_name, file_suffix):
+    try:
+        file_base, file_extension = file_name.split('.', 1)
+        return  '%s (%s).%s' % (file_base, file_suffix, file_extension)
+    except ValueError:
+        return  '%s (%s)' % (file_name, file_suffix)
