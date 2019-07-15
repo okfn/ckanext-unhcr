@@ -88,6 +88,10 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
         _map.connect('/dataset/{id}/publish_microdata', controller=controller, action='publish_microdata')
 
+        # group
+        controller = 'ckanext.unhcr.controllers.extended_group:ExtendedGroupController'
+        _map.connect('/data-container/{id}', controller=controller, action='read')
+
         # user
         controller = 'ckanext.unhcr.controllers.extended_user:ExtendedUserController'
         _map.connect('user_dashboard_requests', '/dashboard/requests', controller=controller, action='list_requests', ckan_icon='spinner')
