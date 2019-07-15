@@ -620,13 +620,13 @@ def convert_resource_to_microdata_resource(resource):
         'report': 'doc/rep',
         'sampling_methodology': 'doc/oth',
         'infographics': 'doc/oth',
-        'attachement': 'doc/oth',
+        'attachment': 'doc/oth',
     }
 
     # general
     md_resource = {
         'title': resource.get('name') or 'Unnamed resource',
-        'dctype': TYPES_MAPPING[resource.get('file_type', 'attachement')],
+        'dctype': TYPES_MAPPING[resource.get('file_type', 'attachment')],
     }
 
     # dcformat

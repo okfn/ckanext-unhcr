@@ -40,6 +40,12 @@ this.ckan.module('resource-type', function ($) {
       if (ev) ev.preventDefault()
       this.field.hide()
       this.field.nextAll().show()
+      // We allow to select only the "Microdata" option
+      $('#field-file_type option').each(function () {
+        if ($(this).val() !== 'microdata') {
+          $(this).remove();
+        }
+      })
       this.input.val('data')
       this._fixUploadButton()
     },
@@ -48,7 +54,14 @@ this.ckan.module('resource-type', function ($) {
       if (ev) ev.preventDefault()
       this.field.hide()
       this.field.nextAll().show()
-      $('#field-format').parents('.control-group').nextAll('.control-group').hide()
+      // We hide all the fields below "File Type"
+      $('#field-file_type').parents('.control-group').nextAll('.control-group').hide()
+      // We allow to select only NOT the "Microdata" option
+      $('#field-file_type option').each(function () {
+        if ($(this).val() === 'microdata') {
+          $(this).remove();
+        }
+      })
       this.input.val('attachment')
       this._fixUploadButton()
     },

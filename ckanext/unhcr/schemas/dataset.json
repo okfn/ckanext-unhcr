@@ -900,38 +900,15 @@
         },
         {
             "field_name": "format",
-            "label": "Format",
+            "label": "File Format",
             "preset": "resource_format_autocomplete"
-        },
-        {
-            "field_name": "date_range_start",
-            "label": "Date collection first date",
-            "preset": "date",
-            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date",
-            "help_text": "Expected format: mm/dd/yyyy",
-            "required": true
-        },
-        {
-            "field_name": "date_range_end",
-            "label": "Date collection last date",
-            "preset": "date",
-            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date",
-            "help_text": "Expected format: mm/dd/yyyy",
-            "required": true
-        },
-        {
-            "field_name": "version",
-            "form_placeholder": "0",
-            "label": "Version",
-            "validators": "ignore_if_attachment scheming_required",
-            "required": true
         },
         {
             "field_name": "file_type",
             "help_text": "Indicates what is contained in the file",
             "label": "File Type",
             "preset": "select",
-            "validators": "ignore_if_attachment scheming_required scheming_choices",
+            "validators": "file_type_validator scheming_required scheming_choices",
             "required": true,
             "choices": [
                 {
@@ -955,6 +932,29 @@
                     "value": "infographics"
                 }
             ]
+        },
+        {
+            "field_name": "date_range_start",
+            "label": "Date collection first date",
+            "preset": "date",
+            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date",
+            "help_text": "Expected format: mm/dd/yyyy",
+            "required": true
+        },
+        {
+            "field_name": "date_range_end",
+            "label": "Date collection last date",
+            "preset": "date",
+            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date",
+            "help_text": "Expected format: mm/dd/yyyy",
+            "required": true
+        },
+        {
+            "field_name": "version",
+            "form_placeholder": "0",
+            "label": "Version",
+            "validators": "ignore_if_attachment scheming_required",
+            "required": true
         },
         {
             "field_name": "hxl-ated",

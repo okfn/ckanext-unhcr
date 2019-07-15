@@ -954,36 +954,13 @@
             "required": false, 
             "preset": "resource_format_autocomplete", 
             "field_name": "format", 
-            "label": "Format"
-        }, 
-        {
-            "required": false, 
-            "label": "Date collection first date", 
-            "preset": "date", 
-            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date", 
-            "help_text": "Expected format: mm/dd/yyyy", 
-            "field_name": "date_range_start"
-        }, 
-        {
-            "required": false, 
-            "label": "Date collection last date", 
-            "preset": "date", 
-            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date", 
-            "help_text": "Expected format: mm/dd/yyyy", 
-            "field_name": "date_range_end"
-        }, 
-        {
-            "form_placeholder": "0", 
-            "required": false, 
-            "validators": "ignore_if_attachment scheming_required", 
-            "field_name": "version", 
-            "label": "Version"
+            "label": "File Format"
         }, 
         {
             "required": false, 
             "label": "File Type", 
             "preset": "select", 
-            "validators": "ignore_if_attachment scheming_required scheming_choices", 
+            "validators": "file_type_validator scheming_required scheming_choices", 
             "help_text": "Indicates what is contained in the file", 
             "choices": [
                 {
@@ -1008,6 +985,29 @@
                 }
             ], 
             "field_name": "file_type"
+        }, 
+        {
+            "required": false, 
+            "label": "Date collection first date", 
+            "preset": "date", 
+            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date", 
+            "help_text": "Expected format: mm/dd/yyyy", 
+            "field_name": "date_range_start"
+        }, 
+        {
+            "required": false, 
+            "label": "Date collection last date", 
+            "preset": "date", 
+            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date", 
+            "help_text": "Expected format: mm/dd/yyyy", 
+            "field_name": "date_range_end"
+        }, 
+        {
+            "form_placeholder": "0", 
+            "required": false, 
+            "validators": "ignore_if_attachment scheming_required", 
+            "field_name": "version", 
+            "label": "Version"
         }, 
         {
             "required": false, 

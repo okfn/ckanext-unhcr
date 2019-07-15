@@ -1,13 +1,14 @@
+from nose.plugins.attrib import attr
 from nose.tools import assert_equals, assert_raises
 
 from ckan.plugins.toolkit import ValidationError
 from ckan.tests.helpers import call_action, FunctionalTestBase
 
 
-from ckanext.unhcr.tests import factories
+from ckanext.unhcr.tests import base, factories
 
 
-class TestResourceFields(FunctionalTestBase):
+class TestResourceFields(base.FunctionalTestBase):
 
     def test_file_ment_fields(self):
 
@@ -19,6 +20,7 @@ class TestResourceFields(FunctionalTestBase):
             'format': 'PDF',
             'description': 'Some description',
             'type': 'attachment',
+            'file_type': 'report',
         }
 
         dataset['resources'] = [resource]
@@ -41,6 +43,7 @@ class TestResourceFields(FunctionalTestBase):
             'format': 'CSV',
             'description': 'Some data file',
             'type': 'data',
+            'file_type': 'microdata',
         }
 
         dataset['resources'] = [resource]
@@ -50,7 +53,7 @@ class TestResourceFields(FunctionalTestBase):
 
         errors = e.exception.error_dict['resources'][0]
 
-        for field in ['file_type', 'identifiability', 'date_range_end',
+        for field in ['identifiability', 'date_range_end',
                       'version', 'date_range_start', 'process_status']:
             error = errors[field]
 
@@ -66,6 +69,7 @@ class TestResourceFields(FunctionalTestBase):
             'format': 'PDF',
             'description': 'Some description',
             'type': 'attachment',
+            'file_type': 'report',
         }
         resource2 = {
             'name': 'Test Data file',
@@ -73,6 +77,7 @@ class TestResourceFields(FunctionalTestBase):
             'format': 'CSV',
             'description': 'Some data file',
             'type': 'data',
+            'file_type': 'microdata',
         }
 
         dataset['resources'] = [resource1, resource2]
@@ -82,7 +87,7 @@ class TestResourceFields(FunctionalTestBase):
 
         errors = e.exception.error_dict['resources'][1]
 
-        for field in ['file_type', 'identifiability', 'date_range_end',
+        for field in ['identifiability', 'date_range_end',
                       'version', 'date_range_start', 'process_status']:
             error = errors[field]
 
