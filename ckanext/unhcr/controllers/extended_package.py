@@ -8,6 +8,13 @@ log = logging.getLogger(__name__)
 
 class ExtendedPackageController(PackageController):
 
+    # Read
+
+    def read(self, id):
+        if not toolkit.c.user:
+            return toolkit.render('page.html')
+        return super(ExtendedPackageController, self).read(id)
+
     # Copy
 
     def copy(self, id):
