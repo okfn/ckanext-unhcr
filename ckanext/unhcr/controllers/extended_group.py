@@ -11,5 +11,5 @@ class ExtendedGroupController(GroupController):
 
     def read(self, id):
         if not toolkit.c.user:
-            return toolkit.render('page.html')
+            return toolkit.abort(403, toolkit.render('page.html'))
         return super(ExtendedGroupController, self).read(id)
