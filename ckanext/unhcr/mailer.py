@@ -27,18 +27,17 @@ def mail_user_by_id(user_id, subj, body):
 # Data Container
 
 def compose_container_email_subj(org_dict, event='request'):
-    return '[UNHCR RIDL] Data Container {0}: {1}'.format(event.capitalize(), org_dict['title'])
+    return '[UNHCR RIDL] Data Container %s: %s' % (event.capitalize(), org_dict['title'])
 
 
 def compose_container_email_body(org_dict, user, event='request'):
-    org_link = toolkit.url_for('data-container_read', id=org_dict['name'], qualified=True)
-    return render_jinja2('emails/data_container_{0}.txt'.format(event), {
-        'user_name': user.fullname or user.name,
-        'site_title': config.get('ckan.site_title'),
-        'site_url': config.get('ckan.site_url'),
-        'org_title': org_dict['title'],
-        'org_link': org_link,
-    })
+    context = {}
+    context['user_name'] = user.fullname or user.name
+    context['site_title'] = config.get('ckan.site_title')
+    context['site_url'] = config.get('ckan.site_url')
+    context['org_title'] = org_dict['title']
+    context['org_link'] = toolkit.url_for('data-container_read', id=org_dict['name'], qualified=True)
+    return render_jinja2('emails/data_container_%s.txt' % event, context)
 
 
 # Data Deposit
