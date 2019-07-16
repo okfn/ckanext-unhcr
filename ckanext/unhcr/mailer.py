@@ -2,11 +2,26 @@ import logging
 from ckan import model
 from ckan.common import config
 from ckan.plugins import toolkit
-from ckan.lib.mailer import mail_user
+from ckan.lib import mailer as core_mailer
 from ckan.lib.base import render_jinja2
 import ckan.logic.action.get as get_core
 from ckanext.unhcr import helpers
 log = logging.getLogger(__name__)
+
+
+# General
+
+def mail_user(user, subj, body, headers={}):
+    try:
+        core_mailer.mail_user(user, subj, body, headers=headers)
+    except Exception as exception:
+        log.exception(exception)
+
+
+def mail_user_by_id(user_id, subj, body):
+    user = model.User.get(user_id)
+    headers = {'Content-Type': 'text/html; charset=UTF-8'}
+    return mail_user(user, subj, body, headers=headers)
 
 
 # Data Containers
@@ -19,7 +34,7 @@ def mail_data_container_request_to_sysadmins(context, org_dict):
         if user.email:
             subj = _compose_email_subj(org_dict, event='request')
             body = _compose_email_body(org_dict, user, event='request')
-            mail_user_handling_errors(user, subj, body)
+            mail_user(user, subj, body)
 
 
 def mail_data_container_update_to_user(context, org_dict, event='approval'):
@@ -31,7 +46,7 @@ def mail_data_container_update_to_user(context, org_dict, event='approval'):
         if user and user.email:
             subj = _compose_email_subj(org_dict, event=event)
             body = _compose_email_body(org_dict, user, event=event)
-            mail_user_handling_errors(user, subj, body)
+            mail_user(user, subj, body)
 
 
 def _compose_email_subj(org_dict, event='request'):
@@ -66,18 +81,3 @@ def compose_curation_email_body(dataset, curation, recipient, event, message=Non
     context['recipient'] = recipient
     context['message'] = message
     return render_jinja2('emails/curation_%s.html' % event, context)
-
-
-def mail_user_by_id(user_id, subj, body):
-    user = model.User.get(user_id)
-    headers = {'Content-Type': 'text/html; charset=UTF-8'}
-    return mail_user_handling_errors(user, subj, body, headers=headers)
-
-
-# General
-
-def mail_user_handling_errors(user, subj, body, headers={}):
-    try:
-        mail_user(user, subj, body, headers=headers)
-    except Exception as exception:
-        log.exception(exception)
