@@ -12,14 +12,14 @@ log = logging.getLogger(__name__)
 # General
 
 def mail_user(user, subj, body, headers={}):
-    headers.setdefault('Content-Type', 'text/html; charset=UTF-8')
     try:
+        headers.setdefault('Content-Type', 'text/html; charset=UTF-8')
         core_mailer.mail_user(user, subj, body, headers=headers)
     except Exception as exception:
         log.exception(exception)
 
 
-def mail_user_by_id(user_id, subj, body):
+def mail_user_by_id(user_id, subj, body, headers={}):
     user = model.User.get(user_id)
     return mail_user(user, subj, body, headers=headers)
 
