@@ -12,6 +12,7 @@ log = logging.getLogger(__name__)
 # General
 
 def mail_user(user, subj, body, headers={}):
+    headers.setdefault('Content-Type', 'text/html; charset=UTF-8')
     try:
         core_mailer.mail_user(user, subj, body, headers=headers)
     except Exception as exception:
@@ -20,7 +21,6 @@ def mail_user(user, subj, body, headers={}):
 
 def mail_user_by_id(user_id, subj, body):
     user = model.User.get(user_id)
-    headers = {'Content-Type': 'text/html; charset=UTF-8'}
     return mail_user(user, subj, body, headers=headers)
 
 
