@@ -26,18 +26,18 @@ def mail_user_by_id(user_id, subj, body):
 
 # Data Container
 
-def compose_container_email_subj(org_dict, event='request'):
+def compose_container_email_subj(org_dict, event):
     return '[UNHCR RIDL] Data Container %s: %s' % (event.capitalize(), org_dict['title'])
 
 
-def compose_container_email_body(org_dict, user, event='request'):
+def compose_container_email_body(container, user, event):
     context = {}
-    context['user_name'] = user.fullname or user.name
     context['site_title'] = config.get('ckan.site_title')
     context['site_url'] = config.get('ckan.site_url')
-    context['org_title'] = org_dict['title']
-    context['org_link'] = toolkit.url_for('data-container_read', id=org_dict['name'], qualified=True)
-    return render_jinja2('emails/data_container_%s.txt' % event, context)
+    context['container'] = container
+    context['container_url'] = toolkit.url_for('data-container_read', id=container['name'], qualified=True)
+    context['recipient'] = user.fullname or user.name
+    return render_jinja2('emails/container/%s.html' % event, context)
 
 
 # Data Deposit
@@ -55,4 +55,4 @@ def compose_curation_email_body(dataset, curation, recipient, event, message=Non
     context['curation'] = curation
     context['recipient'] = recipient
     context['message'] = message
-    return render_jinja2('emails/curation_%s.html' % event, context)
+    return render_jinja2('emails/curation/%s.html' % event, context)

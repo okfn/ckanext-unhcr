@@ -1,0 +1,29 @@
+{% extends "emails/curation/base.html" %}
+{% import 'emails/macros/email.html' as email with context %}
+
+{% block email_body %}
+
+  {% call email.paragraph() %}
+    Dear {{ recipient }},
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    A new dataset has been assigned to you for curation
+    {% if message %}
+      with the following message "{{ message }}"
+    {% endif %}
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    <b>{{ dataset.title }}</b>
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    <i>{{ dataset.notes }}</i>
+  {% endcall %}
+
+  {% call email.action(dataset_url) %}
+    Curate Dataset
+  {% endcall %}
+
+{% endblock %}

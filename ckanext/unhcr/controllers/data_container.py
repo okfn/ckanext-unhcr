@@ -20,12 +20,12 @@ class DataContainerController(toolkit.BaseController):
         # organization_patch state=active
         org_dict = patch_core.organization_patch({}, {'id': id, 'state': 'active'})
 
-        # send approval email
+        # send approve email
         for member in get_core.member_list(context, {'id': org_dict['id']}):
             user = model.User.get(member[0])
             if user and user.email:
-                subj = mailer.compose_container_email_subj(org_dict, event='approval')
-                body = mailer.compose_container_email_body(org_dict, user, event='approval')
+                subj = mailer.compose_container_email_subj(org_dict, event='approve')
+                body = mailer.compose_container_email_body(org_dict, user, event='approve')
                 mailer.mail_user(user, subj, body)
 
         # show flash message and redirect

@@ -1,0 +1,22 @@
+{% extends "emails/container/base.html" %}
+{% import 'emails/macros/email.html' as email with context %}
+
+{% block email_body %}
+
+  {% call email.paragraph() %}
+    Dear {{ recipient }},
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    The data container that you requested in the RIDL has been rejected.
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    <b>{{ container.title }}</b>
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    Please contact the site administrators for the further information.
+  {% endcall %}
+
+{% endblock %}

@@ -1,4 +1,4 @@
-{% extends "emails/curation_base.html" %}
+{% extends "emails/container/base.html" %}
 {% import 'emails/macros/email.html' as email with context %}
 
 {% block email_body %}
@@ -8,22 +8,19 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    This dataset has been rejected
-    {% if message %}
-      with the following message "{{ message }}"
-    {% endif %}
+    A new data container has been requested in the RIDL site:
   {% endcall %}
 
   {% call email.paragraph() %}
-    <b>{{ dataset.title }}</b>
+    <b>{{ container.title }}</b>
   {% endcall %}
 
   {% call email.paragraph() %}
-    <i>{{ dataset.notes }}</i>
+    To approve or reject the request, please visit the following page (logged in as a site administrator):
   {% endcall %}
 
-  {% call email.action(dataset_url) %}
-    View Dataset
+  {% call email.action(container_url) %}
+    Review Data Container
   {% endcall %}
 
 {% endblock %}

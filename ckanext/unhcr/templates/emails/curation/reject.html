@@ -1,4 +1,4 @@
-{% extends "emails/curation_base.html" %}
+{% extends "emails/curation/base.html" %}
 {% import 'emails/macros/email.html' as email with context %}
 
 {% block email_body %}
@@ -8,7 +8,7 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    This dataset has been withdrawn from curation by {{ curation.contacts.depositor.title }}
+    This dataset has been rejected
     {% if message %}
       with the following message "{{ message }}"
     {% endif %}
@@ -20,6 +20,10 @@
 
   {% call email.paragraph() %}
     <i>{{ dataset.notes }}</i>
+  {% endcall %}
+
+  {% call email.action(dataset_url) %}
+    View Dataset
   {% endcall %}
 
 {% endblock %}
