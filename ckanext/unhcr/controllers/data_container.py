@@ -13,6 +13,7 @@ class DataContainerController(toolkit.BaseController):
     # Requests
 
     def approve(self, id):
+        context = {'model': model, 'user': toolkit.c.user}
 
         # check access and state
         _raise_not_authz_or_not_pending(id)
@@ -33,6 +34,7 @@ class DataContainerController(toolkit.BaseController):
         toolkit.redirect_to('data-container_read', id=id)
 
     def reject(self, id, *args, **kwargs):
+        context = {'model': model, 'user': toolkit.c.user}
 
         # check access and state
         _raise_not_authz_or_not_pending(id)

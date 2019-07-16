@@ -2,6 +2,7 @@ import mock
 
 import pylons
 from paste.registry import Registry
+from nose.plugins.attrib import attr
 
 from ckan import model
 import ckan.plugins.toolkit as toolkit
