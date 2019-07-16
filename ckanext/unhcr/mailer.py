@@ -5,6 +5,7 @@ from ckan.plugins import toolkit
 from ckan.lib.mailer import mail_user
 from ckan.lib.base import render_jinja2
 import ckan.logic.action.get as get_core
+from ckanext.unhcr import helpers
 log = logging.getLogger(__name__)
 
 
@@ -14,7 +15,7 @@ def mail_data_container_request_to_sysadmins(context, org_dict):
     context.setdefault('model', model)
 
     # Mail all sysadmins
-    for user in _get_sysadmins(context):
+    for user in helpers.get_sysadmins():
         if user.email:
             subj = _compose_email_subj(org_dict, event='request')
             body = _compose_email_body(org_dict, user, event='request')
@@ -31,11 +32,6 @@ def mail_data_container_update_to_user(context, org_dict, event='approval'):
             subj = _compose_email_subj(org_dict, event=event)
             body = _compose_email_body(org_dict, user, event=event)
             mail_user_handling_errors(user, subj, body)
-
-
-def _get_sysadmins(context):
-    model = context['model']
-    return model.Session.query(model.User).filter(model.User.sysadmin==True).all()
 
 
 def _compose_email_subj(org_dict, event='request'):

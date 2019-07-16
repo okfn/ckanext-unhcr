@@ -740,3 +740,7 @@ def add_file_name_suffix(file_name, file_suffix):
         return  '%s (%s).%s' % (file_base, file_suffix, file_extension)
     except ValueError:
         return  '%s (%s)' % (file_name, file_suffix)
+
+
+def get_sysadmins():
+    return model.Session.query(model.User).filter(model.User.sysadmin==True).all()

@@ -1,4 +1,5 @@
 import mock
+from nose.plugins.attrib import attr
 from ckan import model
 from ckanext.unhcr.tests import factories
 from ckan.tests import factories as core_factories
@@ -6,10 +7,11 @@ from nose.tools import assert_raises, assert_equals
 from ckan.tests.helpers import call_action, FunctionalTestBase
 from ckanext.unhcr.mailer import mail_data_container_request_to_sysadmins
 from ckanext.unhcr.mailer import mail_data_container_update_to_user
+from ckanext.unhcr.tests import base
 
 
 # Without jinja2 mocking it can't find a template in the test mode
-class TestMailer(FunctionalTestBase):
+class TestMailer(base.FunctionalTestBase):
 
     context = {'model': model, 'ignore_auth': True}
 
