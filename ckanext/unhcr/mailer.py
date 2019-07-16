@@ -26,17 +26,6 @@ def mail_user_by_id(user_id, subj, body):
 
 # Misc
 
-def mail_data_container_request_to_sysadmins(context, org_dict):
-    context.setdefault('model', model)
-
-    # Mail all sysadmins
-    for user in helpers.get_sysadmins():
-        if user.email:
-            subj = compose_container_email_subj(org_dict, event='request')
-            body = compose_container_email_body(org_dict, user, event='request')
-            mail_user(user, subj, body)
-
-
 def mail_data_container_update_to_user(context, org_dict, event='approval'):
     context.setdefault('model', model)
 

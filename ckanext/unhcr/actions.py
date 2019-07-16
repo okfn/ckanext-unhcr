@@ -152,6 +152,7 @@ def organization_create(context, data_dict):
     # state=approval_needed on creation step and then
     # we patch the organization
 
+    # Notify sysadmins
     notify_sysadmins = False
     user = get_core.user_show(context, {'id': context['user']})
     if not user['sysadmin']:
@@ -161,10 +162,13 @@ def organization_create(context, data_dict):
         org_dict = patch_core.organization_patch(context,
             {'id': org_dict['id'], 'state': 'approval_needed'})
         notify_sysadmins = True
-
     if notify_sysadmins:
         try:
-            mailer.mail_data_container_request_to_sysadmins(context, org_dict)
+            for user in helpers.get_sysadmins():
+                if user.email:
+                    subj = mailer.compose_container_email_subj(org_dict, event='request')
+                    body = mailer.compose_container_email_body(org_dict, user, event='request')
+                    mailer.mail_user(user, subj, body)
         except MailerException:
             message = '[email] Data container request notification is not sent: {0}'
             log.critical(message.format(org_dict['title']))
