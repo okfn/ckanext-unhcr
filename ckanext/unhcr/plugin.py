@@ -299,6 +299,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'package_publish_microdata': actions.package_publish_microdata,
             'package_get_microdata_collections': actions.package_get_microdata_collections,
             'organization_create': actions.organization_create,
+            'organization_member_create': actions.organization_member_create,
+            'organization_member_delete': actions.organization_member_delete,
             'pending_requests_list': actions.pending_requests_list,
             'package_activity_list': actions.package_activity_list,
             'dashboard_activity_list': actions.dashboard_activity_list,

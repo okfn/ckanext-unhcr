@@ -64,11 +64,11 @@ def compose_membership_email_subj(container):
     return '[UNHCR RIDL] Membership: %s' % container.get('title')
 
 
-def compose_membership_email_body(container, user, event):
+def compose_membership_email_body(container, user_dict, event):
     context = {}
     context['site_title'] = config.get('ckan.site_title')
     context['site_url'] = config.get('ckan.site_url')
     context['container'] = container
     context['container_url'] = toolkit.url_for('data-container_read', id=container['name'], qualified=True)
-    context['recipient'] = user.fullname or user.name
+    context['recipient'] = user_dict.get('fullname') or user_dict.get('name')
     return render_jinja2('emails/membership/%s.html' % event, context)

@@ -7,6 +7,7 @@ from ckan.plugins import toolkit
 from ckan.lib.mailer import MailerException
 import ckan.logic.action.get as get_core
 import ckan.logic.action.create as create_core
+import ckan.logic.action.delete as delete_core
 import ckan.logic.action.update as update_core
 import ckan.logic.action.patch as patch_core
 import ckan.lib.activity_streams as activity_streams
@@ -174,6 +175,34 @@ def organization_create(context, data_dict):
             log.critical(message.format(org_dict['title']))
 
     return org_dict
+
+
+def organization_member_create(context, data_dict):
+
+    # Get container/user
+    container = toolkit.get_action('organization_show')(context, {'id': data_dict['id']})
+    user = toolkit.get_action('user_show')(context, {'id': data_dict['username']})
+
+    # Notify the user
+    subj = mailer.compose_membership_email_subj(container)
+    body = mailer.compose_membership_email_body(container, user, 'create')
+    mailer.mail_user_by_id(user['id'], subj, body)
+
+    return create_core.organization_member_create(context, data_dict)
+
+
+def organization_member_delete(context, data_dict):
+
+    # Get container/user
+    container = toolkit.get_action('organization_show')(context, {'id': data_dict['id']})
+    user = toolkit.get_action('user_show')(context, {'id': data_dict['user_id']})
+
+    # Notify the user
+    subj = mailer.compose_membership_email_subj(container)
+    body = mailer.compose_membership_email_body(container, user, 'delete')
+    mailer.mail_user_by_id(user['id'], subj, body)
+
+    return delete_core.organization_member_delete(context, data_dict)
 
 
 # Pending requests
