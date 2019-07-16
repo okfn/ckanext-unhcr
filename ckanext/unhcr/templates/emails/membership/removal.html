@@ -1,0 +1,26 @@
+{% extends "emails/membership/base.html" %}
+{% import 'macros/email.html' as email with context %}
+
+{% block email_body %}
+
+  {% call email.paragraph() %}
+    Dear {{ recipient }},
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    You have been removed from a data container:
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    <b>{{ container.title }}</b>
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    You can view the data container on the following page after logging in to the site:
+  {% endcall %}
+
+  {% call email.action(container_url) %}
+    View Data Container
+  {% endcall %}
+
+{% endblock %}
