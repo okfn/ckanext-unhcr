@@ -24,20 +24,6 @@ def mail_user_by_id(user_id, subj, body):
     return mail_user(user, subj, body, headers=headers)
 
 
-# Misc
-
-def mail_data_container_update_to_user(context, org_dict, event='approval'):
-    context.setdefault('model', model)
-
-    # Mail all members
-    for member in get_core.member_list(context, {'id': org_dict['id']}):
-        user = model.User.get(member[0])
-        if user and user.email:
-            subj = compose_container_email_subj(org_dict, event=event)
-            body = compose_container_email_body(org_dict, user, event=event)
-            mail_user(user, subj, body)
-
-
 # Data Container
 
 def compose_container_email_subj(org_dict, event='request'):

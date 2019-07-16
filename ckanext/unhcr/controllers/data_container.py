@@ -4,8 +4,7 @@ import ckan.plugins.toolkit as toolkit
 import ckan.logic.action.get as get_core
 import ckan.logic.action.patch as patch_core
 import ckan.logic.action.delete as delete_core
-from ckanext.unhcr.mailer import mail_data_container_update_to_user
-from ckanext.unhcr import helpers
+from ckanext.unhcr import helpers, mailer
 log = logging.getLogger(__name__)
 
 
@@ -22,7 +21,12 @@ class DataContainerController(toolkit.BaseController):
         org_dict = patch_core.organization_patch({}, {'id': id, 'state': 'active'})
 
         # send approval email
-        mail_data_container_update_to_user({}, org_dict, event='approval')
+        for member in get_core.member_list(context, {'id': org_dict['id']}):
+            user = model.User.get(member[0])
+            if user and user.email:
+                subj = mailer.compose_container_email_subj(org_dict, event='approval')
+                body = mailer.compose_container_email_body(org_dict, user, event='approval')
+                mailer.mail_user(user, subj, body)
 
         # show flash message and redirect
         toolkit.h.flash_success('Data container "{}" approved'.format(org_dict['title']))
@@ -35,7 +39,12 @@ class DataContainerController(toolkit.BaseController):
 
         # send rejection email
         org_dict = get_core.organization_show({'model': model}, {'id': id})
-        mail_data_container_update_to_user({}, org_dict, event='rejection')
+        for member in get_core.member_list(context, {'id': org_dict['id']}):
+            user = model.User.get(member[0])
+            if user and user.email:
+                subj = mailer.compose_container_email_subj(org_dict, event='rejection')
+                body = mailer.compose_container_email_body(org_dict, user, event='rejection')
+                mailer.mail_user(user, subj, body)
 
         # call organization_purge
         delete_core.organization_purge({'model': model}, {'id': id})
