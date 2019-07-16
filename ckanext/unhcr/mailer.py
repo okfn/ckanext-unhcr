@@ -24,7 +24,7 @@ def mail_user_by_id(user_id, subj, body):
     return mail_user(user, subj, body, headers=headers)
 
 
-# Data Containers
+# Misc
 
 def mail_data_container_request_to_sysadmins(context, org_dict):
     context.setdefault('model', model)
@@ -32,8 +32,8 @@ def mail_data_container_request_to_sysadmins(context, org_dict):
     # Mail all sysadmins
     for user in helpers.get_sysadmins():
         if user.email:
-            subj = _compose_email_subj(org_dict, event='request')
-            body = _compose_email_body(org_dict, user, event='request')
+            subj = compose_container_email_subj(org_dict, event='request')
+            body = compose_container_email_body(org_dict, user, event='request')
             mail_user(user, subj, body)
 
 
@@ -44,16 +44,18 @@ def mail_data_container_update_to_user(context, org_dict, event='approval'):
     for member in get_core.member_list(context, {'id': org_dict['id']}):
         user = model.User.get(member[0])
         if user and user.email:
-            subj = _compose_email_subj(org_dict, event=event)
-            body = _compose_email_body(org_dict, user, event=event)
+            subj = compose_container_email_subj(org_dict, event=event)
+            body = compose_container_email_body(org_dict, user, event=event)
             mail_user(user, subj, body)
 
 
-def _compose_email_subj(org_dict, event='request'):
+# Data Container
+
+def compose_container_email_subj(org_dict, event='request'):
     return '[UNHCR RIDL] Data Container {0}: {1}'.format(event.capitalize(), org_dict['title'])
 
 
-def _compose_email_body(org_dict, user, event='request'):
+def compose_container_email_body(org_dict, user, event='request'):
     org_link = toolkit.url_for('data-container_read', id=org_dict['name'], qualified=True)
     return render_jinja2('emails/data_container_{0}.txt'.format(event), {
         'user_name': user.fullname or user.name,
@@ -65,7 +67,6 @@ def _compose_email_body(org_dict, user, event='request'):
 
 
 # Data Deposit
-# TODO: sync data/container deposit approaches
 
 def compose_curation_email_subj(dataset):
     return '[UNHCR RIDL] Curation: %s' % dataset.get('title')
