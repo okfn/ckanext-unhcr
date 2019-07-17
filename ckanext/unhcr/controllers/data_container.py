@@ -134,8 +134,8 @@ class DataContainerController(toolkit.BaseController):
         # Add membership
         for contname in contnames:
             try:
-                data_dict = {'id': contname, 'username': username, 'role': role}
-                container = toolkit.get_action('group_member_create')(context, data_dict)
+                data_dict = {'id': contname, 'username': username, 'role': role, 'not_notify': True}
+                container = toolkit.get_action('organization_member_create')(context, data_dict)
                 message = 'User "%s" added to the data container "%s"'
                 toolkit.h.flash_success(message % (username, contname))
             except (toolkit.ObjectNotFound, toolkit.ValidationError):
@@ -159,8 +159,8 @@ class DataContainerController(toolkit.BaseController):
 
         # Remove membership
         try:
-            data_dict = {'id': contname, 'username': username}
-            container = toolkit.get_action('group_member_delete')(context, data_dict)
+            data_dict = {'id': contname, 'user_id': username}
+            container = toolkit.get_action('organization_member_delete')(context, data_dict)
         except (toolkit.ObjectNotFound, toolkit.ValidationError):
             message = 'User, container or role not found'
             toolkit.h.flash_error(message)

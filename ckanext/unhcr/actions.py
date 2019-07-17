@@ -179,28 +179,32 @@ def organization_create(context, data_dict):
 
 def organization_member_create(context, data_dict):
 
-    # Get container/user
-    container = toolkit.get_action('organization_show')(context, {'id': data_dict['id']})
-    user = toolkit.get_action('user_show')(context, {'id': data_dict['username']})
+    if not data_dict.get('not_notify'):
 
-    # Notify the user
-    subj = mailer.compose_membership_email_subj(container)
-    body = mailer.compose_membership_email_body(container, user, 'create')
-    mailer.mail_user_by_id(user['id'], subj, body)
+        # Get container/user
+        container = toolkit.get_action('organization_show')(context, {'id': data_dict['id']})
+        user = toolkit.get_action('user_show')(context, {'id': data_dict['username']})
+
+        # Notify the user
+        subj = mailer.compose_membership_email_subj(container)
+        body = mailer.compose_membership_email_body(container, user, 'create')
+        mailer.mail_user_by_id(user['id'], subj, body)
 
     return create_core.organization_member_create(context, data_dict)
 
 
 def organization_member_delete(context, data_dict):
 
-    # Get container/user
-    container = toolkit.get_action('organization_show')(context, {'id': data_dict['id']})
-    user = toolkit.get_action('user_show')(context, {'id': data_dict['user_id']})
+    if not data_dict.get('not_notify'):
 
-    # Notify the user
-    subj = mailer.compose_membership_email_subj(container)
-    body = mailer.compose_membership_email_body(container, user, 'delete')
-    mailer.mail_user_by_id(user['id'], subj, body)
+        # Get container/user
+        container = toolkit.get_action('organization_show')(context, {'id': data_dict['id']})
+        user = toolkit.get_action('user_show')(context, {'id': data_dict['user_id']})
+
+        # Notify the user
+        subj = mailer.compose_membership_email_subj(container)
+        body = mailer.compose_membership_email_body(container, user, 'delete')
+        mailer.mail_user_by_id(user['id'], subj, body)
 
     return delete_core.organization_member_delete(context, data_dict)
 
