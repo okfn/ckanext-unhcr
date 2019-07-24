@@ -7,6 +7,7 @@ from ckan.plugins import toolkit
 from ckan.lib.mailer import MailerException
 import ckan.logic.action.get as get_core
 import ckan.logic.action.create as create_core
+import ckan.logic.action.delete as delete_core
 import ckan.logic.action.update as update_core
 import ckan.logic.action.patch as patch_core
 import ckan.lib.activity_streams as activity_streams
@@ -152,6 +153,7 @@ def organization_create(context, data_dict):
     # state=approval_needed on creation step and then
     # we patch the organization
 
+    # Notify sysadmins
     notify_sysadmins = False
     user = get_core.user_show(context, {'id': context['user']})
     if not user['sysadmin']:
@@ -161,15 +163,50 @@ def organization_create(context, data_dict):
         org_dict = patch_core.organization_patch(context,
             {'id': org_dict['id'], 'state': 'approval_needed'})
         notify_sysadmins = True
-
     if notify_sysadmins:
         try:
-            mailer.mail_data_container_request_to_sysadmins(context, org_dict)
+            for user in helpers.get_sysadmins():
+                if user.email:
+                    subj = mailer.compose_container_email_subj(org_dict, event='request')
+                    body = mailer.compose_container_email_body(org_dict, user, event='request')
+                    mailer.mail_user(user, subj, body)
         except MailerException:
             message = '[email] Data container request notification is not sent: {0}'
             log.critical(message.format(org_dict['title']))
 
     return org_dict
+
+
+def organization_member_create(context, data_dict):
+
+    if not data_dict.get('not_notify'):
+
+        # Get container/user
+        container = toolkit.get_action('organization_show')(context, {'id': data_dict['id']})
+        user = toolkit.get_action('user_show')(context, {'id': data_dict['username']})
+
+        # Notify the user
+        subj = mailer.compose_membership_email_subj(container)
+        body = mailer.compose_membership_email_body(container, user, 'create')
+        mailer.mail_user_by_id(user['id'], subj, body)
+
+    return create_core.organization_member_create(context, data_dict)
+
+
+def organization_member_delete(context, data_dict):
+
+    if not data_dict.get('not_notify'):
+
+        # Get container/user
+        container = toolkit.get_action('organization_show')(context, {'id': data_dict['id']})
+        user = toolkit.get_action('user_show')(context, {'id': data_dict['user_id']})
+
+        # Notify the user
+        subj = mailer.compose_membership_email_subj(container)
+        body = mailer.compose_membership_email_body(container, user, 'delete')
+        mailer.mail_user_by_id(user['id'], subj, body)
+
+    return delete_core.organization_member_delete(context, data_dict)
 
 
 # Pending requests

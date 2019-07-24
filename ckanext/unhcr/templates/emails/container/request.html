@@ -1,0 +1,26 @@
+{% extends "emails/container/base.html" %}
+{% import 'macros/email.html' as email with context %}
+
+{% block email_body %}
+
+  {% call email.paragraph() %}
+    Dear <b>{{ recipient }}</b>,
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    A new data container has been requested in the RIDL site:
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    <b>{{ container.title }}</b>
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    To approve or reject the request, please visit the following page (logged in as a site administrator):
+  {% endcall %}
+
+  {% call email.action(container_url) %}
+    Review Data Container
+  {% endcall %}
+
+{% endblock %}

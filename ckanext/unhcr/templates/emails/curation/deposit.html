@@ -1,10 +1,10 @@
-{% extends "emails/curation_base.html" %}
-{% import 'emails/macros/email.html' as email with context %}
+{% extends "emails/curation/base.html" %}
+{% import 'macros/email.html' as email with context %}
 
 {% block email_body %}
 
   {% call email.paragraph() %}
-    Dear {{ recipient }},
+    Dear <b>{{ recipient }}</b>,
   {% endcall %}
 
   {% call email.paragraph() %}
@@ -19,7 +19,7 @@
     <i>{{ dataset.notes }}</i>
   {% endcall %}
 
-  {% call email.action(dataset.url) %}
+  {% call email.action(dataset_url) %}
     Manage Dataset
   {% endcall %}
 

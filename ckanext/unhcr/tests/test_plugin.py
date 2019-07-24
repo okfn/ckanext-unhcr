@@ -2,6 +2,7 @@ import mock
 
 import pylons
 from paste.registry import Registry
+from nose.plugins.attrib import attr
 
 from ckan import model
 import ckan.plugins.toolkit as toolkit
@@ -9,8 +10,6 @@ from ckanext.unhcr.tests import factories
 from ckan.tests import factories as core_factories
 from nose.tools import assert_raises, assert_equals
 from ckan.tests.helpers import call_action, call_auth, FunctionalTestBase
-from ckanext.unhcr.mailer import mail_data_container_request_to_sysadmins
-from ckanext.unhcr.mailer import mail_data_container_update_to_user
 
 
 # Tests

@@ -1,0 +1,28 @@
+{% extends "emails/membership/base.html" %}
+{% import 'macros/email.html' as email with context %}
+
+{% block email_body %}
+
+  {% call email.paragraph() %}
+    Dear <b>{{ recipient }}</b>,
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    You have been added to the following data containers:
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    {% for item in container %}
+      <p><a href="{{ item.url }}"><b>{{ item.title }}</b></a></p>
+    {% endfor %}
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    You can view all the RIDL data containers on the following page after logging in to the site:
+  {% endcall %}
+
+  {% call email.action(container_url) %}
+    View Data Containers
+  {% endcall %}
+
+{% endblock %}
