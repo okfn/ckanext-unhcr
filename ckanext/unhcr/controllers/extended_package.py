@@ -8,6 +8,15 @@ log = logging.getLogger(__name__)
 
 class ExtendedPackageController(PackageController):
 
+    # Read
+
+    def read(self, id):
+        if not toolkit.c.user:
+            return toolkit.abort(403, toolkit.render('page.html'))
+        return super(ExtendedPackageController, self).read(id)
+
+    # Copy
+
     def copy(self, id):
         context = {'model': model, 'user': toolkit.c.user}
 
@@ -83,6 +92,8 @@ class ExtendedPackageController(PackageController):
 
         return self.new_resource(id, data=data)
 
+    # Download
+
     def resource_download(self, id, resource_id, filename=None):
         """
         Wraps default `resource_download` endpoint checking
@@ -99,3 +110,34 @@ class ExtendedPackageController(PackageController):
 
         return super(ExtendedPackageController, self).resource_download(
             id, resource_id, filename=filename)
+
+    # Publish
+
+    def publish_microdata(self, id):
+        context = {'model': model, 'user': toolkit.c.user}
+        nation = toolkit.request.params.get('nation')
+        repoid = toolkit.request.params.get('repoid')
+
+        # Get dataset
+        try:
+            dataset = toolkit.get_action('package_show')(context, {'id': id})
+        except (toolkit.ObjectNotFound, toolkit.NotAuthorized):
+            message = 'Not authorized to publish of dataset "%s"'
+            return toolkit.abort(403, message % id)
+
+        # Publish to Microdata
+        error = None
+        try:
+            survey = toolkit.get_action('package_publish_microdata')(
+                context, {'id': id, 'nation': nation, 'repoid': repoid})
+        except (toolkit.NotAuthorized, RuntimeError) as exception:
+            error = str(exception)
+
+        # Show flash message and redirect
+        if not error:
+            message = 'Dataset "%s" published to the Microdata library at the following address: "%s"'
+            toolkit.h.flash_success(message % (dataset['title'], survey['url']))
+        else:
+            message = 'Dataset "%s" publishing to the Microdata library is not completed for the following reason: "%s"'
+            toolkit.h.flash_error(message % (dataset['title'], error))
+        toolkit.redirect_to('dataset_edit', id=dataset['name'])

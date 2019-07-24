@@ -1,0 +1,12 @@
+{% ckan_extends %}
+{% import 'macros/form.html' as form %}
+
+{% block admin_form %}
+  {{ super() }}
+  {{ form.input('ckanext.unhcr.microdata_api_key', id='field-ckanext.unhcr.microdata_api_key', label=_('Microdata API Key'), value=data['ckanext.unhcr.microdata_api_key'], error=errors['ckanext.unhcr.microdata_api_key']) }}
+{% endblock %}
+
+{% block admin_form_help %}
+  {{ super() }}
+  <p><strong>Microdata API Key:</strong> A key could be created using this <a href="http://catalog.ihsn.org/api-documentation/catalog-admin/index.html#operation/createApiKey">endpoint</a></p>
+{% endblock %}

@@ -41,6 +41,15 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
 
         activity_stream_string_functions['changed package'] = helpers.custom_activity_renderer
 
+    def update_config_schema(self, schema):
+        schema.update({
+            'ckanext.unhcr.microdata_api_key': [
+                toolkit.get_validator('ignore_missing'),
+            ],
+        })
+
+        return schema
+
     # IRoutes
 
     def before_map(self, _map):
@@ -72,10 +81,16 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
 
         # package
         controller = 'ckanext.unhcr.controllers.extended_package:ExtendedPackageController'
+        _map.connect('/dataset/{id}', controller=controller, action='read')
         _map.connect('/dataset/copy/{id}', controller=controller, action='copy')
         _map.connect('/dataset/{id}/resource_copy/{resource_id}', controller=controller, action='resource_copy')
         _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
         _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
+        _map.connect('/dataset/{id}/publish_microdata', controller=controller, action='publish_microdata')
+
+        # organization
+        controller = 'ckanext.unhcr.controllers.extended_organization:ExtendedOrganizationController'
+        _map.connect('/data-container/{id}', controller=controller, action='read')
 
         # user
         controller = 'ckanext.unhcr.controllers.extended_user:ExtendedUserController'
@@ -145,6 +160,8 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'get_deposited_dataset_user_curation_role': helpers.get_deposited_dataset_user_curation_role,
             'get_dataset_validation_report': helpers.get_dataset_validation_report,
             'get_user_deposited_drafts': helpers.get_user_deposited_drafts,
+            # Microdata
+            'get_microdata_collections': helpers.get_microdata_collections,
             # Misc
             'current_path': helpers.current_path,
             'get_field_label': helpers.get_field_label,
@@ -284,7 +301,11 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
     def get_actions(self):
         return {
             'package_create': actions.package_create,
+            'package_publish_microdata': actions.package_publish_microdata,
+            'package_get_microdata_collections': actions.package_get_microdata_collections,
             'organization_create': actions.organization_create,
+            'organization_member_create': actions.organization_member_create,
+            'organization_member_delete': actions.organization_member_delete,
             'pending_requests_list': actions.pending_requests_list,
             'package_activity_list': actions.package_activity_list,
             'dashboard_activity_list': actions.dashboard_activity_list,
@@ -314,6 +335,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'deposited_dataset_curator_id': validators.deposited_dataset_curator_id,
             'always_false_if_not_sysadmin': validators.always_false_if_not_sysadmin,
             'visibility_validator': validators.visibility_validator,
+            'file_type_validator': validators.file_type_validator,
         }
 
     def get_dataset_labels(self, dataset_obj):

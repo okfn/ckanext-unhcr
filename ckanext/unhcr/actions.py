@@ -1,10 +1,13 @@
 import logging
+import requests
 from ckan import model
 from urlparse import urljoin
+from ckan.common import config
 from ckan.plugins import toolkit
 from ckan.lib.mailer import MailerException
 import ckan.logic.action.get as get_core
 import ckan.logic.action.create as create_core
+import ckan.logic.action.delete as delete_core
 import ckan.logic.action.update as update_core
 import ckan.logic.action.patch as patch_core
 import ckan.lib.activity_streams as activity_streams
@@ -32,6 +35,111 @@ def package_create(context, data_dict):
     return dataset
 
 
+def package_publish_microdata(context, data_dict):
+    default_error = 'Unknown microdata error'
+
+    # Get data
+    dataset_id = data_dict.get('id')
+    nation = data_dict.get('nation')
+    repoid = data_dict.get('repoid')
+
+    # Check access
+    toolkit.check_access('sysadmin', context)
+    api_key = config.get('ckanext.unhcr.microdata_api_key')
+    if not api_key:
+        raise toolkit.NotAuthorized('Microdata API Key is not set')
+
+    # Get dataset/survey
+    headers = {'X-Api-Key': api_key}
+    dataset = toolkit.get_action('package_show')(context, {'id': dataset_id})
+    survey = helpers.convert_dataset_to_microdata_survey(dataset, nation, repoid)
+    idno = survey['study_desc']['title_statement']['idno']
+
+    try:
+
+        # Publish dataset
+        url = 'https://microdata.unhcr.org/index.php/api/datasets/create/survey/%s' % idno
+        response = requests.post(url, headers=headers, json=survey).json()
+        if response.get('status') != 'success':
+            raise RuntimeError(str(response.get('errors', default_error)))
+        template = 'https://microdata.unhcr.org/index.php/catalog/%s'
+        survey['url'] = template % response['dataset']['id']
+        survey['resources'] = []
+        survey['files'] = []
+
+        # Pubish resources/files
+        file_name_counter = {}
+        if dataset.get('resources', []):
+            url = 'https://microdata.unhcr.org/index.php/api/datasets/%s/%s'
+            for resource in dataset.get('resources', []):
+
+                # resource
+                resouce_url = url % (idno, 'resources')
+                md_resource = helpers.convert_resource_to_microdata_resource(resource)
+                response = requests.post(
+                    resouce_url, headers=headers, json=md_resource).json()
+                if response.get('status') != 'success':
+                    raise RuntimeError(str(response.get('errors', default_error)))
+                survey['resources'].append(response['resource'])
+
+                # file
+                file_url = url % (idno, 'files')
+                file_name = resource['url'].split('/')[-1]
+                file_path = helpers.get_resource_file_path(resource)
+                file_mime = resource['mimetype']
+                if not file_name or not file_path:
+                    continue
+                file_name_counter.setdefault(file_name, 0)
+                file_name_counter[file_name] += 1
+                if file_name_counter[file_name] > 1:
+                    file_name = helpers.add_file_name_suffix(
+                        file_name, file_name_counter[file_name] - 1)
+                with open(file_path, 'rb') as file_obj:
+                    file = (file_name, file_obj, file_mime)
+                    response = requests.post(
+                        file_url, headers=headers, files={'file': file}).json()
+                # TODO: update
+                # it's a hack to overcome incorrect Microdata responses
+                # usopported file types fail this way and we are skipping them
+                if not isinstance(response, dict):
+                    continue
+                if response.get('status') != 'success':
+                    raise RuntimeError(str(response.get('errors', default_error)))
+                survey['files'].append(response)
+
+    except requests.exceptions.HTTPError:
+        log.exception(exception)
+        raise RuntimeError('Microdata connection failed')
+
+    return survey
+
+
+def package_get_microdata_collections(context, data_dict):
+    default_error = 'Unknown microdata error'
+
+    # Check access
+    toolkit.check_access('sysadmin', context)
+    api_key = config.get('ckanext.unhcr.microdata_api_key')
+    if not api_key:
+        raise toolkit.NotAuthorized('Microdata API Key is not set')
+
+    try:
+
+        # Get collections
+        headers = {'X-Api-Key': api_key}
+        url = 'https://microdata.unhcr.org/index.php/api/collections'
+        response = requests.get(url, headers=headers).json()
+        if response.get('status') != 'success':
+            raise RuntimeError(str(response.get('errors', default_error)))
+        collections = response['collections']
+
+    except requests.exceptions.HTTPError:
+        log.exception(exception)
+        raise RuntimeError('Microdata connection failed')
+
+    return collections
+
+
 # Organization
 
 def organization_create(context, data_dict):
@@ -45,6 +153,7 @@ def organization_create(context, data_dict):
     # state=approval_needed on creation step and then
     # we patch the organization
 
+    # Notify sysadmins
     notify_sysadmins = False
     user = get_core.user_show(context, {'id': context['user']})
     if not user['sysadmin']:
@@ -54,15 +163,50 @@ def organization_create(context, data_dict):
         org_dict = patch_core.organization_patch(context,
             {'id': org_dict['id'], 'state': 'approval_needed'})
         notify_sysadmins = True
-
     if notify_sysadmins:
         try:
-            mailer.mail_data_container_request_to_sysadmins(context, org_dict)
+            for user in helpers.get_sysadmins():
+                if user.email:
+                    subj = mailer.compose_container_email_subj(org_dict, event='request')
+                    body = mailer.compose_container_email_body(org_dict, user, event='request')
+                    mailer.mail_user(user, subj, body)
         except MailerException:
             message = '[email] Data container request notification is not sent: {0}'
             log.critical(message.format(org_dict['title']))
 
     return org_dict
+
+
+def organization_member_create(context, data_dict):
+
+    if not data_dict.get('not_notify'):
+
+        # Get container/user
+        container = toolkit.get_action('organization_show')(context, {'id': data_dict['id']})
+        user = toolkit.get_action('user_show')(context, {'id': data_dict['username']})
+
+        # Notify the user
+        subj = mailer.compose_membership_email_subj(container)
+        body = mailer.compose_membership_email_body(container, user, 'create')
+        mailer.mail_user_by_id(user['id'], subj, body)
+
+    return create_core.organization_member_create(context, data_dict)
+
+
+def organization_member_delete(context, data_dict):
+
+    if not data_dict.get('not_notify'):
+
+        # Get container/user
+        container = toolkit.get_action('organization_show')(context, {'id': data_dict['id']})
+        user = toolkit.get_action('user_show')(context, {'id': data_dict['user_id']})
+
+        # Notify the user
+        subj = mailer.compose_membership_email_subj(container)
+        body = mailer.compose_membership_email_body(container, user, 'delete')
+        mailer.mail_user_by_id(user['id'], subj, body)
+
+    return delete_core.organization_member_delete(context, data_dict)
 
 
 # Pending requests

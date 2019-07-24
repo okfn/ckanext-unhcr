@@ -39,9 +39,9 @@ class TestAuthUI(AuthTestBase):
         endpoints = [
             ('/', 403),
             ('/dataset', 403),
-            ('/dataset/{}'.format(dataset['name']), 404),
+            ('/dataset/{}'.format(dataset['name']), 403),
             ('/data-container', 403),
-            ('/data-container/{}'.format(data_container['name']), 404),
+            ('/data-container/{}'.format(data_container['name']), 403),
             ('/user', 403),
         ]
         for endpoint in endpoints:

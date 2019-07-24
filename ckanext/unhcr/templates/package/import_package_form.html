@@ -1,14 +1,82 @@
 {% ckan_extends %}
 
-{% block package_metadata_fields_visibility %}
+{% block package_basic_fields_org %}
+  {# if we have a default group then this wants remembering #}
+  {% if data.group_id %}
+    <input type="hidden" name="groups__0__id" value="{{ data.group_id }}" />
+  {% endif %}
+
+  {% set dataset_is_draft = data.get('state', 'draft').startswith('draft') or data.get('state', 'none') ==  'none' %}
+  {% set dataset_has_organization = data.owner_org or data.group_id %}
+  {% set organizations_available = h.organizations_available('create_dataset') %}
+  {% set user_is_sysadmin = h.check_access('sysadmin') %}
+  {% set show_organizations_selector = organizations_available %}
+  {% set show_visibility_selector = dataset_has_organization or (organizations_available and (user_is_sysadmin or dataset_is_draft)) %}
+
+  {% if show_organizations_selector and show_visibility_selector %}
+    <div data-module="dataset-visibility">
+  {% endif %}
+
+  {% if show_organizations_selector %}
+    {% set existing_org = data.owner_org or data.group_id %}
+    <div class="control-group">
+      <label for="field-organizations" class="control-label">{{ _('Organization') }}</label>
+      <div class="controls">
+        <select id="field-organizations" name="owner_org" data-module="autocomplete">
+          {% if h.check_config_permission('create_unowned_dataset') %}
+             <option value="" {% if not selected_org and data.id %} selected="selected" {% endif %}>{{ _('No organization') }}</option>
+          {% endif %}
+          {% for organization in organizations_available %}
+            {% if organization.name != 'data-deposit' %}
+              {# get out first org from users list only if there is not an existing org #}
+              {% set selected_org = (existing_org and existing_org == organization.id) or (not existing_org and not data.id and organization.id == organizations_available[0].id) %}
+              <option value="{{ organization.id }}" {% if selected_org %} selected="selected" {% endif %}>{{ organization.display_name }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if show_visibility_selector %}
+    {% block package_metadata_fields_visibility %}
+      <div class="control-group">
+        <label for="field-visibility" class="control-label">{{ _('Internal Access Level') }}</label>
+        <div class="controls">
+          <select id="field-visibility" name="visibility">
+            {% for option in [('public', _('Internally Visible')), ('restricted', _('Private'))] %}
+            <option value="{{ option[0] }}" {% if option[0] == data.visibility %}selected="selected"{% endif %}>{{ option[1] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    {% endblock %}
+  {% endif %}
+
+  {% block package_basic_fields_license %}
   <div class="control-group">
-    <label for="field-private" class="control-label">{{ _('Internal Access Level') }}</label>
+    <label class="control-label" for="field-license">{{ _("External Access Level") }}</label>
     <div class="controls">
-      <select id="field-private" name="private">
-        {% for option in [('False', _('Internally Visible')), ('True', _('Private'))] %}
-        <option value="{{ option[0] }}" {% if option[0] == data.private|trim %}selected="selected"{% endif %}>{{ option[1] }}</option>
+      <select id="field-license" name="license_id" data-module="autocomplete">
+        {% set existing_license_id = data.get('license_id', 'notspecified') %}
+        {% for license_id, license_desc in h.license_options(existing_license_id) %}
+          <option value="{{ license_id }}" {% if existing_license_id == license_id %}selected="selected"{% endif %}>{{ license_desc }}</option>
         {% endfor %}
       </select>
+      <span class="info-block">
+        <i class="fa fa-info-circle"></i>
+        {% trans %}
+          License definitions and additional information can be found
+          at <a href="http://opendefinition.org/licenses/">opendefinition.org</a>
+        {% endtrans %}
+      </span>
     </div>
   </div>
+  {% endblock %}
+
+  {% if show_organizations_selector and show_visibility_selector %}
+    </div>
+  {% endif %}
+
 {% endblock %}
+

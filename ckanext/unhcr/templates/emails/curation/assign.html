@@ -1,14 +1,14 @@
-{% extends "emails/curation_base.html" %}
-{% import 'emails/macros/email.html' as email with context %}
+{% extends "emails/curation/base.html" %}
+{% import 'macros/email.html' as email with context %}
 
 {% block email_body %}
 
   {% call email.paragraph() %}
-    Dear {{ recipient }},
+    Dear <b>{{ recipient }}</b>,
   {% endcall %}
 
   {% call email.paragraph() %}
-    This dataset has been withdrawn from curation by {{ curation.contacts.depositor.title }}
+    A new dataset has been assigned to you for curation
     {% if message %}
       with the following message "{{ message }}"
     {% endif %}
@@ -20,6 +20,10 @@
 
   {% call email.paragraph() %}
     <i>{{ dataset.notes }}</i>
+  {% endcall %}
+
+  {% call email.action(dataset_url) %}
+    Curate Dataset
   {% endcall %}
 
 {% endblock %}

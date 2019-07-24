@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 OneOf = get_validator('OneOf')
 
 
-# Attachements
+# Attachments
 
 def ignore_if_attachment(key, data, errors, context):
     index = key[1]
@@ -164,3 +164,13 @@ def visibility_validator(key, data, error, context):
         data[('visibility',)] = 'restricted'
     else:
         data[('private',)] = False
+
+
+# File types
+
+def file_type_validator(key, data, errors, context):
+    index = key[1]
+    value = data.get(key)
+    attach = _is_attachment(index, data)
+    if (attach and value == 'microdata') or (not attach and value != 'microdata'):
+        raise Invalid('Invalid value for the "file_type" field')

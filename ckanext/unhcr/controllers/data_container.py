@@ -4,8 +4,7 @@ import ckan.plugins.toolkit as toolkit
 import ckan.logic.action.get as get_core
 import ckan.logic.action.patch as patch_core
 import ckan.logic.action.delete as delete_core
-from ckanext.unhcr.mailer import mail_data_container_update_to_user
-from ckanext.unhcr import helpers
+from ckanext.unhcr import helpers, mailer
 log = logging.getLogger(__name__)
 
 
@@ -14,6 +13,7 @@ class DataContainerController(toolkit.BaseController):
     # Requests
 
     def approve(self, id):
+        context = {'model': model, 'user': toolkit.c.user}
 
         # check access and state
         _raise_not_authz_or_not_pending(id)
@@ -21,21 +21,32 @@ class DataContainerController(toolkit.BaseController):
         # organization_patch state=active
         org_dict = patch_core.organization_patch({}, {'id': id, 'state': 'active'})
 
-        # send approval email
-        mail_data_container_update_to_user({}, org_dict, event='approval')
+        # send approve email
+        for member in get_core.member_list(context, {'id': org_dict['id']}):
+            user = model.User.get(member[0])
+            if user and user.email:
+                subj = mailer.compose_container_email_subj(org_dict, event='approval')
+                body = mailer.compose_container_email_body(org_dict, user, event='approval')
+                mailer.mail_user(user, subj, body)
 
         # show flash message and redirect
         toolkit.h.flash_success('Data container "{}" approved'.format(org_dict['title']))
         toolkit.redirect_to('data-container_read', id=id)
 
     def reject(self, id, *args, **kwargs):
+        context = {'model': model, 'user': toolkit.c.user}
 
         # check access and state
         _raise_not_authz_or_not_pending(id)
 
         # send rejection email
         org_dict = get_core.organization_show({'model': model}, {'id': id})
-        mail_data_container_update_to_user({}, org_dict, event='rejection')
+        for member in get_core.member_list(context, {'id': org_dict['id']}):
+            user = model.User.get(member[0])
+            if user and user.email:
+                subj = mailer.compose_container_email_subj(org_dict, event='rejection')
+                body = mailer.compose_container_email_body(org_dict, user, event='rejection')
+                mailer.mail_user(user, subj, body)
 
         # call organization_purge
         delete_core.organization_purge({'model': model}, {'id': id})
@@ -121,15 +132,24 @@ class DataContainerController(toolkit.BaseController):
             return toolkit.abort(403, message)
 
         # Add membership
+        containers = []
         for contname in contnames:
             try:
-                data_dict = {'id': contname, 'username': username, 'role': role}
-                container = toolkit.get_action('group_member_create')(context, data_dict)
+                container = toolkit.get_action('organization_show')(context, {'id': contname})
+                data_dict = {'id': contname, 'username': username, 'role': role, 'not_notify': True}
+                toolkit.get_action('organization_member_create')(context, data_dict)
                 message = 'User "%s" added to the data container "%s"'
                 toolkit.h.flash_success(message % (username, contname))
+                containers.append(container)
             except (toolkit.ObjectNotFound, toolkit.ValidationError):
                 message = 'User "%s" NOT added to the data container "%s"'
                 toolkit.h.flash_error(message % (username, contname))
+
+        # Notify user
+        user = toolkit.get_action('user_show')(context, {'id': username})
+        subj = mailer.compose_membership_email_subj({'title': 'multiple containers'})
+        body = mailer.compose_membership_email_body(containers, user, 'create_multiple')
+        mailer.mail_user_by_id(username, subj, body)
 
         # Redirect
         toolkit.redirect_to('data_container_membership', username=username)
@@ -148,8 +168,8 @@ class DataContainerController(toolkit.BaseController):
 
         # Remove membership
         try:
-            data_dict = {'id': contname, 'username': username}
-            container = toolkit.get_action('group_member_delete')(context, data_dict)
+            data_dict = {'id': contname, 'user_id': username}
+            container = toolkit.get_action('organization_member_delete')(context, data_dict)
         except (toolkit.ObjectNotFound, toolkit.ValidationError):
             message = 'User, container or role not found'
             toolkit.h.flash_error(message)
