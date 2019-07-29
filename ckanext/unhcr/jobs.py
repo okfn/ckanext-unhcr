@@ -9,25 +9,14 @@ log = logging.getLogger(__name__)
 
 # Module API
 
-def process_dataset_fields(package_id):
-    time.sleep(3)
-
-    # Get package
-    package_show = toolkit.get_action('package_show')
-    package = package_show({'job': True}, {'id': package_id})
-
-    # Modify package
-    package = _modify_package(package)
-
-    # Update package
-    package_update = toolkit.get_action('package_update')
-    package_update({'job': True}, package)
-
-
-def process_dataset_links_on_create(package_id):
-    time.sleep(3)
-
+def process_dataset_on_create(package_id):
     context = {'model': model, 'job': True}
+
+    # Pause excecution
+    time.sleep(3)
+
+    # Process dataset_fields
+    _process_dataset_fields(package_id)
 
     # Create back references
     package = toolkit.get_action('package_show')(context, {'id': package_id})
@@ -35,7 +24,7 @@ def process_dataset_links_on_create(package_id):
     _create_link_package_back_references(package_id, link_package_ids)
 
 
-def process_dataset_links_on_delete(package_id):
+def process_dataset_on_delete(package_id):
     context = {'model': model, 'job': True}
 
     # Delete back references
@@ -44,7 +33,12 @@ def process_dataset_links_on_delete(package_id):
     _delete_link_package_back_references(package_id, link_package_ids)
 
 
-def process_dataset_links_on_update(package_id):
+def process_dataset_on_update(package_id):
+
+    # Process dataset_fields
+    _process_dataset_fields(package_id)
+
+    # Prepare back references
     link_package_ids = _get_link_package_ids_from_revisions(package_id)
 
     # Create back references
@@ -57,6 +51,20 @@ def process_dataset_links_on_update(package_id):
 
 
 # Internal
+
+def _process_dataset_fields(package_id):
+
+    # Get package
+    package_show = toolkit.get_action('package_show')
+    package = package_show({'job': True}, {'id': package_id})
+
+    # Modify package
+    package = _modify_package(package)
+
+    # Update package
+    package_update = toolkit.get_action('package_update')
+    package_update({'job': True}, package)
+
 
 def _modify_package(package):
 
