@@ -177,7 +177,7 @@ class DataContainerController(toolkit.BaseController):
 
         # Show flash message and redirect
         message = 'User "%s" removed from the data container "%s"'
-        toolkit.h.flash_success(message % (username, contname))
+        toolkit.h.flash_error(message % (username, contname))
         toolkit.redirect_to('data_container_membership', username=username)
 
 
