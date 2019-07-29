@@ -138,14 +138,17 @@ class DataContainerController(toolkit.BaseController):
                 container = toolkit.get_action('organization_show')(context, {'id': contname})
                 data_dict = {'id': contname, 'username': username, 'role': role, 'not_notify': True}
                 toolkit.get_action('organization_member_create')(context, data_dict)
-                message = 'User "%s" added to the data container "%s"'
-                toolkit.h.flash_success(message % (username, contname))
                 containers.append(container)
             except (toolkit.ObjectNotFound, toolkit.ValidationError):
-                message = 'User "%s" NOT added to the data container "%s"'
+                message = 'User "%s" NOT added to the following data container: "%s"'
                 toolkit.h.flash_error(message % (username, contname))
 
-        # Notify user
+        # Notify by flash
+        titles = ['"%s"' % cont.get('title', cont['name']) for cont in containers]
+        message = 'User "%s" added to the following data containers: %s'
+        toolkit.h.flash_success(message % (username, ', '.join(titles)))
+
+        # Notify by email
         user = toolkit.get_action('user_show')(context, {'id': username})
         subj = mailer.compose_membership_email_subj({'title': 'multiple containers'})
         body = mailer.compose_membership_email_body(containers, user, 'create_multiple')
