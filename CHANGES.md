@@ -1,5 +1,15 @@
 # RIDL Changelog
 
+## v0.0.2 - 2019-07-31
+
+* Allow all users to search and browse private datasets (not download them).
+* Ability for sysadmins to push datasets to the Microdata library.
+* Fixed Dashboard button link for Data Containers.
+* Improve fields handling in DDI import.
+* Redirect to login page on datasets and data containers if not logged in.
+* Email notifications when users get added to a data container.
+* Several minor bug fixes and enhancements
+
 ## v0.0.1 - 2019-05-30
 
 * Data Deposit feature to provide dataset that don't (yet) conform to the RIDL 
