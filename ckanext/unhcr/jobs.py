@@ -35,6 +35,9 @@ def process_dataset_on_delete(package_id):
 
 def process_dataset_on_update(package_id):
 
+    # Pause execution
+    time.sleep(3)
+
     # Process dataset_fields
     _process_dataset_fields(package_id)
 
