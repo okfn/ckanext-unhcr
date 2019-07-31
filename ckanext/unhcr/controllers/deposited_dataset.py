@@ -118,7 +118,7 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Show flash message and redirect
         message = 'Datasest "%s" Curator updated'
-        toolkit.h.flash_error(message % dataset['title'])
+        toolkit.h.flash_success(message % dataset['title'])
         toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 
     def request_changes(self, dataset_id):
@@ -163,7 +163,7 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Show flash message and redirect
         message = 'Datasest "%s" changes requested'
-        toolkit.h.flash_error(message % dataset['title'])
+        toolkit.h.flash_success(message % dataset['title'])
         toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 
     def request_review(self, dataset_id):
@@ -203,7 +203,7 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Show flash message and redirect
         message = 'Datasest "%s" review requested'
-        toolkit.h.flash_error(message % dataset['title'])
+        toolkit.h.flash_success(message % dataset['title'])
         toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 
     def reject(self, dataset_id):
@@ -283,7 +283,7 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Show flash message and redirect
         message = 'Datasest "%s" submitted'
-        toolkit.h.flash_error(message % dataset['title'])
+        toolkit.h.flash_success(message % dataset['title'])
         toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 
     def withdraw(self, dataset_id):
