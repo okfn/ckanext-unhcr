@@ -80,6 +80,16 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         _map.connect('dataset_curation_activity','/dataset/curation_activity/{dataset_id}', controller=controller, action='activity')
 
         # package
+
+        # Re-add these core ones otherwise our route below will mask them
+        _map.connect('add dataset', '/dataset/new', controller='package', action='new')
+        _map.connect('/dataset/{action}', controller='package',
+                  requirements=dict(action='|'.join([
+                      'list',
+                      'autocomplete',
+                      'search'
+                  ])))
+
         controller = 'ckanext.unhcr.controllers.extended_package:ExtendedPackageController'
         _map.connect('/dataset/{id}', controller=controller, action='read')
         _map.connect('/dataset/copy/{id}', controller=controller, action='copy')
@@ -88,7 +98,13 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
         _map.connect('/dataset/{id}/publish_microdata', controller=controller, action='publish_microdata')
 
+
         # organization
+
+        # Re-add this core one otherwise our route below will mask it
+        _map.connect('data-container_new', '/data-container/new',
+                        controller='group', action='new')
+
         controller = 'ckanext.unhcr.controllers.extended_organization:ExtendedOrganizationController'
         _map.connect('/data-container/{id}', controller=controller, action='read')
 
