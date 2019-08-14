@@ -103,7 +103,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
 
         # Re-add this core one otherwise our route below will mask it
         _map.connect('data-container_new', '/data-container/new',
-                        controller='group', action='new')
+                        controller='organization', action='new')
 
         controller = 'ckanext.unhcr.controllers.extended_organization:ExtendedOrganizationController'
         _map.connect('/data-container/{id}', controller=controller, action='read')
