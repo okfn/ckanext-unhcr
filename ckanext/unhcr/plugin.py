@@ -82,6 +82,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         # package
 
         # Re-add these core ones otherwise our route below will mask them
+        _map.connect('search', '/dataset', controller='package', action='search', highlight_actions='index search')
         _map.connect('add dataset', '/dataset/new', controller='package', action='new')
         _map.connect('/dataset/{action}', controller='package',
                   requirements=dict(action='|'.join([
@@ -97,7 +98,6 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
         _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
         _map.connect('/dataset/{id}/publish_microdata', controller=controller, action='publish_microdata')
-
 
         # organization
 

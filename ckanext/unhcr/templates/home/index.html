@@ -16,7 +16,7 @@
         {% set tags = h.get_facet_items_dict('tags', limit=3) %}
 
         <div class="module module-search module-narrow module-shallow box">
-          <form class="module-content search-form" method="get" action="/dataset">
+          <form class="module-content search-form" method="get" action="{% url_for controller='package', action='search' %}">
             <h3 class="heading">{{ _("Search the library of") }} {{ h.SI_number_span(dataset_count) }}
           {{ _('dataset') if dataset_count == 1 else _('datasets') }}</h3>
             <div class="search-input form-group search-giant">
