@@ -314,7 +314,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
 
     def get_actions(self):
         return {
-            'package_create': actions.package_create,
+            'package_update': actions.package_update,
             'package_publish_microdata': actions.package_publish_microdata,
             'package_get_microdata_collections': actions.package_get_microdata_collections,
             'organization_create': actions.organization_create,

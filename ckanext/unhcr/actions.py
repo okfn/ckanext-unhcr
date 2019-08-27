@@ -17,14 +17,24 @@ log = logging.getLogger(__name__)
 
 # Package
 
-def package_create(context, data_dict):
+def package_update(context, data_dict):
     userobj = toolkit.c.userobj
 
-    # Create dataset
-    dataset = create_core.package_create(context, data_dict)
+    # Decide if we need notification
+    # - deposited-datset AND
+    # - not a test env AND
+    # - just published
+    notify = False
+    if data_dict.get('type') == 'deposited-dataset' and hasattr(userobj, 'id'):
+        dataset = toolkit.get_action('package_show')(context, {'id': data_dict['id']})
+        if dataset.get('state') == 'draft' and data_dict.get('state') == 'active':
+            notify = True
 
-    # Send notification if it's deposited and it's not testing env
-    if dataset.get('type') == 'deposited-dataset' and hasattr(userobj, 'id'):
+    # Update dataset
+    dataset = update_core.package_update(context, data_dict)
+
+    # Send notification if needed
+    if notify:
         dataset['url'] = toolkit.url_for('dataset_read', id=dataset.get('name'), qualified=True)
         curation = helpers.get_deposited_dataset_user_curation_status(dataset, userobj.id)
         subj = mailer.compose_curation_email_subj(dataset)
