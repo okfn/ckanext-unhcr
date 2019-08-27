@@ -15,6 +15,14 @@ class ExtendedPackageController(PackageController):
             return toolkit.abort(403, toolkit.render('page.html'))
         return super(ExtendedPackageController, self).read(id)
 
+    # Publish
+
+    def publish(self, id):
+        context = {'model': model, 'user': toolkit.c.user}
+        dataset = toolkit.get_action('package_patch')(context, {'id': id, 'state': 'active'})
+        toolkit.h.flash_success('Dataset "%s" has been published' % dataset['title'])
+        toolkit.redirect_to('dataset_read', id=dataset['name'])
+
     # Copy
 
     def copy(self, id):

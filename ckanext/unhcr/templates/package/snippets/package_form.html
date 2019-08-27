@@ -43,7 +43,7 @@ then itself be extended to add/remove blocks of functionality. #}
       {# https://github.com/okfn/ckanext-unhcr/issues/206 #}
       {% if data.state == 'draft' and data.resources %}
         <button class="btn btn-primary" type="submit" name="save">{{ _('Add Data') }}</button>
-        <button class="btn btn-primary" name="publish">{{ _('Publish Dataset') }}</button>
+        <a href="/dataset/publish/{{ data.id }}" class="btn btn-primary">{{ _('Publish Dataset') }}</a>
       {% else %}
         {% block save_button %}
           <button class="btn btn-primary" type="submit" name="save">{% block save_button_text %}{{ _('Next: Add Data') }}{% endblock %}</button>
