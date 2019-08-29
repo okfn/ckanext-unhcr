@@ -22,7 +22,10 @@ then itself be extended to add/remove blocks of functionality. #}
   {% endblock %}
 
   {% block form_actions %}
+
+      {{ form.required_message() }}
     <div class="form-actions">
+
       {% block disclaimer %}
         <p class="action-info small">
           {%- trans -%}
@@ -39,17 +42,15 @@ then itself be extended to add/remove blocks of functionality. #}
           <a class="btn btn-danger pull-left" href="{% url_for controller='package', action='delete', id=data.id %}" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to delete this dataset?') }}">{% block delete_button_text %}{{ _('Delete') }}{% endblock %}</a>
         {% endif %}
       {% endblock %}
-      {# To fix the problem with a draft with one resource #}
-      {# https://github.com/okfn/ckanext-unhcr/issues/206 #}
+
       {% if data.state == 'draft' and data.resources %}
-        <button class="btn btn-primary" type="submit" name="save">{{ _('Add Data') }}</button>
+        <button class="btn" type="submit" name="save">{{ _('Add More Data') }}</button>
         <a href="/dataset/publish/{{ data.id }}" class="btn btn-primary">{{ _('Publish Dataset') }}</a>
       {% else %}
         {% block save_button %}
           <button class="btn btn-primary" type="submit" name="save">{% block save_button_text %}{{ _('Next: Add Data') }}{% endblock %}</button>
         {% endblock %}
       {% endif %}
-      {{ form.required_message() }}
     </div>
   {% endblock %}
 </form>
