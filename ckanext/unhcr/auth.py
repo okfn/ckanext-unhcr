@@ -173,16 +173,20 @@ def resource_download(context, data_dict):
     If the parent dataset is marked as `restricted` then  only users belonging to
     the dataset organization can download the file.
     '''
+
+    # Prepare all the parts
     model = context.get('model') or model
     user = context.get('user')
     resource = get_resource_object(context, data_dict)
-
     dataset = toolkit.get_action('package_show')(
         {'ignore_auth': True}, {'id': resource.package_id})
-
     visibility = dataset.get('visibility')
 
-    if not user or not visibility or visibility != 'restricted':
+    # Use default check
+    is_depositor = (
+        dataset.get('type') == 'deposited-dataset' and
+        dataset.get('creator_user_id') == getattr(context.get('auth_user_obj'), 'id', None))
+    if not user or is_depositor or not visibility or visibility != 'restricted':
         return {
             'success': toolkit.check_access('resource_show', context, data_dict)}
 
@@ -190,10 +194,8 @@ def resource_download(context, data_dict):
     if dataset.get('owner_org'):
         user_orgs = toolkit.get_action('organization_list_for_user')(
             {'ignore_auth': True}, {'id': user})
-
         user_in_owner_org = any(
             org['id'] == dataset['owner_org'] for org in user_orgs)
-
         if user_in_owner_org:
             return {'success': True}
 
