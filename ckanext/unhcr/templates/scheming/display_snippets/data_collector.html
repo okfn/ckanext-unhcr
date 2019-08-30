@@ -1,0 +1,10 @@
+{% set values = h.normalize_list(data[field.field_name]) %}
+{% if values|length == 1 %}
+  {{ values[0] }}
+{% else %}
+  <ul>
+    {% for value in values %}
+      <li>{{ value }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}

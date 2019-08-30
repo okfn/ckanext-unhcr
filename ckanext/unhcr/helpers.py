@@ -571,11 +571,11 @@ def convert_dataset_to_microdata_survey(dataset, nation, repoid):
         survey['study_desc']['study_info']['analysis_unit'] = dataset.get('unit_of_measurement')
 
     # data_collectors
-    if dataset.get('data_collector', []):
+    if dataset.get('data_collector', ''):
         survey['study_desc']['method']['data_collection']['data_collectors'] = []
-        for value in dataset.get('data_collector', []):
+        for value in normalize_list(dataset.get('data_collector', '')):
             survey['study_desc']['method']['data_collection']['data_collectors'].append(
-                {'name': get_choice_label('data_collector', value)})
+                {'name': value})
 
     # sampling_procedure
     sampling_procedure = None

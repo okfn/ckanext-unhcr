@@ -224,7 +224,7 @@ class TestHelpers(FunctionalTestBase):
         assert_equals(error.error_summary, {
             'Keywords': 'Select at least one',
             'Archived': 'Missing value',
-            'Data collector': 'Select at least one',
+            'Data collector': 'Missing value',
             'Unit of measurement': 'Missing value',
             'Data collection technique': 'Missing value',
         })
@@ -261,7 +261,7 @@ class TestHelpers(FunctionalTestBase):
             date_range_start = '2015-01-01',
             date_range_end = '2016-01-01',
             geog_coverage = 'world',
-            data_collector = ['acf'],
+            data_collector = 'ACF,UNHCR',
             data_collection_technique = 'f2f',
             sampling_procedure = 'nonprobability',
             data_collection_notes = 'Notes about data collection',
@@ -313,7 +313,8 @@ class TestHelpers(FunctionalTestBase):
                 'method': {
                     'data_collection': {
                         'data_collectors': [
-                            {'name': 'Action contre la faim'},
+                            {'name': 'ACF'},
+                            {'name': 'UNHCR'},
                         ],
                         'sampling_procedure': 'Non-probability',
                         'coll_mode': 'Face-to-face interview',
@@ -335,7 +336,7 @@ class TestHelpers(FunctionalTestBase):
             unit_of_measurement = 'individual',
             keywords = ['3', '4'],
             archived = 'False',
-            data_collector = ['acf'],
+            data_collector = 'ACF,UNHCR',
             data_collection_technique = 'f2f',
             sampling_procedure = 'nonprobability',
         )
@@ -367,7 +368,8 @@ class TestHelpers(FunctionalTestBase):
                 'method': {
                     'data_collection': {
                         'data_collectors': [
-                            {'name': 'Action contre la faim'},
+                            {'name': 'ACF'},
+                            {'name': 'UNHCR'},
                         ],
                         'sampling_procedure': 'Non-probability',
                         'coll_mode': 'Face-to-face interview',

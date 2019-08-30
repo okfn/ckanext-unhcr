@@ -91,6 +91,18 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
                       'search'
                   ])))
 
+        # Re-add these DDI ones otherwise our route below will mask them
+        _map.connect(
+            '/dataset/import',
+            controller='ckanext.ddi.controllers:ImportFromXml',
+            action='import_form'
+        )
+        _map.connect(
+            '/dataset/importfile',
+            controller='ckanext.ddi.controllers:ImportFromXml',
+            action='run_import'
+        )
+
         controller = 'ckanext.unhcr.controllers.extended_package:ExtendedPackageController'
         _map.connect('/dataset/{id}', controller=controller, action='read')
         _map.connect('/dataset/publish/{id}', controller=controller, action='publish')
@@ -181,6 +193,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'get_microdata_collections': helpers.get_microdata_collections,
             # Misc
             'current_path': helpers.current_path,
+            'normalize_list': helpers.normalize_list,
             'get_field_label': helpers.get_field_label,
             'can_download': helpers.can_download,
             'get_org_admins_email_link': helpers.get_org_admins_email_link,
@@ -229,20 +242,25 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         for field in fields:
             if pkg_dict.get(field):
                 value = pkg_dict[field]
-                try:
-                    values = json.loads(pkg_dict[field])
-                except ValueError:
-                    values = [value]
 
-                out = []
+                # Free text values: value1,value2
+                if field == 'data_collector':
+                    pkg_dict['vocab_' + field] = helpers.normalize_list(value)
 
-                for schema_field in schema['dataset_fields']:
-                    if schema_field['field_name'] == field:
-                        for item in values:
-                            for choice in schema_field['choices']:
-                                if choice['value'] == item:
-                                    out.append(choice['label'])
-                pkg_dict['vocab_' + field] = out
+                # Select values: ["value1","value2"]
+                else:
+                    try:
+                        values = json.loads(pkg_dict[field])
+                    except ValueError:
+                        values = [value]
+                    out = []
+                    for schema_field in schema['dataset_fields']:
+                        if schema_field['field_name'] == field:
+                            for item in values:
+                                for choice in schema_field['choices']:
+                                    if choice['value'] == item:
+                                        out.append(choice['label'])
+                    pkg_dict['vocab_' + field] = out
 
         # Index additional data for deposited dataset
 

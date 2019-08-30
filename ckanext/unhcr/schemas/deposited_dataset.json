@@ -132,172 +132,11 @@
             "label": "Original ID"
         }, 
         {
+            "display_snippet": "data_collector.html", 
             "required": false, 
-            "choices": [
-                {
-                    "value": "unhcr", 
-                    "label": "United Nations High Commissioner for Refugees"
-                }, 
-                {
-                    "value": "acf", 
-                    "label": "Action contre la faim"
-                }, 
-                {
-                    "value": "reach", 
-                    "label": "Impact - REACH"
-                }, 
-                {
-                    "value": "acted", 
-                    "label": "Agency for Technical Cooperation and Development"
-                }, 
-                {
-                    "value": "care", 
-                    "label": "CARE International"
-                }, 
-                {
-                    "value": "caritas", 
-                    "label": "Caritas"
-                }, 
-                {
-                    "value": "drc", 
-                    "label": "Danish Refugee Council"
-                }, 
-                {
-                    "value": "intersos", 
-                    "label": "INTERSOS"
-                }, 
-                {
-                    "value": "iom", 
-                    "label": "International Organization for Migration"
-                }, 
-                {
-                    "value": "mc", 
-                    "label": "Mercy Corps"
-                }, 
-                {
-                    "value": "nrc", 
-                    "label": "Norwegian Refugee Council "
-                }, 
-                {
-                    "value": "sci", 
-                    "label": "Save the Children International"
-                }, 
-                {
-                    "value": "mapaction", 
-                    "label": "MapAction"
-                }, 
-                {
-                    "value": "cartong", 
-                    "label": "CartONG"
-                }, 
-                {
-                    "value": "immap", 
-                    "label": "iMMAP"
-                }, 
-                {
-                    "value": "ohchr", 
-                    "label": "Office of the High Commissioner for Human Rights"
-                }, 
-                {
-                    "value": "fao", 
-                    "label": "Food and Agriculture Organization"
-                }, 
-                {
-                    "value": "unami", 
-                    "label": "United Nations Assistance Mission for Iraq"
-                }, 
-                {
-                    "value": "undp", 
-                    "label": "United Nations Development Programme"
-                }, 
-                {
-                    "value": "unesco", 
-                    "label": "United Nations Educational, Scientific and Cultural Organization"
-                }, 
-                {
-                    "value": "unfd", 
-                    "label": "Union Nationale des Femmes de Djibouti"
-                }, 
-                {
-                    "value": "unfpa", 
-                    "label": "United Nations Populations Fund"
-                }, 
-                {
-                    "value": "unhabitat", 
-                    "label": "UN-HABITAT"
-                }, 
-                {
-                    "value": "unhas", 
-                    "label": "United Nations Humanitarian Air Service"
-                }, 
-                {
-                    "value": "unicef", 
-                    "label": "United Nations Children's Fund"
-                }, 
-                {
-                    "value": "unido", 
-                    "label": "United Nations Industrial Development Organization"
-                }, 
-                {
-                    "value": "unitar_unosat", 
-                    "label": "UNITAR/UNOSAT"
-                }, 
-                {
-                    "value": "unmacc", 
-                    "label": "United Nations Mine Action Coordination Centre"
-                }, 
-                {
-                    "value": "unmil", 
-                    "label": "United Nations Mission in Liberia"
-                }, 
-                {
-                    "value": "unmiss", 
-                    "label": "United Nations Mission in South Sudan"
-                }, 
-                {
-                    "value": "unocha", 
-                    "label": "United Nations Office for the Coordination of Humanitarian Affairs"
-                }, 
-                {
-                    "value": "unops", 
-                    "label": "United Nations Office for Project Services"
-                }, 
-                {
-                    "value": "unowas", 
-                    "label": "UN Office for West Africa and the Sahel"
-                }, 
-                {
-                    "value": "unrwa", 
-                    "label": "United Nations Relief and Works Agency "
-                }, 
-                {
-                    "value": "unsc", 
-                    "label": "UN Security Council"
-                }, 
-                {
-                    "value": "unv", 
-                    "label": "UNV"
-                }, 
-                {
-                    "value": "unwomen", 
-                    "label": "UN Women"
-                }, 
-                {
-                    "value": "wfp", 
-                    "label": "World food Programme - Programme Alimentaire Mondial"
-                }, 
-                {
-                    "value": "who", 
-                    "label": "World Health Organization"
-                }, 
-                {
-                    "value": "world_bank", 
-                    "label": "World Bank"
-                }
-            ], 
-            "preset": "multiple_select", 
-            "help_text": "Which organization owns / collected the data. Multiple values are allowed.", 
+            "form_snippet": "data_collector.html", 
             "label": "Data Collector", 
+            "help_text": "Which organization owns / collected the data. Multiple values are allowed. It's possible to use values from the drop-down list or custom values. Use <enter> to finish typing a data collector's title", 
             "field_name": "data_collector"
         }, 
         {
@@ -733,7 +572,7 @@
                 }, 
                 {
                     "value": "anonymized_public", 
-                    "label": "Anonymized 3st level: Public Use File (PUF)"
+                    "label": "Anonymized 3rd level: Public Use File (PUF)"
                 }
             ], 
             "help_text": "Indicates if personally identifiable data is contained in the dataset", 

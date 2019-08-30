@@ -13,7 +13,7 @@ class Dataset(factories.Dataset):
     unit_of_measurement = 'individual'
     keywords = ['3', '4']
     archived = 'False'
-    data_collector = ['acf']
+    data_collector = 'ACF,UNHCR'
     data_collection_technique = 'f2f'
     sampling_procedure = 'nonprobability'
     operational_purpose_of_data = 'cartography'
