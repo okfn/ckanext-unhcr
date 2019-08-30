@@ -769,6 +769,10 @@
                 {
                     "label": "Infographics & Dashboard",
                     "value": "infographics"
+                },
+                {
+                    "label": "Other",
+                    "value": "other"
                 }
             ]
         },

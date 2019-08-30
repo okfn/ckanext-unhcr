@@ -821,6 +821,10 @@
                 {
                     "value": "infographics", 
                     "label": "Infographics & Dashboard"
+                }, 
+                {
+                    "value": "other", 
+                    "label": "Other"
                 }
             ], 
             "field_name": "file_type"
