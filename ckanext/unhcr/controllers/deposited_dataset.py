@@ -28,8 +28,9 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Authorize context
         if 'approve' not in curation['actions']:
-            message = 'Not authorized to approve dataset "%s"'
-            return toolkit.abort(403, message % dataset_id)
+            message = 'This action is not available for the dataset "%s"'
+            toolkit.h.flash_error(message % dataset['title'])
+            toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
         context['ignore_auth'] = True
 
         # Update dataset
@@ -76,8 +77,9 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Authorize context
         if 'assign' not in curation['actions']:
-            message = 'Not authorized to assign Curator to dataset "%s"'
-            return toolkit.abort(403, message % dataset_id)
+            message = 'This action is not available for the dataset "%s"'
+            toolkit.h.flash_error(message % dataset['title'])
+            toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
         context['ignore_auth'] = True
 
         # Update dataset
@@ -133,8 +135,9 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Authorize context
         if 'request_changes' not in curation['actions']:
-            message = 'Not authorized to request changes of dataset "%s"'
-            return toolkit.abort(403, message % dataset_id)
+            message = 'This action is not available for the dataset "%s"'
+            toolkit.h.flash_error(message % dataset['title'])
+            toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
         context['ignore_auth'] = True
 
         # Update dataset
@@ -178,8 +181,9 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Authorize context
         if 'request_review' not in curation['actions']:
-            message = 'Not authorized to request review of dataset "%s"'
-            return toolkit.abort(403, message % dataset_id)
+            message = 'This action is not available for the dataset "%s"'
+            toolkit.h.flash_error(message % dataset['title'])
+            toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
         context['ignore_auth'] = True
 
         # Update dataset
@@ -218,8 +222,9 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Authorize context
         if 'reject' not in curation['actions']:
-            message = 'Not authorized to reject dataset "%s"'
-            return toolkit.abort(403, message % dataset_id)
+            message = 'This action is not available for the dataset "%s"'
+            toolkit.h.flash_error(message % dataset['title'])
+            toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
         context['ignore_auth'] = True
 
         # Delete rejected dataset, but first update its name so it can be reused
@@ -257,8 +262,9 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Authorize context
         if 'submit' not in curation['actions']:
-            message = 'Not authorized to submit dataset "%s"'
-            return toolkit.abort(403, message % dataset_id)
+            message = 'This action is not available for the dataset "%s"'
+            toolkit.h.flash_error(message % dataset['title'])
+            toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
         context['ignore_auth'] = True
 
         # Update dataset
@@ -298,8 +304,9 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Authorize context
         if 'withdraw' not in curation['actions']:
-            message = 'Not authorized to withdraw dataset "%s"'
-            return toolkit.abort(403, message % dataset_id)
+            message = 'This action is not available for the dataset "%s"'
+            toolkit.h.flash_error(message % dataset['title'])
+            toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
         context['ignore_auth'] = True
 
         # Delete withdrawn dataset, but first update its name so it can be reused

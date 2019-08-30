@@ -11,6 +11,7 @@ assert_in = core_helpers.assert_in
 assert_not_in = core_helpers.assert_not_in
 
 # TODO: optimize testing speed
+@attr('only')
 class TestDepositedDatasetController(base.FunctionalTestBase):
 
     ACTIONS = [
@@ -121,7 +122,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Approve dataset
-        self.make_request('approve', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('approve', user=user, status=403 if user == 'depositor' else 302)
 
     # Approve (submitted)
 
@@ -164,7 +166,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Approve dataset
-        self.make_request('approve', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('approve', user=user, status=302)
 
     def test_approve_submitted_not_valid(self):
         for user in ['sysadmin', 'depadmin', 'curator']:
@@ -178,7 +181,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Approve dataset
-        self.make_request('approve', user=user, status=403)
+        self.make_request('approve', user=user, status=302)
 
     def test_approve_submitted_not_granted(self):
         for user in ['creator', 'depositor']:
@@ -192,7 +195,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Approve dataset
-        self.make_request('approve', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('approve', user=user, status=403 if user == 'depositor' else 302)
 
     # Approve (review)
 
@@ -259,7 +263,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Approve dataset
-        self.make_request('approve', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('approve', user=user, status=403 if user == 'depositor' else 302)
 
     # Assign (draft)
 
@@ -271,7 +276,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Request changes
         params = {'curator_id': self.curator['id']}
-        self.make_request('assign', user=user, params=params, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('assign', user=user, params=params, status=403 if user == 'depositor' else 302)
 
     # Assign (submitted)
 
@@ -367,7 +373,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Assign curator
         params = {'curator_id': self.curator['id']}
-        self.make_request('assign', user=user, params=params, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('assign', user=user, params=params, status=403 if user == 'depositor' else 302)
 
     # Assign (review)
 
@@ -384,7 +391,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Request changes
         params = {'curator_id': self.curator['id']}
-        self.make_request('assign', user=user, params=params, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('assign', user=user, params=params, status=403 if user == 'depositor' else 302)
 
     # Request Changes (draft)
 
@@ -395,7 +403,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
     def check_request_changes_draft_not_granted(self, user):
 
         # Request changes
-        self.make_request('request_changes', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('request_changes', user=user, status=403 if user == 'depositor' else 302)
 
     # Request Changes (submitted)
 
@@ -432,7 +441,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Request changes
-        self.make_request('request_changes', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('request_changes', user=user, status=403 if user == 'depositor' else 302)
 
     # Request Changes (review)
 
@@ -475,7 +485,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Request changes
-        self.make_request('request_changes', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('request_changes', user=user, status=403 if user == 'depositor' else 302)
 
     # Request Review (draft)
 
@@ -495,7 +506,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Request review
-        self.make_request('request_review', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('request_review', user=user, status=403 if user == 'depositor' else 302)
 
     # Request Review (submitted)
 
@@ -543,7 +555,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Request review
-        self.make_request('request_review', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('request_review', user=user, status=302)
 
     def test_request_review_submitted_not_valid(self):
         for user in ['sysadmin', 'depadmin', 'curator']:
@@ -558,7 +571,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Request review
-        self.make_request('request_review', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('request_review', user=user, status=302)
 
     def test_request_review_submitted_not_granted(self):
         for user in ['creator', 'depositor']:
@@ -573,7 +587,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Request review
-        self.make_request('request_review', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('request_review', user=user, status=403 if user == 'depositor' else 302)
 
     # Request Review (review)
 
@@ -589,7 +604,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Request review
-        self.make_request('request_review', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('request_review', user=user, status=403 if user == 'depositor' else 302)
 
     # Reject (draft)
 
@@ -600,7 +616,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
     def check_reject_draft_not_granted(self, user):
 
         # Reject dataset
-        self.make_request('reject', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('reject', user=user, status=403 if user == 'depositor' else 302)
 
     # Reject (submitted)
 
@@ -638,7 +655,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Reject dataset
-        self.make_request('reject', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('reject', user=user, status=403 if user == 'depositor' else 302)
 
     # Reject (review)
 
@@ -654,7 +672,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Reject dataset
-        self.make_request('reject', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('reject', user=user, status=403 if user == 'depositor' else 302)
 
     # Submit (draft)
 
@@ -681,7 +700,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
     def check_submit_draft_not_granted(self, user):
 
         # Submit dataset
-        self.make_request('submit', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('submit', user=user, status=403 if user == 'depositor' else 302)
 
     # Submit (submitted)
 
@@ -697,7 +717,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Submit dataset
-        self.make_request('submit', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('submit', user=user, status=403 if user == 'depositor' else 302)
 
     # Submit (review)
 
@@ -713,7 +734,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Submit dataset
-        self.make_request('submit', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('submit', user=user, status=403 if user == 'depositor' else 302)
 
     # Withdraw (draft)
 
@@ -741,7 +763,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
     def check_withdraw_draft_not_granted(self, user):
 
         # Withdraw dataset
-        self.make_request('withdraw', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('withdraw', user=user, status=403 if user == 'depositor' else 302)
 
     # Withdraw (submitted)
 
@@ -757,7 +780,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Withdraw dataset
-        self.make_request('withdraw', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('withdraw', user=user, status=403 if user == 'depositor' else 302)
 
     # Withdraw (review)
 
@@ -773,7 +797,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         })
 
         # Withdraw dataset
-        self.make_request('withdraw', user=user, status=403)
+        # TODO: follow redirect and check for "action is not available"
+        self.make_request('withdraw', user=user, status=403 if user == 'depositor' else 302)
 
     # Activities
 
