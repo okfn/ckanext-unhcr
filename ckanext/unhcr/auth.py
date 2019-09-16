@@ -226,3 +226,7 @@ def unhcr_datastore_search_sql(context, data_dict):
                 'success': False,
                 'msg': 'Not authorized to read resource.'}
     return {'success': True}
+
+
+def datasets_validation_report(context, data_dict):
+    return {'success': False}

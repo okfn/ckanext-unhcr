@@ -1,10 +1,10 @@
 import logging
 import requests
 from ckan import model
-from urlparse import urljoin
 from ckan.common import config
 from ckan.plugins import toolkit
 from ckan.lib.mailer import MailerException
+import ckan.lib.plugins as lib_plugins
 import ckan.logic.action.get as get_core
 import ckan.logic.action.create as create_core
 import ckan.logic.action.delete as delete_core
@@ -12,6 +12,8 @@ import ckan.logic.action.update as update_core
 import ckan.logic.action.patch as patch_core
 import ckan.lib.activity_streams as activity_streams
 from ckanext.unhcr import helpers, mailer
+from ckanext.scheming.helpers import scheming_get_dataset_schema
+
 log = logging.getLogger(__name__)
 
 
@@ -397,3 +399,38 @@ def datastore_search(action, context, data_dict):
 def datastore_search_sql(action, context, data_dict):
     toolkit.check_access('unhcr_datastore_search_sql', context, data_dict)
     return action(context, data_dict)
+
+
+@toolkit.side_effect_free
+def datasets_validation_report(context, data_dict):
+
+    toolkit.check_access('datasets_validation_report', context, data_dict)
+    search_params = {
+        'q': '*:*',
+        'include_private': True,
+        'rows': 1000
+    }
+    query = toolkit.get_action('package_search')({'ignore_auth': True}, search_params)
+
+    count = query['count']
+    datasets = query['results']
+
+    out = {
+        'count': count,
+        'datasets': [],
+    }
+
+    # get the schema
+    package_plugin = lib_plugins.lookup_package_plugin('dataset')
+    schema = package_plugin.update_package_schema()
+    context = {'model': model, 'session': model.Session, 'user': toolkit.c.user}
+    for dataset in datasets:
+        data, errors = package_plugin.validate(context, dataset, schema, 'package_update')
+        if errors:
+            out['datasets'].append({
+                'id': dataset['id'],
+                'name': dataset['name'],
+                'errors': errors,
+            })
+
+    return out

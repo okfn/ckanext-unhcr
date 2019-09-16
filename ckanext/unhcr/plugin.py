@@ -327,6 +327,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
         functions['unhcr_datastore_info'] = auth.unhcr_datastore_info
         functions['unhcr_datastore_search'] = auth.unhcr_datastore_search
         functions['unhcr_datastore_search_sql'] = auth.unhcr_datastore_search_sql
+        functions['datasets_validation_report'] = actions.datasets_validation_report
         return functions
 
     # IActions
@@ -353,6 +354,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'datastore_info': actions.datastore_info,
             'datastore_search': actions.datastore_search,
             'datastore_search_sql': actions.datastore_search_sql,
+            'datasets_validation_report': actions.datasets_validation_report,
         }
 
     # IValidators
