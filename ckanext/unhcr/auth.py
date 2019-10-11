@@ -27,7 +27,11 @@ def restrict_access_to_get_auth_functions():
         'site_read',  # Because of madness in the API controller
         'organiation_list_for_user',  # Because of #4097
         'get_site_user',
-        ]
+        'user_reset',  # saml2
+        'user_create',  # saml2
+        'user_delete',  # saml2
+        'request_reset',  # saml2
+    ]
     module_path = 'ckan.logic.auth.get'
     module = __import__(module_path)
 
@@ -63,6 +67,9 @@ def restrict_access_to_get_auth_functions():
 def site_read(context, data_dict):
     if toolkit.request.path.startswith('/api'):
         # Let individual API actions deal with their auth
+        return {'success': True}
+    elif toolkit.request.path == '/service/login':
+        # Allow local logins
         return {'success': True}
     if not context.get('user'):
         return {'success': False}
