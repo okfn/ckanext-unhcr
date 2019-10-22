@@ -194,7 +194,6 @@ Add admins and and editors to data deposit using web interface:
 - make `ckan_depadmin` admin of `data-deposit`
 - make `ckan_curator1` and `ckan_curator2` editors of `data-deposit`
 
-
 ## Testing email notifications
 
 We use a fake SMTP server to test email notifications:
