@@ -10,8 +10,8 @@ assets:
 	npx grunt postcss
 
 docker:
-	docker pull openknowledge/ckan-base:2.7 && \
-	docker pull openknowledge/ckan-dev:2.7 && \
+	docker pull openknowledge/ckan-base:2.8 && \
+	docker pull openknowledge/ckan-dev:2.8 && \
 	docker-compose -f ../../docker-compose.dev.yml build
 
 e2e:

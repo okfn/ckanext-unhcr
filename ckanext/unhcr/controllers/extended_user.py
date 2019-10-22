@@ -22,6 +22,7 @@ class ExtendedUserController(UserController):
             return toolkit.abort(403, message)
 
         return toolkit.render('user/dashboard_requests.html', {
+            'user_dict': context['user'],
             'requests': requests,
         })
 

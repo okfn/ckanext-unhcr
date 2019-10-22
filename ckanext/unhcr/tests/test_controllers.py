@@ -11,7 +11,6 @@ assert_in = core_helpers.assert_in
 assert_not_in = core_helpers.assert_not_in
 
 # TODO: optimize testing speed
-@attr('only')
 class TestDepositedDatasetController(base.FunctionalTestBase):
 
     ACTIONS = [
