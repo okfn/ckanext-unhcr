@@ -139,10 +139,13 @@ a {
 .navbar {
   & .container {
     @media (--portrait-tablet-up) {
-      width: 724px;
+      width: var(--container-portrait-tablet-up);
     }
     @media (--landscape-tablet-up) {
-      width: 940px;
+      width: var(--container-landscape-tablet-up);
+    }
+    @media (--desktop-up) {
+      width: var(--container-desktop-up);
     }
   }
 
