@@ -694,6 +694,7 @@ def can_download(package_dict):
     except (toolkit.NotAuthorized, toolkit.ObjectNotFound, IndexError):
         return False
 
+
 def get_org_admins_email_link(package_dict):
     try:
         context = {'ignore_auth': True}

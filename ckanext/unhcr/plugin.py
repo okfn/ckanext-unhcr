@@ -198,6 +198,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'get_field_label': helpers.get_field_label,
             'can_download': helpers.can_download,
             'get_org_admins_email_link': helpers.get_org_admins_email_link,
+            'get_choice_label': helpers.get_choice_label,
         }
 
     # IPackageController
