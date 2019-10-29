@@ -109,6 +109,39 @@
             "field_name": "visibility"
         }, 
         {
+            "display_snippet": null, 
+            "required": false, 
+            "choices": [
+                {
+                    "value": "not_available", 
+                    "label": "Not available"
+                }, 
+                {
+                    "value": "direct_access", 
+                    "label": "Direct access"
+                }, 
+                {
+                    "value": "public_use", 
+                    "label": "Public use"
+                }, 
+                {
+                    "value": "licensed_use", 
+                    "label": "Licensed use"
+                }, 
+                {
+                    "value": "data_enclave", 
+                    "label": "Data enclave"
+                }, 
+                {
+                    "value": "open_access", 
+                    "label": "Open access"
+                }
+            ], 
+            "preset": "select", 
+            "label": "External access level", 
+            "field_name": "external_access_level"
+        }, 
+        {
             "required": false, 
             "choices": [
                 {
@@ -743,13 +776,6 @@
             "label": "DDI", 
             "help_text": "Determines if a dataset was imported from a DDI XML file", 
             "field_name": "ddi"
-        }, 
-        {
-            "help_text": "License definitions and additional information can be found at http://opendefinition.org/. it will be applicable only to datasets published in the Microdata Library", 
-            "form_snippet": "license.html", 
-            "required": false, 
-            "field_name": "license_id", 
-            "label": "External access level"
         }
     ], 
     "resource_fields": [
