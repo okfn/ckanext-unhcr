@@ -8,8 +8,8 @@
 
 {% block primary_content_inner %}
   <h2 class="hide-heading">{{ _('My Datasets') }}</h2>
-  {% if user_dict.datasets %}
-    {% set datasets = user_dict.datasets | rejectattr('type', 'equalto', 'deposited-dataset') %}
+  {% if c.user_dict.datasets %}
+    {% set datasets = c.user_dict.datasets | rejectattr('type', 'equalto', 'deposited-dataset') %}
     {% snippet 'snippets/package_list.html', packages=datasets %}
   {% else %}
     <p class="empty">

@@ -124,7 +124,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
 
         # user
         controller = 'ckanext.unhcr.controllers.extended_user:ExtendedUserController'
-        _map.connect('dashboard.requests', '/dashboard/requests', controller=controller, action='list_requests', ckan_icon='spinner')
+        _map.connect('user_dashboard_requests', '/dashboard/requests', controller=controller, action='list_requests', ckan_icon='spinner')
 
         return _map
 

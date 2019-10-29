@@ -3,7 +3,7 @@ import csv
 import ckanapi
 from slugify import slugify
 
-INPUT_CSV = 'scripts/initial_data_container_list_feb_2018.csv'
+INPUT_CSV = 'initial_data_container_list_feb_2018.csv'
 
 
 def create_data_containers(url, api_key):
@@ -27,9 +27,6 @@ def create_data_containers(url, api_key):
                     'name': slugify(row[0]),
                     'title': row[0],
                     'type': 'data-container',
-                    'geographic_area': row[0],
-                    # TODO: replace by real values
-                    'country': 'VAR',
                 })
 
             # Save 1st level containers
@@ -40,9 +37,6 @@ def create_data_containers(url, api_key):
                     'name': slugify(row[1]),
                     'title': row[1],
                     'type': 'data-container',
-                    'geographic_area': row[1],
-                    # TODO: replace by real values
-                    'country': 'VAR',
                     'groups': [{'name': slugify(row[0])}],
                 })
 
@@ -54,9 +48,6 @@ def create_data_containers(url, api_key):
                     'name': slugify(row[2]),
                     'title': row[2],
                     'type': 'data-container',
-                    'geographic_area': row[2],
-                    # TODO: replace by real values
-                    'country': 'VAR',
                     'groups': [{'name': slugify(row[1])}],
                 })
 

@@ -61,7 +61,7 @@ class DepositedDatasetController(toolkit.BaseController):
             mailer.mail_user_by_id(recipient['name'], subj, body)
 
         # Show flash message and redirect
-        message = 'Dataset "%s" approved and moved to the destination data container'
+        message = 'Datasest "%s" approved and moved to the destination data container'
         toolkit.h.flash_success(message % dataset['title'])
         toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 
@@ -119,7 +119,7 @@ class DepositedDatasetController(toolkit.BaseController):
             mailer.mail_user_by_id(recipient['name'], subj, body)
 
         # Show flash message and redirect
-        message = 'Dataset "%s" Curator updated'
+        message = 'Datasest "%s" Curator updated'
         toolkit.h.flash_success(message % dataset['title'])
         toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 
@@ -165,7 +165,7 @@ class DepositedDatasetController(toolkit.BaseController):
             mailer.mail_user_by_id(recipient['name'], subj, body)
 
         # Show flash message and redirect
-        message = 'Dataset "%s" changes requested'
+        message = 'Datasest "%s" changes requested'
         toolkit.h.flash_success(message % dataset['title'])
         toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 
@@ -206,7 +206,7 @@ class DepositedDatasetController(toolkit.BaseController):
         mailer.mail_user_by_id(depositor['name'], subj, body)
 
         # Show flash message and redirect
-        message = 'Dataset "%s" review requested'
+        message = 'Datasest "%s" review requested'
         toolkit.h.flash_success(message % dataset['title'])
         toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 
@@ -246,7 +246,7 @@ class DepositedDatasetController(toolkit.BaseController):
         mailer.mail_user_by_id(depositor['name'], subj, body)
 
         # Show flash message and redirect
-        message = 'Dataset "%s" rejected'
+        message = 'Datasest "%s" rejected'
         toolkit.h.flash_error(message % dataset['title'])
         toolkit.redirect_to('data-container_read', id='data-deposit')
 
@@ -288,7 +288,7 @@ class DepositedDatasetController(toolkit.BaseController):
             mailer.mail_user_by_id(user['id'], subj, body)
 
         # Show flash message and redirect
-        message = 'Dataset "%s" submitted'
+        message = 'Datasest "%s" submitted'
         toolkit.h.flash_success(message % dataset['title'])
         toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 
@@ -328,7 +328,7 @@ class DepositedDatasetController(toolkit.BaseController):
             mailer.mail_user_by_id(user['id'], subj, body)
 
         # Show flash message and redirect
-        message = 'Dataset "%s" withdrawn'
+        message = 'Datasest "%s" withdrawn'
         toolkit.h.flash_error(message % dataset['title'])
         toolkit.redirect_to('data-container_read', id='data-deposit')
 

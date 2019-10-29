@@ -1,4 +1,3 @@
-import nose
 import pylons
 from paste.registry import Registry
 from nose.plugins.attrib import attr
@@ -30,26 +29,25 @@ class AuthTestBase(helpers.FunctionalTestBase):
 
 class TestAuthUI(AuthTestBase):
 
-    #  TODO: uncomment when SAML2 is in-place
-    #  def test_non_logged_in_users(self):
+    def test_non_logged_in_users(self):
 
-        #  app = self._get_test_app()
+        app = self._get_test_app()
 
-        #  dataset = factories.Dataset()
-        #  data_container = factories.DataContainer()
+        dataset = factories.Dataset()
+        data_container = factories.DataContainer()
 
-        #  endpoints = [
-            #  ('/', 403),
-            #  ('/dataset', 403),
-            #  ('/dataset/{}'.format(dataset['name']), 403),
-            #  ('/data-container', 403),
-            #  ('/data-container/{}'.format(data_container['name']), 403),
-            #  ('/user', 403),
-        #  ]
-        #  for endpoint in endpoints:
-            #  response = app.get(endpoint[0], status=endpoint[1])
-            #  if endpoint[1] != 404:
-                #  assert_in('You must be logged in', response.body)
+        endpoints = [
+            ('/', 403),
+            ('/dataset', 403),
+            ('/dataset/{}'.format(dataset['name']), 403),
+            ('/data-container', 403),
+            ('/data-container/{}'.format(data_container['name']), 403),
+            ('/user', 403),
+        ]
+        for endpoint in endpoints:
+            response = app.get(endpoint[0], status=endpoint[1])
+            if endpoint[1] != 404:
+                assert_in('You must be logged in', response.body)
 
     def test_logged_in_users(self):
 
