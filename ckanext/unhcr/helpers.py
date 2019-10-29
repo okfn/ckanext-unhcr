@@ -112,10 +112,7 @@ def page_authorized():
             toolkit.c.action in [
                 'login', 'logged_in', 'request_reset', 'perform_reset',
                 'logged_out', 'logged_out_page', 'logged_out_redirect'
-                ]
-        ) or
-        toolkit.request.path == '/service/login'
-    )
+                ]))
 
 
 # Linked datasets
