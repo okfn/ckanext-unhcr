@@ -40,38 +40,20 @@
 
   {% if show_visibility_selector %}
     {% block package_metadata_fields_visibility %}
-      <div class="control-group">
-        <label for="field-visibility" class="control-label">{{ _('Internal Access Level') }}</label>
-        <div class="controls">
-          <select id="field-visibility" name="visibility">
-            {% for option in [('public', _('Internally Visible')), ('restricted', _('Private'))] %}
-            <option value="{{ option[0] }}" {% if option[0] == data.visibility %}selected="selected"{% endif %}>{{ option[1] }}</option>
-            {% endfor %}
-          </select>
-        </div>
-      </div>
+      {% set schema = h.scheming_get_schema('dataset', 'dataset') %}
+      {% set field = h.scheming_field_by_name(schema.dataset_fields, 'visibility') %}
+      {%- snippet 'scheming/snippets/form_field.html',
+      field=field, data={'visibility': 'public'}, errors=errors, licenses=[],
+      entity_type='dataset', object_type='dataset' -%}
     {% endblock %}
   {% endif %}
 
   {% block package_basic_fields_license %}
-  <div class="control-group">
-    <label class="control-label" for="field-license">{{ _("External Access Level") }}</label>
-    <div class="controls">
-      <select id="field-license" name="license_id" data-module="autocomplete">
-        {% set existing_license_id = data.get('license_id', 'notspecified') %}
-        {% for license_id, license_desc in h.license_options(existing_license_id) %}
-          <option value="{{ license_id }}" {% if existing_license_id == license_id %}selected="selected"{% endif %}>{{ license_desc }}</option>
-        {% endfor %}
-      </select>
-      <span class="info-block">
-        <i class="fa fa-info-circle"></i>
-        {% trans %}
-          License definitions and additional information can be found
-          at <a href="http://opendefinition.org/licenses/">opendefinition.org</a>
-        {% endtrans %}
-      </span>
-    </div>
-  </div>
+    {% set schema = h.scheming_get_schema('dataset', 'dataset') %}
+    {% set field = h.scheming_field_by_name(schema.dataset_fields, 'external_access_level') %}
+    {%- snippet 'scheming/snippets/form_field.html',
+    field=field, data=data, errors=errors, licenses=[],
+    entity_type='dataset', object_type='dataset' -%}
   {% endblock %}
 
   {% if show_organizations_selector and show_visibility_selector %}

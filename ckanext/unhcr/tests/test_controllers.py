@@ -1,3 +1,4 @@
+import nose
 import mock
 from nose.plugins.attrib import attr
 from ckan.lib.helpers import url_for
@@ -119,6 +120,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
+            'external_access_level': 'open_access',
         })
 
         # Approve dataset
@@ -142,6 +144,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
+            'external_access_level': 'open_access',
         })
 
         # Approve dataset
@@ -215,6 +218,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
+            'external_access_level': 'open_access',
         })
 
         # Approve dataset
@@ -239,6 +243,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
+            'external_access_level': 'open_access',
         })
 
         # Approve dataset
@@ -462,6 +467,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
+            'external_access_level': 'open_access',
         })
 
         # Request changes
@@ -503,6 +509,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
+            'external_access_level': 'open_access',
         })
 
         # Request review
@@ -527,6 +534,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
+            'external_access_level': 'open_access',
         })
 
         # Request review
@@ -552,6 +560,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
+            'external_access_level': 'open_access',
         })
 
         # Request review
@@ -810,6 +819,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             'archived': 'False',
             'data_collector': ['acf'],
             'data_collection_technique': 'f2f',
+            'external_access_level': 'open_access',
         })
 
         self.make_request('approve', user='sysadmin', status=302)

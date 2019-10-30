@@ -13,6 +13,7 @@ from ckan.lib.activity_streams import activity_stream_string_functions
 from ckanext.unhcr import actions, auth, helpers, jobs, validators
 
 from ckanext.scheming.helpers import scheming_get_dataset_schema
+from ckanext.hierarchy.helpers import group_tree_section
 
 log = logging.getLogger(__name__)
 
@@ -197,6 +198,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'get_field_label': helpers.get_field_label,
             'can_download': helpers.can_download,
             'get_org_admins_email_link': helpers.get_org_admins_email_link,
+            'get_choice_label': helpers.get_choice_label,
         }
 
     # IPackageController
@@ -294,6 +296,29 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
                     pass
 
         return pkg_dict
+
+    # Always include sub-containers to container_read search
+    def before_search(self, search_params):
+        if toolkit.c.controller == 'ckanext.unhcr.controllers.extended_organization:ExtendedOrganizationController':
+            toolkit.c.include_children_selected = True
+
+            # helper function
+            def _children_name_list(children):
+                name_list = []
+                for child in children:
+                    name = child.get('name', "")
+                    name_list += [name] + _children_name_list(child.get('children', []))
+                return name_list
+
+            # update filter query
+            children = _children_name_list(group_tree_section(toolkit.c.id, type_='data-container', include_parents=False, include_siblings=False).get('children',[]))
+            if children:
+                search_params['fq'] = 'organization:%s' % toolkit.c.id
+                for name in children:
+                    if name:
+                        search_params['fq'] += ' OR organization:%s' %  name
+
+        return search_params
 
     def after_create(self, context, data_dict):
         if not context.get('job'):

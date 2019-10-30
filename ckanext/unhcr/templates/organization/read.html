@@ -19,16 +19,18 @@
 {% block groups_search_form %}
 
   {# Drafts #}
-  {% set drafts = h.get_user_deposited_drafts() %}
-  {% if drafts %}
-    <div class="review alert alert-info" role="alert">
-      <p>{% trans %}You have datasets which are not deposited yet:{% endtrans %}</p>
-      <ul>
-        {% for draft in drafts %}
-        <li><a href="/dataset/{{ draft.name }}">{{ draft.title }}</a></li>
-        {% endfor %}
-      </ul>
-    </div>
+  {% if c.group_dict.id == deposit.id %}
+    {% set drafts = h.get_user_deposited_drafts() %}
+    {% if drafts %}
+      <div class="review alert alert-info" role="alert">
+        <p>{% trans %}You have datasets which are not deposited yet:{% endtrans %}</p>
+        <ul>
+          {% for draft in drafts %}
+          <li><a href="/dataset/{{ draft.name }}">{{ draft.title }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
   {% endif %}
 
   {# Search #}

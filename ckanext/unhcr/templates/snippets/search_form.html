@@ -10,9 +10,6 @@
       </button>
       {% endblock %}
     </div>
-     {% if include_children_option %}
-       {{ form.checkbox('include_children', label="Include Children Data Containers", checked=(h.is_include_children_selected(c.fields)), value=True, error=error) }}
-     {% endif %}
 {% endblock %}
 
 {% block search_facets %}

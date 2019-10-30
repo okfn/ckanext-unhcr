@@ -18,6 +18,7 @@ class Dataset(factories.Dataset):
     sampling_procedure = 'nonprobability'
     operational_purpose_of_data = 'cartography'
     visibility = 'public'
+    external_access_level = 'open_access'
 
 
 class Resource(factories.Resource):
