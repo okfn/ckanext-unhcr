@@ -1,5 +1,12 @@
 # RIDL Changelog
 
+
+## v0.2.0 - 2019-10-31
+
+* New External Access field values, that replace the old licenses
+* Remove confusing format helper on date fields
+* Always include sub-data containers in dataset searches by default
+
 ## v0.1.0 - 2019-08-31
 
 * The "Data Collector" field has been updated to be a free text field
