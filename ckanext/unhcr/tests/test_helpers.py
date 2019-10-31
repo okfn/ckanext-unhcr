@@ -1,4 +1,5 @@
 import os
+import nose
 import pylons
 from ckan import model
 from ckan.plugins import toolkit
@@ -227,6 +228,7 @@ class TestHelpers(FunctionalTestBase):
             'Data collector': 'Missing value',
             'Unit of measurement': 'Missing value',
             'Data collection technique': 'Missing value',
+            'External access level': 'Missing value',
         })
 
     def test_get_dataset_validation_error_or_none_valid(self):

@@ -77,6 +77,39 @@
           ]
         },
         {
+            "field_name": "external_access_level",
+            "label": "External access level",
+            "required": true,
+            "preset": "select",
+            "display_snippet": null,
+            "choices": [
+                {
+                    "label": "Not available",
+                    "value": "not_available"
+                },
+                {
+                    "label": "Direct access",
+                    "value": "direct_access"
+                },
+                {
+                    "label": "Public use",
+                    "value": "public_use"
+                },
+                {
+                    "label": "Licensed use",
+                    "value": "licensed_use"
+                },
+                {
+                    "label": "Data enclave",
+                    "value": "data_enclave"
+                },
+                {
+                    "label": "Open access",
+                    "value": "open_access"
+                }
+            ]
+        },
+        {
             "field_name": "data_sensitivity",
             "help_text": "Apply to both Anonymized and  Personally identifiable data",
             "label": "Data sensitivity",
@@ -696,12 +729,6 @@
             "help_text": "Determines if a dataset was imported from a DDI XML file",
             "form_snippet": null,
             "display_snippet": null
-        },
-        {
-            "field_name": "license_id",
-            "form_snippet": "license.html",
-            "help_text": "License definitions and additional information can be found at http://opendefinition.org/. it will be applicable only to datasets published in the Microdata Library",
-            "label": "External access level"
         }
     ],
     "resource_fields": [
@@ -787,7 +814,6 @@
             "label": "Date collection first date",
             "preset": "date",
             "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date",
-            "help_text": "Expected format: mm/dd/yyyy",
             "required": true
         },
         {
@@ -795,7 +821,6 @@
             "label": "Date collection last date",
             "preset": "date",
             "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date",
-            "help_text": "Expected format: mm/dd/yyyy",
             "required": true
         },
         {

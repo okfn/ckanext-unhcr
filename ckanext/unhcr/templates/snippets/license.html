@@ -1,5 +1,6 @@
-{% ckan_extends %}
-
-{% block license_title %}
-  <h2 class="module-heading"><i class="fa fa-lock"></i> {{ _('External access level') }}</h2>
-{% endblock %}
+<section class="module module-narrow module-shallow license">
+  <h2 class="module-heading"><i class="fa fa-lock"></i>External Access Level</h2>
+  <p class="module-content">
+    <span>{{ h.get_choice_label('external_access_level', pkg_dict.external_access_level) or 'Not available' }}</span>
+  </p>
+</section>
