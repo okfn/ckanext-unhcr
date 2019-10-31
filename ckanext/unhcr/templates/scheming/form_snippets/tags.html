@@ -5,10 +5,10 @@
     id='field-' + field.field_name,
     label=h.scheming_language_text(field.label),
     placeholder=h.scheming_language_text(field.form_placeholder),
-    value=','.join(h.normalize_list(data[field.field_name])),
+    value=data[field.field_name],
     error=errors[field.field_name],
-    classes=field.classes if 'classes' in field else ['control-full'],
-    attrs=dict( **(field.get('form_attrs', {}))),
+    classes=field.classes if 'classes' in field else ['control-medium'],
+    attrs=dict(**(field.get('form_attrs', {}))),
     is_required=h.scheming_field_required(field)
     )
 %}

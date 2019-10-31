@@ -36,7 +36,8 @@
             "required": false, 
             "preset": "tag_string_autocomplete", 
             "field_name": "tag_string", 
-            "label": "Tags"
+            "label": "Tags",
+            "form_snippet": "tags.html"
         }, 
         {
             "display_snippet": "link.html", 
@@ -793,7 +794,12 @@
             "required": false, 
             "preset": "resource_format_autocomplete", 
             "field_name": "format", 
-            "label": "File Format"
+            "label": "File Format",
+            "form_attrs": {
+              "class": "",
+              "data-module": "autocomplete",
+              "data-module-source": "/api/2/util/resource/format_autocomplete?incomplete=?"
+            }
         }, 
         {
             "required": false, 
