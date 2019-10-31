@@ -12,7 +12,7 @@
 
   {# Actions #}
   <section class="module module-narrow module-shallow curation-actions">
-    <h2 class="module-heading"><i class="fa fa-medium fa-bars"></i>Actions</h2>
+    <h2 class="module-heading"><i class="fa fa-bars"></i>Actions</h2>
 
     <p class="module-content">
       As a{% if curation.role == 'admin' %}n{% endif %}
@@ -84,7 +84,7 @@
 
   {# Contacts #}
   <section class="module module-narrow module-shallow curation-contacts">
-    <h2 class="module-heading"><i class="fa fa-medium fa-envelope"></i>Contacts</h2>
+    <h2 class="module-heading"><i class="fa fa-envelope"></i>Contacts</h2>
     {% set curator = curation.contacts.curator %}
     {% if curator %}
       <dl>
@@ -104,7 +104,7 @@
   {# Validation #}
   <section class="module module-narrow module-shallow curation-validation">
     {% if curation.error %}
-      <h2 class="module-heading"><i class="fa fa-medium fa-times"></i>Validation</h2>
+      <h2 class="module-heading"><i class="fa fa-times"></i>Validation</h2>
       <p class="module-content">
         The following fields need to be updated before the dataset can be published
       </p>
@@ -123,7 +123,7 @@
         {% endfor %}
       </ul>
     {% else %}
-      <h2 class="module-heading"><i class="fa fa-medium fa-check"></i>Validation</h2>
+      <h2 class="module-heading"><i class="fa fa-check"></i>Validation</h2>
       <p class="module-content">
         The dataset is valid and can be published.
       </p>
