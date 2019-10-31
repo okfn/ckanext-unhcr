@@ -75,6 +75,9 @@
   }
 }
 
+.dataset-list-curation {
+  padding-left: 0;
+}
 /* Editing */
 
 .control-group.curation-invalid {

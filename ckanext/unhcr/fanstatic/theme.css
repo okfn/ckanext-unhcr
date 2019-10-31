@@ -1283,6 +1283,12 @@ body {
   background: #0072BC;
 }
 
+ul.unstyled,
+ol.unstyled {
+ margin-left:0;
+ list-style:none
+}
+
 .homepage {
   padding-bottom: 70px;
   display: -webkit-box;
@@ -2133,6 +2139,10 @@ i {
 
 .dataset-item-curation a.email {
   color: #aaa;
+}
+
+.dataset-list-curation {
+  padding-left: 0;
 }
 
 /* Editing */
