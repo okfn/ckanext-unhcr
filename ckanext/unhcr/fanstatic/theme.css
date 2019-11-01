@@ -2062,6 +2062,10 @@ i {
   margin-right: 0;
 }
 
+.add-member-form {
+  margin-bottom: 20px;
+}
+
 /* General */
 
 .curation-sidebar .btn {
