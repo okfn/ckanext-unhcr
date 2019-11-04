@@ -20,6 +20,7 @@ log = logging.getLogger(__name__)
 _ = toolkit._
 
 
+
 class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermissionLabels):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.ITranslation)

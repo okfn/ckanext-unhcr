@@ -55,7 +55,7 @@ this.ckan.module('resource-type', function ($) {
       this.field.hide()
       this.field.nextAll().show()
       // We hide all the fields below "File Type"
-      $('#field-file_type').parents('.control-group').nextAll('.control-group').hide()
+      $('#field-file_type').parents('.form-group').nextAll('.form-group').hide()
       // We allow to select only NOT the "Microdata" option
       $('#field-file_type option').each(function () {
         if ($(this).val() === 'microdata') {
