@@ -10,9 +10,9 @@
 
     {# User selection #}
     <h2>{{ _('Manage Membership') }}</h2>
-    <form class="dataset-form form-horizontal add-member-form" method="get">
+    <form class="dataset-form add-member-form" method="get">
       <div class="row">
-        <div class="span4">
+        <div class="col-md-6">
           <div class="control-group control-medium control-select">
             <div class="controls">
               <select name="username" id="membership-username" required="required">
@@ -21,10 +21,10 @@
                   <option value="{{ user.name }}" {% if membership.user and membership.user.name == user.name %}selected{% endif %}>{{ user.display_name }}</option>
                 {% endfor %}
               </select>
-              <div class="info-block ">
+              <small class="info-block ">
                 <i class="fa fa-info-circle"></i>
                 After selection the page will be updated automatically
-              </div>
+              </small>
             </div>
           </div>
         </div>
@@ -35,12 +35,12 @@
     {% if membership.user %}
       <hr>
       <h2>{{ _('Add Containers') }}</h2>
-      <form class="dataset-form form-horizontal add-member-form add-container-form" action="/data-container/membership_add" method="post">
+      <form class="dataset-form add-member-form add-container-form" action="/data-container/membership_add" method="post">
         {# Username #}
         <input name="username" type="hidden" value={{ membership.user.name }}>
         <div class="row">
           {# Containers #}
-          <div class="span4">
+          <div class="col-md-6">
             <div class="control-group control-medium control-select">
               <label class="control-label" for="membership-contnames">Containers</label>
               <div class="controls">
@@ -54,7 +54,7 @@
             </div>
           </div>
           {# Role #}
-          <div class="span4">
+          <div class="col-md-6">
             <div class="control-group control-medium">
               <label class="control-label" for="membership-role">Role</label>
               <div class="controls">
@@ -64,10 +64,10 @@
                     <option value="{{ role.name }}">{{ role.title }}</option>
                   {% endfor %}
                 </select>
-                <div class="info-block ">
+                <small class="info-block ">
                   <i class="fa fa-info-circle"></i>
                   You can select multiple data containers, but the same role will be applied to all of them
-                </div>
+                </small>
               </div>
             </div>
           </div>
@@ -100,10 +100,10 @@
               <td>{{ container.capacity|capitalize }}</td>
               <td>
                 <div class="btn-group pull-right">
-                  <a class="btn btn-small" href="/data-container/member_new/{{ container.name }}?user={{ membership.user.name }}" title="{{ _('Edit') }}">
+                  <a class="btn btn-sm" href="/data-container/member_new/{{ container.name }}?user={{ membership.user.name }}" title="{{ _('Edit') }}">
                     <i class="fa fa-wrench"></i>
                   </a>
-                  <a class="btn btn-danger btn-small" href="{% url_for controller='ckanext.unhcr.controllers.data_container:DataContainerController', action='membership_remove', username=membership.user.name, contname=container.name %}" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to remove the user from this container?') }}" title="{{ _('Remove') }}">
+                  <a class="btn btn-danger btn-sm" href="{% url_for controller='ckanext.unhcr.controllers.data_container:DataContainerController', action='membership_remove', username=membership.user.name, contname=container.name %}" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to remove the user from this container?') }}" title="{{ _('Remove') }}">
                     <i class="fa fa-times"></i>
                   </a>
                 </div>

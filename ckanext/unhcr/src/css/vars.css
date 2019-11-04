@@ -21,10 +21,13 @@
   --attribution-height: 70px;
 
   --font-family-base: 'Lato', Arial, sans-serif;
+
+  --container-portrait-tablet-up: 750px;
+  --container-landscape-tablet-up: 970px;
+  --container-desktop-up: 1170px;
 }
 
-@custom-media --phone-only (max-width: 480px);
-@custom-media --landscape-phone-up (min-width: 480px);
+@custom-media --phone-only (max-width: 767px);
 @custom-media --portrait-tablet-up (min-width: 768px);
-@custom-media --landscape-tablet-up (min-width: 980px);
+@custom-media --landscape-tablet-up (min-width: 992px);
 @custom-media --desktop-up (min-width: 1200px);

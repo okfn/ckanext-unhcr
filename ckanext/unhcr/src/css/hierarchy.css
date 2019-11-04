@@ -28,16 +28,18 @@ ul.hierarchy-tree {
   }
 
   @nest .secondary & {
-    & > li {
+    @media (--landscape-tablet-up) {
+      & > li {
 
-      & a {
-        color: color(var(--aside-colour) a(80%));
-      }
+        & a {
+          color: color(var(--aside-colour) a(80%));
+        }
 
-      &.highlighted > a {
-        color: var(--aside-bg);
-        background-color: var(--aside-colour);
-        border-color: var(--aside-colour);
+        &.highlighted > a {
+          color: var(--aside-bg);
+          background-color: var(--aside-colour);
+          border-color: var(--aside-colour);
+        }
       }
     }
   }
@@ -61,7 +63,9 @@ ul.hierarchy-tree {
       background-color: var(--main-bg);
 
       @nest .secondary & {
-        background-color: var(--aside-bg);
+        @media (--landscape-tablet-up) {
+          background-color: var(--aside-bg);
+        }
       }
     }
   }
@@ -69,11 +73,13 @@ ul.hierarchy-tree {
 
 
 ul.hierarchy-tree-top {
-  margin: 0;
+  padding: 0;
 
   @nest .secondary & {
-    padding-right: 20px;
-    mix-blend-mode: luminosity;
+    @media (--landscape-tablet-up) {
+      padding-right: 20px;
+      mix-blend-mode: luminosity;
+    }
   }
 
   & li {
@@ -97,9 +103,11 @@ ul.hierarchy-tree-top {
       }
 
       @nest .secondary & {
-        background-color: var(--aside-item-bg);
-        box-shadow: 0px -4px 0px 0px var(--aside-bg);
-        border-color: var(--aside-item-border);
+        @media (--landscape-tablet-up) {
+          background-color: var(--aside-item-bg);
+          box-shadow: 0px -4px 0px 0px var(--aside-bg);
+          border-color: var(--aside-item-border);
+        }
       }
     }
   }
@@ -144,7 +152,9 @@ ul.hierarchy-tree-top {
             color: var(--primary-colour);
 
             @nest .secondary & {
-              color: var(--aside-colour);
+              @media (--landscape-tablet-up) {
+                color: var(--aside-colour);
+              }
             }
           }
         }
@@ -155,7 +165,9 @@ ul.hierarchy-tree-top {
             color: #fff;
 
             @nest .secondary & {
-              color: var(--aside-bg);
+              @media (--landscape-tablet-up) {
+                color: var(--aside-bg);
+              }
             }
           }
         }
@@ -170,7 +182,9 @@ ul.hierarchy-tree-top {
           color: var(--black-40);
 
           @nest .secondary & {
-            color: var(--aside-colour);
+            @media (--landscape-tablet-up) {
+              color: var(--aside-colour);
+            }
           }
         }
         &:hover {
@@ -178,7 +192,9 @@ ul.hierarchy-tree-top {
             color: var(--primary-colour);
 
             @nest .secondary & {
-              color: var(--aside-colour);
+              @media (--landscape-tablet-up) {
+                color: var(--aside-colour);
+              }
             }
           }
         }
@@ -189,7 +205,9 @@ ul.hierarchy-tree-top {
             color: #fff;
 
             @nest .secondary & {
-              color: var(--aside-bg);
+              @media (--landscape-tablet-up) {
+                color: var(--aside-bg);
+              }
             }
           }
         }

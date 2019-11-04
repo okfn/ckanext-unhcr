@@ -20,8 +20,16 @@ body {
     flex-direction: column;
     flex-grow: 1;
 
+    @media (--phone-only) {
+      width: 100%;
+    }
+
     & > .wrapper {
       flex-grow: 1;
+
+      @media (--portrait-tablet-up) {
+        margin-left: 0;
+      }
     }
   }
 }

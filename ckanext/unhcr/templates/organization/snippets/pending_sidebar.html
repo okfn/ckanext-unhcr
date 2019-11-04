@@ -12,7 +12,7 @@
 
   {# Actions #}
   <section class="module module-narrow module-shallow curation-actions">
-    <h2 class="module-heading"><i class="fa fa-medium fa-bars"></i>Actions</h2>
+    <h2 class="module-heading"><i class="fa fa-bars"></i>Actions</h2>
 
     <p class="module-content">
       {% if h.check_access('sysadmin') %}
@@ -41,7 +41,7 @@
 
   {# Destination #}
   <section class="module module-narrow module-shallow curation-tree">
-    <h2 class="module-heading"><i class="fa fa-medium fa-globe"></i>Destination</h2>
+    <h2 class="module-heading"><i class="fa fa-globe"></i>Destination</h2>
     <p class="module-content">
       {% snippet 'organization/snippets/organization_tree.html', top_nodes=[h.group_tree_section(id_=c.group_dict.id, type_=c.group_dict.type, include_siblings=False)], use_shortnames=True %}
     </p>

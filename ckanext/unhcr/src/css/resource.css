@@ -15,20 +15,22 @@
     }
   }
 
-  & + .primary {
-    width: auto;
+  & + .secondary {
+    display: none;
 
-    & .module-content {
-      @media (--portrait-tablet-up) {
-        padding-left: 0;
-        padding-right: 0;
+    & + .primary {
+      width: auto;
+      padding: 0;
+
+      & .module-content {
+        @media (--portrait-tablet-up) {
+          padding-left: 0;
+          padding-right: 0;
+        }
       }
     }
-
-    & + .secondary {
-      width: auto;
-    }
   }
+
 }
 
 .resource-read {
@@ -40,7 +42,9 @@
 
     & .toolbar {
       & .breadcrumb {
-        display: block;
+        @media (--portrait-tablet-up) {
+          display: block;
+        }
       }
     }
   }
