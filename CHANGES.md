@@ -1,5 +1,14 @@
 # RIDL Changelog
 
+## v1.0.0 - 2019-11-15
+
+* Upgrade to CKAN 2.8, which contains several performance and design
+  improvements
+* Switch authentication provider to Azure Active Directory via SAML2,
+  which integrates better with the rest of UNHCR infrastructure and
+  fixes the following authentication related issues:
+    * Users got logged out too frequently
+    * Users did not get redirected to the original URL after logging in
 
 ## v0.2.0 - 2019-10-31
 
