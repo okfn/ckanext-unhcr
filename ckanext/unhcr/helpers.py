@@ -99,7 +99,6 @@ def _render_tree_node(node):
 # Access restriction
 
 def page_authorized():
-
     if (toolkit.c.controller == 'error' and
             toolkit.c.action == 'document' and
             toolkit.c.code and toolkit.c.code[0] != '403'):
@@ -116,6 +115,10 @@ def page_authorized():
         ) or
         toolkit.request.path == '/service/login'
     )
+
+
+def get_came_from_param():
+    return toolkit.request.environ.get('CKAN_CURRENT_URL', '')
 
 
 # Linked datasets
