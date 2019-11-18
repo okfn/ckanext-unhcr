@@ -28,13 +28,13 @@
       {% set link_help = 'Click to open the form' %}
 
       {% if 'approve' in curation.actions %}
-        <a href="#curation-approve" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
+        <a href="#curation-approve" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}" data-target="#curation-approve">
           {% trans %}Approve Dataset{% endtrans %}
         </a>
       {% endif %}
 
       {% if 'request_review' in curation.actions %}
-        <a href="#curation-request-review" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
+        <a href="#curation-request-review" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}" data-target="#curation-request-review">
           {% trans %}Request Final Review{% endtrans %}
         </a>
       {% endif %}
@@ -49,31 +49,31 @@
       {% endif %}
 
       {% if 'submit' in curation.actions %}
-        <a href="#curation-submit" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
+        <a href="#curation-submit" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}" data-target="#curation-submit">
           {% trans %}Submit Dataset{% endtrans %}
         </a>
       {% endif %}
 
       {% if 'assign' in curation.actions %}
-        <a href="#curation-assign" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
+        <a href="#curation-assign" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}" data-target="#curation-assign">
           {% trans %}Update Curator{% endtrans %}
         </a>
       {% endif %}
 
       {% if 'request_changes' in curation.actions %}
-        <a href="#curation-request-changes" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}">
+        <a href="#curation-request-changes" role="button" class="btn btn-warning" data-toggle="modal" title="{{ link_help }}" data-target="#curation-request-changes">
           {% trans %}Request Changes{% endtrans %}
         </a>
       {% endif %}
 
       {% if 'withdraw' in curation.actions %}
-        <a href="#curation-withdraw" role="button" class="btn btn-danger" data-toggle="modal" title="{{ link_help }}">
+        <a href="#curation-withdraw" role="button" class="btn btn-danger" data-toggle="modal" title="{{ link_help }}" data-target="#curation-withdaw">
           {% trans %}Withdraw Dataset{% endtrans %}
         </a>
       {% endif %}
 
       {% if 'reject' in curation.actions %}
-        <a href="#curation-reject" role="button" class="btn btn-danger" data-toggle="modal" title="{{ link_help }}">
+        <a href="#curation-reject" role="button" class="btn btn-danger" data-toggle="modal" title="{{ link_help }}" data-target="#curation-reject">
           {% trans %}Reject Dataset{% endtrans %}
         </a>
       {% endif %}

@@ -1,7 +1,10 @@
 <div class="curation curation-modals">
 
   {# Microdata #}
-  <div id="publish-microdata" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div id="publish-microdata" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+    <div class="modal-content">
+
     <form action="/dataset/{{ pkg.id }}/publish_microdata">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -52,6 +55,9 @@
         <button class="btn btn-primary" {% if error %}disabled{% endif %}>Confirm</button>
       </div>
     </form>
+  </div>
+
+  </div>
   </div>
 
 </div>
