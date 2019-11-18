@@ -1,5 +1,9 @@
 # RIDL Changelog
 
+## v1.0.1 - 2019-11-18
+
+* Fix modal dialogs in data deposit pages
+
 ## v1.0.0 - 2019-11-15
 
 * Upgrade to CKAN 2.8, which contains several performance and design
