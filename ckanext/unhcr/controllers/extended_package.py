@@ -30,7 +30,7 @@ class ExtendedPackageController(PackageController):
 
         # Get organizations
         orgs = toolkit.get_action('organization_list_for_user')(
-            context, {'permission': 'package_create'})
+            context, {'permission': 'create_dataset'})
         org_ids = [org['id'] for org in orgs]
 
         # Check access

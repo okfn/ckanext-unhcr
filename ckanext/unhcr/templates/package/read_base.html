@@ -20,7 +20,7 @@
 {% endblock %}
 
 {% block content_action %}
-  {% if h.organizations_available('package_create') %}
+  {% if h.organizations_available('create_dataset') %}
     {% link_for _('Copy'), controller='ckanext.unhcr.controllers.extended_package:ExtendedPackageController', action='copy', id=pkg.name, class_='btn', icon='copy' %}
   {% endif %}
   {{ super() }}
