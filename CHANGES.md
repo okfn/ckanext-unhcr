@@ -1,5 +1,9 @@
 # RIDL Changelog
 
+## v1.0.2 - 2019-12-04
+
+* Fix bug preventing editors to copy datasets
+
 ## v1.0.1 - 2019-11-18
 
 * Fix modal dialogs in data deposit pages
