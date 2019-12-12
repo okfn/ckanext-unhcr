@@ -125,7 +125,11 @@ def organization_create(context, data_dict):
 def package_create(context, data_dict):
 
     # Data deposit
-    if data_dict:
+    if not data_dict:
+        # All users can deposit datasets
+        if toolkit.request.path == '/deposited-dataset/new':
+            return {'success': True}
+    else:
         deposit = helpers.get_data_deposit()
         if deposit['id'] == data_dict.get('owner_org'):
             return {'success': True}
