@@ -1166,7 +1166,8 @@
             "field_name": "tag_string",
             "form_placeholder": "eg. economy, mental health, government",
             "label": "Tags",
-            "preset": "tag_string_autocomplete"
+            "preset": "tag_string_autocomplete",
+            "form_snippet": "tags.html"
         }
     ]
 }
