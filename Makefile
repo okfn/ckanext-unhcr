@@ -28,7 +28,7 @@ start:
 	docker-compose -f ../../docker-compose.yml up
 
 shell:
-	docker-compose -f ../../docker-compose.yml exec ckan-dev bash
+	docker-compose -f ../../docker-compose.yml exec ckan-dev sh
 
 test:
 	docker-compose -f ../../docker-compose.yml exec ckan-dev nosetests --ckan --nologcapture -s -v --with-pylons=/srv/app/src_extensions/ckanext-unhcr/test.ini --with-coverage --cover-package=ckanext.unhcr --cover-inclusive --cover-erase --cover-tests /srv/app/src_extensions/ckanext-unhcr/ ${ARGS}
