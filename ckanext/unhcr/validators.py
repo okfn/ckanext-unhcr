@@ -174,3 +174,12 @@ def file_type_validator(key, data, errors, context):
     attach = _is_attachment(index, data)
     if (attach and value == 'microdata') or (not attach and value != 'microdata'):
         raise Invalid('Invalid value for the "file_type" field')
+
+
+# Uploads
+
+def upload_not_empty(key, data, errors, context):
+
+    index = key[1]
+    if not (data[('resources', index, 'url_type')] == 'upload'):
+        errors[('upload',)] = ['All resources require an uploaded file']

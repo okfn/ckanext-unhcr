@@ -398,6 +398,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'always_false_if_not_sysadmin': validators.always_false_if_not_sysadmin,
             'visibility_validator': validators.visibility_validator,
             'file_type_validator': validators.file_type_validator,
+            'upload_not_empty': validators.upload_not_empty,
         }
 
     def get_dataset_labels(self, dataset_obj):

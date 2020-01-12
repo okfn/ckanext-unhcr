@@ -752,7 +752,8 @@
         {
             "field_name": "url",
             "label": "URL",
-            "preset": "resource_url_upload"
+            "preset": "resource_url_upload",
+            "validators": "upload_not_empty unicode remove_whitespace"
         },
         {
             "field_name": "name",
