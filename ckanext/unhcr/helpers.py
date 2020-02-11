@@ -669,17 +669,23 @@ def get_field_label(name, is_resource=False):
     schema = scheming_get_dataset_schema('deposited-dataset')
     fields = schema['resource_fields'] if is_resource else schema['dataset_fields']
     field = scheming_field_by_name(fields, name)
-    return field.get('label', name)
+    if field:
+        return field.get('label', name)
+    else:
+        log.warning('Could not get field {} from deposited-dataset schema'.format(name))
 
 
 def get_choice_label(name, value, is_resource=False):
     schema = scheming_get_dataset_schema('deposited-dataset')
     fields = schema['resource_fields'] if is_resource else schema['dataset_fields']
     field = scheming_field_by_name(fields, name)
-    for choice in field.get('choices', []):
-        if choice.get('value') == value:
-            return choice.get('label')
-    return value
+    if field:
+        for choice in field.get('choices', []):
+            if choice.get('value') == value:
+                return choice.get('label')
+        return value
+    else:
+        log.warning('Could not get field {} from deposited-dataset schema'.format(name))
 
 
 def normalize_list(value):
