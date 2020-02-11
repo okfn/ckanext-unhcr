@@ -1,5 +1,10 @@
 # RIDL Changelog
 
+## v1.0.4 - 2020-01-13
+
+* Fix bug in resource form that led to malformed download URLs
+* Show RIDL version in footer
+
 ## v1.0.3 - 2019-12-19
 
 * Fix bug with the DDI import UI

@@ -1,19 +1,21 @@
-import os
-import re
 import logging
 from urllib import quote
 from ckan import model
 from ckan.lib import uploader
 from ckan.common import config
 from operator import itemgetter
-from collections import OrderedDict
 from ckan.logic import ValidationError
 from ckan.plugins import toolkit
 import ckan.lib.helpers as core_helpers
 import ckan.lib.plugins as lib_plugins
 from ckanext.hierarchy import helpers as hierarchy_helpers
-from ckanext.scheming.helpers import scheming_get_dataset_schema, scheming_field_by_name
+from ckanext.scheming.helpers import (
+    scheming_get_dataset_schema, scheming_field_by_name
+)
 from ckanext.unhcr import utils
+from ckanext.unhcr import __VERSION__
+
+
 log = logging.getLogger(__name__)
 
 
@@ -757,3 +759,7 @@ def add_file_name_suffix(file_name, file_suffix):
 
 def get_sysadmins():
     return model.Session.query(model.User).filter(model.User.sysadmin==True).all()
+
+
+def get_ridl_version():
+    return __VERSION__

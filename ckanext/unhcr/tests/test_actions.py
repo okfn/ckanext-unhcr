@@ -1,10 +1,10 @@
 import json
+import cgi
+from StringIO import StringIO
 import responses
 from ckan import model
-from pprint import pprint
 from ckan.common import config
 from ckan.plugins import toolkit
-from nose.plugins.attrib import attr
 from ckan.tests import helpers as core_helpers, factories as core_factories
 from nose.tools import assert_raises, assert_equals, nottest
 from ckanext.unhcr.tests import base, factories
@@ -359,3 +359,64 @@ class TestDatastoreAuthRestrictedDownloads(base.FunctionalTestBase):
         context['table_names'] = [self.resource['id']]
         assert core_helpers.call_auth('datastore_search_sql', context=context,
             resource_id=self.resource['id'])
+
+
+class FakeFileStorage(cgi.FieldStorage):
+    def __init__(self, fp, filename):
+        self.file = fp
+        self.filename = filename
+        self.name = "upload"
+
+
+class TestResourceUpload(base.FunctionalTestBase):
+
+    def test_upload_present(self):
+
+        dataset = factories.Dataset()
+
+        test_file = StringIO()
+        test_file.write('Some data')
+        test_upload = FakeFileStorage(test_file, "test.txt")
+
+        resource = factories.Resource(
+            package_id=dataset['id'],
+            upload=test_upload)
+
+        assert_equals(
+            resource['url'],
+            '{}/dataset/{}/resource/{}/download/test.txt'.format(
+                config['ckan.site_url'].rstrip('/'),
+                dataset['id'],
+                resource['id']
+            )
+        )
+
+    def test_upload_external_url(self):
+
+        dataset = factories.Dataset()
+
+        with assert_raises(toolkit.ValidationError) as exc:
+
+            factories.Resource(
+                package_id=dataset['id'],
+                url='https://example.com/some.data.csv')
+
+        assert exc.exception.error_dict.keys() == ['upload']
+
+        assert_equals(
+            exc.exception.error_dict['upload'],
+            ['All resources require an uploaded file'])
+
+    def test_upload_missing(self):
+
+        dataset = factories.Dataset()
+
+        with assert_raises(toolkit.ValidationError) as exc:
+
+            factories.Resource(package_id=dataset['id'])
+
+        assert exc.exception.error_dict.keys() == ['upload']
+
+        assert_equals(
+            exc.exception.error_dict['upload'],
+            ['All resources require an uploaded file'])

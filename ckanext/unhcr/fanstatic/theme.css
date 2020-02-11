@@ -1480,6 +1480,10 @@ ol.unstyled {
   opacity: 1;
 }
 
+.site-footer .attribution hr {
+  margin: 5px 0;
+}
+
 .format-label {
   background-size: auto 93px;
   width:  37.38318px;

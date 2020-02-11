@@ -37,6 +37,11 @@
       &:hover {
         opacity: 1;
       }
+
+
+    }
+    & hr {
+      margin: 5px 0
     }
   }
 }

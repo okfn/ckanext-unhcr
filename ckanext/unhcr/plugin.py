@@ -20,8 +20,8 @@ log = logging.getLogger(__name__)
 _ = toolkit._
 
 
-
-class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermissionLabels):
+class UnhcrPlugin(
+        plugins.SingletonPlugin, DefaultTranslation, DefaultPermissionLabels):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.ITranslation)
     plugins.implements(plugins.IFacets)
@@ -201,6 +201,7 @@ class UnhcrPlugin(plugins.SingletonPlugin, DefaultTranslation, DefaultPermission
             'can_download': helpers.can_download,
             'get_org_admins_email_link': helpers.get_org_admins_email_link,
             'get_choice_label': helpers.get_choice_label,
+            'get_ridl_version': helpers.get_ridl_version,
         }
 
     # IPackageController
