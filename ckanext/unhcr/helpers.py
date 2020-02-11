@@ -397,12 +397,12 @@ def get_dataset_validation_report(pkg_dict, error_dict):
             fields = sorted(error_dict['resources'][index])
         except KeyError, IndexError:
             continue
-        report['resources'].append({
-            'id': resource['id'],
-            'name': resource['name'],
-            'fields': fields,
-        })
-
+        if fields:
+            report['resources'].append({
+                'id': resource['id'],
+                'name': resource['name'],
+                'fields': fields,
+            })
     return report
 
 
