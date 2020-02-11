@@ -182,4 +182,4 @@ def upload_not_empty(key, data, errors, context):
 
     index = key[1]
     if not (data[('resources', index, 'url_type')] == 'upload'):
-        errors[('upload',)] = ['All resources require an uploaded file']
+        errors[('resources', index, 'url',)] = ['All resources require an uploaded file']

@@ -801,7 +801,7 @@
             "required": false, 
             "preset": "resource_url_upload", 
             "field_name": "url", 
-            "label": "URL"
+            "label": "Upload"
         }, 
         {
             "form_placeholder": "eg. January 2011 Gold Prices", 
