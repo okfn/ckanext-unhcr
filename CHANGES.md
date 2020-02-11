@@ -1,5 +1,8 @@
 # RIDL Changelog
 
+## v1.0.7 - 2020-02-11
+
+* Only show resources with erros on curation sidebar
 
 ## v1.0.6 - 2020-02-11
 
