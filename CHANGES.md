@@ -1,5 +1,9 @@
 # RIDL Changelog
 
+## v1.0.5 - 2020-02-11
+
+* Fix exception when a schema field can not be found
+
 ## v1.0.4 - 2020-01-13
 
 * Fix bug in resource form that led to malformed download URLs
