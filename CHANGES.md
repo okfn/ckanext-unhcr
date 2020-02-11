@@ -1,5 +1,10 @@
 # RIDL Changelog
 
+
+## v1.0.6 - 2020-02-11
+
+* Improve validation errors display in curation interface
+
 ## v1.0.5 - 2020-02-11
 
 * Fix exception when a schema field can not be found
