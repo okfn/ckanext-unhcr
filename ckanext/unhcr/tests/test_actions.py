@@ -401,10 +401,10 @@ class TestResourceUpload(base.FunctionalTestBase):
                 package_id=dataset['id'],
                 url='https://example.com/some.data.csv')
 
-        assert exc.exception.error_dict.keys() == ['upload']
+        assert exc.exception.error_dict.keys() == ['url']
 
         assert_equals(
-            exc.exception.error_dict['upload'],
+            exc.exception.error_dict['url'],
             ['All resources require an uploaded file'])
 
     def test_upload_missing(self):
@@ -415,8 +415,8 @@ class TestResourceUpload(base.FunctionalTestBase):
 
             factories.Resource(package_id=dataset['id'])
 
-        assert exc.exception.error_dict.keys() == ['upload']
+        assert exc.exception.error_dict.keys() == ['url']
 
         assert_equals(
-            exc.exception.error_dict['upload'],
+            exc.exception.error_dict['url'],
             ['All resources require an uploaded file'])
