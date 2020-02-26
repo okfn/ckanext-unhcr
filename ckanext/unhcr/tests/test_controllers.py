@@ -921,7 +921,9 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         # Resources
         self.resource1 = factories.Resource(
             name='resource1',
-            package_id='dataset1')
+            package_id='dataset1',
+            url_type='upload',
+        )
 
     # Helpers
 
