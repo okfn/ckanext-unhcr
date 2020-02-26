@@ -21,15 +21,20 @@ class TestResourceFields(base.FunctionalTestBase):
             'description': 'Some description',
             'type': 'attachment',
             'file_type': 'report',
+            'url_type': 'upload',
         }
 
         dataset['resources'] = [resource]
 
         updated_dataset = call_action('package_update', {}, **dataset)
 
-        for field in resource.keys():
+        for field in [k for k in resource.keys() if k != 'url']:
             assert_equals(
                 updated_dataset['resources'][0][field], resource[field])
+        assert_equals(
+            updated_dataset['resources'][0]['url'].split('/')[-1],
+            resource['url'].split('/')[-1]
+        )
 
         assert 'date_range_start' not in updated_dataset['resources'][0]
 
