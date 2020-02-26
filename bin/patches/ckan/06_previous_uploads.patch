@@ -1,0 +1,204 @@
+diff --git a/ckan/controllers/package.py b/ckan/controllers/package.py
+index fb28d93aa..5c7b8f1e3 100644
+--- a/ckan/controllers/package.py
++++ b/ckan/controllers/package.py
+@@ -698,6 +698,11 @@ class PackageController(base.BaseController):
+             except ValidationError as e:
+                 errors = e.error_dict
+                 error_summary = e.error_summary
++	        if data.get('url_type') == 'upload' and data.get('url'):
++                    data['url'] = ''
++                    data['url_type'] = ''
++                    data['previous_upload'] = True
++
+                 return self.new_resource(id, data, errors, error_summary)
+             except NotAuthorized:
+                 abort(403, _('Unauthorized to create a resource'))
+diff --git a/ckan/public/base/css/fuchsia.css b/ckan/public/base/css/fuchsia.css
+index 9a5b788d6..30e2c0380 100644
+--- a/ckan/public/base/css/fuchsia.css
++++ b/ckan/public/base/css/fuchsia.css
+@@ -8150,6 +8150,11 @@ fieldset[disabled] .control-custom.disabled .checkbox.btn.focus {
+ .js .image-upload .btn-remove-url .icon-remove {
+   margin-right: 0;
+ }
++.js .image-upload .error-inline {
++  margin-top: 5px;
++  margin-left: 2px;
++  font-weight: bold;
++}
+ .add-member-form .control-label {
+   display: block;
+ }
+diff --git a/ckan/public/base/css/green.css b/ckan/public/base/css/green.css
+index 2eed4151b..0c11d0027 100644
+--- a/ckan/public/base/css/green.css
++++ b/ckan/public/base/css/green.css
+@@ -8150,6 +8150,11 @@ fieldset[disabled] .control-custom.disabled .checkbox.btn.focus {
+ .js .image-upload .btn-remove-url .icon-remove {
+   margin-right: 0;
+ }
++.js .image-upload .error-inline {
++  margin-top: 5px;
++  margin-left: 2px;
++  font-weight: bold;
++}
+ .add-member-form .control-label {
+   display: block;
+ }
+diff --git a/ckan/public/base/css/main.css b/ckan/public/base/css/main.css
+index ee58630e4..3a23b1956 100644
+--- a/ckan/public/base/css/main.css
++++ b/ckan/public/base/css/main.css
+@@ -8150,6 +8150,11 @@ fieldset[disabled] .control-custom.disabled .checkbox.btn.focus {
+ .js .image-upload .btn-remove-url .icon-remove {
+   margin-right: 0;
+ }
++.js .image-upload .error-inline {
++  margin-top: 5px;
++  margin-left: 2px;
++  font-weight: bold;
++}
+ .add-member-form .control-label {
+   display: block;
+ }
+diff --git a/ckan/public/base/css/maroon.css b/ckan/public/base/css/maroon.css
+index d6e076574..95b894aa0 100644
+--- a/ckan/public/base/css/maroon.css
++++ b/ckan/public/base/css/maroon.css
+@@ -8150,6 +8150,11 @@ fieldset[disabled] .control-custom.disabled .checkbox.btn.focus {
+ .js .image-upload .btn-remove-url .icon-remove {
+   margin-right: 0;
+ }
++.js .image-upload .error-inline {
++  margin-top: 5px;
++  margin-left: 2px;
++  font-weight: bold;
++}
+ .add-member-form .control-label {
+   display: block;
+ }
+diff --git a/ckan/public/base/css/red.css b/ckan/public/base/css/red.css
+index 0e6c43246..957f3c262 100644
+--- a/ckan/public/base/css/red.css
++++ b/ckan/public/base/css/red.css
+@@ -8150,6 +8150,11 @@ fieldset[disabled] .control-custom.disabled .checkbox.btn.focus {
+ .js .image-upload .btn-remove-url .icon-remove {
+   margin-right: 0;
+ }
++.js .image-upload .error-inline {
++  margin-top: 5px;
++  margin-left: 2px;
++  font-weight: bold;
++}
+ .add-member-form .control-label {
+   display: block;
+ }
+diff --git a/ckan/public/base/javascript/modules/image-upload.js b/ckan/public/base/javascript/modules/image-upload.js
+index 49255b711..425a08043 100644
+--- a/ckan/public/base/javascript/modules/image-upload.js
++++ b/ckan/public/base/javascript/modules/image-upload.js
+@@ -11,7 +11,9 @@ this.ckan.module('image-upload', function($) {
+       field_url: 'image_url',
+       field_clear: 'clear_upload',
+       field_name: 'name',
+-      upload_label: ''
++      upload_label: '',
++      previous_upload: false
++
+     },
+ 
+     /* Should be changed to true if user modifies resource's name
+@@ -43,6 +45,7 @@ this.ckan.module('image-upload', function($) {
+       this.label_location = $('label[for="field-image-url"]');
+       // determines if the resource is a data resource
+       this.is_data_resource = (this.options.field_url === 'url') && (this.options.field_upload === 'upload');
++      this.previousUpload = this.options.previous_upload;
+ 
+       // Is there a clear checkbox on the form already?
+       var checkbox = $(field_clear, this.el);
+@@ -68,6 +71,11 @@ this.ckan.module('image-upload', function($) {
+                              this._('Upload') + '</a>')
+         .insertAfter(this.input);
+ 
++      if (this.previousUpload) {
++        $('<div class="error-inline"><i class="fa fa-warning"></i> ' +
++          this._('Please select the file to upload again') + '</div>').appendTo(this.field_image);
++      }
++
+       // Button for resetting the form when there is a URL set
+       var removeText = this._('Remove');
+       $('<a href="javascript:;" class="btn btn-danger btn-remove-url">'
+diff --git a/ckan/public/base/javascript/modules/image-upload.min.js b/ckan/public/base/javascript/modules/image-upload.min.js
+index 1bce1609b..15e8f340d 100644
+--- a/ckan/public/base/javascript/modules/image-upload.min.js
++++ b/ckan/public/base/javascript/modules/image-upload.min.js
+@@ -1,7 +1,9 @@
+-this.ckan.module('image-upload',function($){return{options:{is_url:false,is_upload:false,field_upload:'image_upload',field_url:'image_url',field_clear:'clear_upload',field_name:'name',upload_label:''},_nameIsDirty:false,initialize:function(){$.proxyAll(this,/_on/);var options=this.options;var field_upload='input[name="'+options.field_upload+'"]';var field_url='input[name="'+options.field_url+'"]';var field_clear='input[name="'+options.field_clear+'"]';var field_name='input[name="'+options.field_name+'"]';this.input=$(field_upload,this.el);this.field_url=$(field_url,this.el).parents('.form-group');this.field_image=this.input.parents('.form-group');this.field_url_input=$('input',this.field_url);this.field_name=this.el.parents('form').find(field_name);this.label_location=$('label[for="field-image-url"]');this.is_data_resource=(this.options.field_url==='url')&&(this.options.field_upload==='upload');var checkbox=$(field_clear,this.el);if(checkbox.length>0){checkbox.parents('.form-group').remove();}
++this.ckan.module('image-upload',function($){return{options:{is_url:false,is_upload:false,field_upload:'image_upload',field_url:'image_url',field_clear:'clear_upload',field_name:'name',upload_label:'',previous_upload:false},_nameIsDirty:false,initialize:function(){$.proxyAll(this,/_on/);var options=this.options;var field_upload='input[name="'+options.field_upload+'"]';var field_url='input[name="'+options.field_url+'"]';var field_clear='input[name="'+options.field_clear+'"]';var field_name='input[name="'+options.field_name+'"]';this.input=$(field_upload,this.el);this.field_url=$(field_url,this.el).parents('.form-group');this.field_image=this.input.parents('.form-group');this.field_url_input=$('input',this.field_url);this.field_name=this.el.parents('form').find(field_name);this.label_location=$('label[for="field-image-url"]');this.is_data_resource=(this.options.field_url==='url')&&(this.options.field_upload==='upload');this.previousUpload=this.options.previous_upload;var checkbox=$(field_clear,this.el);if(checkbox.length>0){checkbox.parents('.form-group').remove();}
+ this.field_clear=$('<input type="hidden" name="'+options.field_clear+'">').appendTo(this.el);this.button_url=$('<a href="javascript:;" class="btn btn-default">'+'<i class="fa fa-globe"></i>'+
+ this._('Link')+'</a>').prop('title',this._('Link to a URL on the internet (you can also link to an API)')).on('click',this._onFromWeb).insertAfter(this.input);this.button_upload=$('<a href="javascript:;" class="btn btn-default">'+'<i class="fa fa-cloud-upload"></i>'+
+-this._('Upload')+'</a>').insertAfter(this.input);var removeText=this._('Remove');$('<a href="javascript:;" class="btn btn-danger btn-remove-url">'
++this._('Upload')+'</a>').insertAfter(this.input);if(this.previousUpload){$('<div class="error-inline"><i class="fa fa-warning"></i> '+
++this._('Please select the file to upload again')+'</div>').appendTo(this.field_image);}
++var removeText=this._('Remove');$('<a href="javascript:;" class="btn btn-danger btn-remove-url">'
+ +removeText+'</a>').prop('title',removeText).on('click',this._onRemove).insertBefore(this.field_url_input);$('label[for="field-image-upload"]').text(options.upload_label||this._('Image'));this.input.on('mouseover',this._onInputMouseOver).on('mouseout',this._onInputMouseOut).on('change',this._onInputChange).prop('title',this._('Upload a file on your computer')).css('width',this.button_upload.outerWidth());this.fields=$('<i />').add(this.button_upload).add(this.button_url).add(this.input).add(this.field_url).add(this.field_image);this.field_name.on('change',this._onModifyName);if(this.field_name.val()){this._nameIsDirty=true;}
+ if(options.is_url){this._showOnlyFieldUrl();this._updateUrlLabel(this._('URL'));}else if(options.is_upload){this._showOnlyFieldUrl();this.field_url_input.prop('readonly',true);var filename=this._fileNameFromUpload(this.field_url_input.val());this.field_url_input.val(filename);this._updateUrlLabel(this._('File'));}else{this._showOnlyButtons();}},_fileNameFromUpload:function(url){if(/^\/base\/images/.test(url)){return url;}
+ url=url.substring(0,(url.indexOf("#")===-1)?url.length:url.indexOf("#"));url=url.substring(0,(url.indexOf("?")===-1)?url.length:url.indexOf("?"));url=url.substring(url.lastIndexOf("/")+1,url.length);return url;},_updateUrlLabel:function(label_text){if(!this.is_data_resource){return;}
+diff --git a/ckan/public/base/less/forms.less b/ckan/public/base/less/forms.less
+index 79cc069b6..483bd95e2 100644
+--- a/ckan/public/base/less/forms.less
++++ b/ckan/public/base/less/forms.less
+@@ -752,6 +752,13 @@ select[data-module="autocomplete"] {
+             margin-right: 0;
+         }
+     }
++
++    .error-inline {
++      margin-top: 5px;
++      margin-left: 2px;
++      font-weight: bold;
++    }
++
+ }
+ 
+ .add-member-form .control-label {
+diff --git a/ckan/templates/macros/form.html b/ckan/templates/macros/form.html
+index 0a31b97b5..61adb768f 100644
+--- a/ckan/templates/macros/form.html
++++ b/ckan/templates/macros/form.html
+@@ -422,10 +422,19 @@ options     - A list/tuple of fields to be used as <options>.
+   {% set placeholder = placeholder if placeholder else _('http://example.com/my-image.jpg') %}
+   {% set url_label = url_label or _('Image URL')  %}
+   {% set upload_label = upload_label or _('Image')  %}
++  {% set previous_upload = data['previous_upload'] %}
+ 
+   {% if is_upload_enabled %}
+-  <div class="image-upload" data-module="image-upload" data-module-is_url="{{ 'true' if is_url else 'false' }}" data-module-is_upload="{{ 'true' if is_upload else 'false' }}"
+-       data-module-field_url="{{ field_url }}" data-module-field_upload="{{ field_upload }}" data-module-field_clear="{{ field_clear }}" data-module-upload_label="{{ upload_label }}" data-module-field_name="{{ field_name }}">
++  <div class="image-upload"
++       data-module="image-upload"
++       data-module-is_url="{{ 'true' if is_url else 'false' }}"
++       data-module-is_upload="{{ 'true' if is_upload else 'false' }}"
++       data-module-field_url="{{ field_url }}"
++       data-module-field_upload="{{ field_upload }}"
++       data-module-field_clear="{{ field_clear }}"
++       data-module-upload_label="{{ upload_label }}"
++       data-module-field_name="{{ field_name }}"
++       data-module-previous_upload="{{ 'true' if previous_upload else 'false' }}">
+   {% endif %}
+ 
+ 
+diff --git a/test.ini b/test.ini
+index 2cf9d6722..bed18ebc5 100644
+--- a/test.ini
++++ b/test.ini
+@@ -17,7 +17,7 @@ port = 5000
+ 
+ 
+ [app:main]
+-use = config:test-core.ini
++use = config:../../src/ckan/test-core.ini
+ # Here we hard-code the database and a flag to make default tests
+ # run fast.
+ faster_db_test_hacks = True

@@ -1,0 +1,35 @@
+diff --git a/ckan/views/user.py b/ckan/views/user.py
+index eae9b32dd..975f31096 100644
+--- a/ckan/views/user.py
++++ b/ckan/views/user.py
+@@ -3,6 +3,8 @@ import logging
+ 
+ from flask import Blueprint
+ from flask.views import MethodView
++from werkzeug import Response as werkzeug_response
++from flask import Response as flask_response
+ from paste.deploy.converters import asbool
+ from six import text_type
+ 
+@@ -360,7 +362,9 @@ class RegisterView(MethodView):
+ def login():
+     # Do any plugin login stuff
+     for item in plugins.PluginImplementations(plugins.IAuthenticator):
+-        item.login()
++        resp = item.login()
++    if isinstance(resp, (werkzeug_response, flask_response)):
++        return resp
+ 
+     extra_vars = {}
+     if g.user:
+@@ -391,7 +395,9 @@ def logged_in():
+ def logout():
+     # Do any plugin logout stuff
+     for item in plugins.PluginImplementations(plugins.IAuthenticator):
+-        item.logout()
++        resp = item.logout()
++    if isinstance(resp, (werkzeug_response, flask_response)):
++        return resp
+     url = h.url_for(u'user.logged_out_page')
+     return h.redirect_to(
+         _get_repoze_handler(u'logout_handler_path') + u'?came_from=' + url,

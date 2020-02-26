@@ -1,0 +1,26 @@
+diff --git a/ckan/views/user.py b/ckan/views/user.py
+index eae9b32dd..89c5ea003 100644
+--- a/ckan/views/user.py
++++ b/ckan/views/user.py
+@@ -72,21 +72,6 @@ def _extra_template_variables(context, data_dict):
+     return extra
+ 
+ 
+-@user.before_request
+-def before_request():
+-    try:
+-        context = dict(model=model, user=g.user, auth_user_obj=g.userobj)
+-        logic.check_access(u'site_read', context)
+-    except logic.NotAuthorized:
+-        _, action = request.url_rule.endpoint.split(u'.')
+-        if action not in (
+-                u'login',
+-                u'request_reset',
+-                u'perform_reset',
+-        ):
+-            base.abort(403, _(u'Not authorized to see this page'))
+-
+-
+ def index():
+     page_number = h.get_page_number(request.params)
+     q = request.params.get(u'q', u'')
