@@ -10,7 +10,7 @@ from ckan.lib.plugins import DefaultPermissionLabels
 # 🙈
 from ckan.lib.activity_streams import activity_stream_string_functions
 
-from ckanext.unhcr import actions, auth, helpers, jobs, validators
+from ckanext.unhcr import actions, auth, blueprint, helpers, jobs, validators
 
 from ckanext.scheming.helpers import scheming_get_dataset_schema
 from ckanext.hierarchy.helpers import group_tree_section
@@ -33,6 +33,7 @@ class UnhcrPlugin(
     plugins.implements(plugins.IRoutes, inherit=True)
     plugins.implements(plugins.IValidators)
     plugins.implements(plugins.IPermissionLabels)
+    plugins.implements(plugins.IBlueprint)
 
     # IConfigurer
 
@@ -436,3 +437,8 @@ class UnhcrPlugin(
                     labels.extend(['deposited-dataset'])
 
         return labels
+
+    # IBlueprint
+
+    def get_blueprint(self):
+        return blueprint.unhcr_metrics_blueprint

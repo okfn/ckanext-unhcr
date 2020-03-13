@@ -8,12 +8,24 @@
 
 {% block header_site_navigation_tabs %}
   {% if c.userobj %}
-    {{ h.build_nav_main(
-        ('data-container_index', _('Organizations')),
-        ('data-deposit', _('Data Deposit')),
-        ('search', _('Datasets')),
-       )
-    }}
+    {% if c.userobj.sysadmin %}
+      {{
+        h.build_nav_main(
+          ('data-container_index', _('Organizations')),
+          ('data-deposit', _('Data Deposit')),
+          ('search', _('Datasets')),
+          ('unhcr_metrics.metrics', _('Metrics')),
+        )
+      }}
+    {% else %}
+      {{
+        h.build_nav_main(
+          ('data-container_index', _('Organizations')),
+          ('data-deposit', _('Data Deposit')),
+          ('search', _('Datasets')),
+        )
+      }}
+    {% endif %}
   {% endif %}
   {% if g.debug %}
     <small>Debug: {{ c.user }}</small>

@@ -1,0 +1,44 @@
+{% extends "page.html" %}
+
+{% block secondary_content %}
+  <h2 class="module-heading"><i class="fa fa-line-chart"></i> Metrics</h2>
+  <nav>
+    <ul class="unstyled nav nav-simple">
+      {% for metric in metrics %}
+        <li class="nav-item"><a href="#{{ metric.id }}">{{ metric.title }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+{% endblock %}
+
+{% block primary_content %}
+
+<h1>Metrics</h1>
+
+<h2>Totals</h2>
+<ul class="media-grid" data-module="media-grid">
+  {% for metric in metrics %}
+    {% if metric.total %}
+      <li class="media-item">
+        <h3 class="media-heading">{{ metric.short_title or metric.title }}</h3>
+        <strong class="count">{{ metric.total }}</strong>
+        <a href="#{{ metric.id }}" title="{{ metric.title }}" class="media-view">
+          <span>{{ metric.title }}</span>
+        </a>
+      </li>
+    {% endif %}
+  {% endfor %}
+</ul>
+
+{% for metric in metrics %}
+  <h2 id="{{ metric.id }}">{{ metric.title }}</h2>
+  {% if metric.type == 'freq_table' %}
+    {% snippet "metrics/snippets/freq_table.html", metric=metric %}
+  {% elif metric.type == 'line_graph' %}
+    {% snippet "metrics/snippets/line_graph.html", metric=metric %}
+  {% else %}
+    {# we don't know how to display this #}
+  {% endif %}
+{% endfor %}
+
+{% endblock %}
