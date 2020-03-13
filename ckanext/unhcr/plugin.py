@@ -1,4 +1,5 @@
 # encoding: utf-8
+import os
 import json
 import logging
 
@@ -113,6 +114,12 @@ class UnhcrPlugin(
         _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
         _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
         _map.connect('/dataset/{id}/publish_microdata', controller=controller, action='publish_microdata')
+
+        # Recover ckanext-cloudstorage controllers
+        if 'cloudstorage' in os.environ.get('CKAN__PLUGINS', ''):
+            controller='ckanext.cloudstorage.controller:StorageController'
+            _map.connect('resource_download', '/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
+            _map.connect('resource_download', '/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
 
         # organization
 
