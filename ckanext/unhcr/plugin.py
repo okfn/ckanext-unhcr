@@ -112,13 +112,8 @@ class UnhcrPlugin(
         _map.connect('/dataset/copy/{id}', controller=controller, action='copy')
         _map.connect('/dataset/{id}/resource_copy/{resource_id}', controller=controller, action='resource_copy')
         _map.connect('/dataset/{id}/publish_microdata', controller=controller, action='publish_microdata')
-        if 'cloudstorage' not in os.environ.get('CKAN__PLUGINS', ''):
-            _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
-            _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
-        else:
-            controller='ckanext.cloudstorage.controller:StorageController'
-            _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
-            _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
+        _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
+        _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
 
 
         # organization
