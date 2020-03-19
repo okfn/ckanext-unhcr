@@ -105,18 +105,3 @@ def get_users(context):
             for user in users[:10]
         ]
     }
-
-def metrics():
-    context = {'user': toolkit.c.user }
-
-    if not toolkit.c.userobj.sysadmin:
-        return toolkit.abort(403, 'Forbidden')
-
-    return toolkit.render('metrics/index.html', {
-        'metrics': [
-            get_datasets_by_date(context),
-            get_containers(context),
-            get_tags(context),
-            get_users(context),
-        ]
-    })

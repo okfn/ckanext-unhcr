@@ -1,7 +1,28 @@
 # -*- coding: utf-8 -*-
 
 from flask import Blueprint
-from .metrics import metrics
+import ckan.plugins.toolkit as toolkit
+from .metrics import (
+    get_datasets_by_date,
+    get_containers,
+    get_tags,
+    get_users,
+)
+
+def metrics():
+    context = {'user': toolkit.c.user }
+
+    if not toolkit.c.userobj.sysadmin:
+        return toolkit.abort(403, 'Forbidden')
+
+    return toolkit.render('metrics/index.html', {
+        'metrics': [
+            get_datasets_by_date(context),
+            get_containers(context),
+            get_tags(context),
+            get_users(context),
+        ]
+    })
 
 unhcr_metrics_blueprint = Blueprint('unhcr_metrics', __name__)
 
