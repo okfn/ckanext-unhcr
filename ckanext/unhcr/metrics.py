@@ -7,10 +7,12 @@ import ckan.plugins.toolkit as toolkit
 
 def get_datasets_by_date(context):
     title = 'Total number of Datasets'
-    packages = toolkit.get_action('package_search')(
-        context,
-        { 'q': '*:*', 'rows': 0 }
-    )
+    data_dict = {
+        'q': '*:*',
+        'rows': 0,
+        'include_private': True,
+    }
+    packages = toolkit.get_action('package_search')(context, data_dict)
 
     return {
         'type': 'line_graph',
@@ -27,6 +29,7 @@ def get_containers(context):
         'rows': 0,
         'facet.field': ['organization'],
         'facet.limit': 10,
+        'include_private': True,
     }
     packages = toolkit.get_action('package_search')(context, data_dict)
 
@@ -59,6 +62,7 @@ def get_tags(context):
         'rows': 0,
         'facet.field': ['tags'],
         'facet.limit': 10,
+        'include_private': True,
     }
     packages = toolkit.get_action('package_search')(context, data_dict)
 
