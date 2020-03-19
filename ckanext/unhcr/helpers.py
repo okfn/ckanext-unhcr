@@ -8,6 +8,7 @@ from ckan.logic import ValidationError
 from ckan.plugins import toolkit
 import ckan.lib.helpers as core_helpers
 import ckan.lib.plugins as lib_plugins
+from ckan.logic import NotFound
 from ckanext.hierarchy import helpers as hierarchy_helpers
 from ckanext.scheming.helpers import (
     scheming_get_dataset_schema, scheming_field_by_name
@@ -126,10 +127,13 @@ def get_came_from_param():
 def user_is_curator():
     user = toolkit.c.user
     group = get_data_deposit()
-    users = toolkit.get_action('member_list')(
-        { 'user': user },
-        { 'id': group['id'] }
-    )
+    try:
+        users = toolkit.get_action('member_list')(
+            { 'user': user },
+            { 'id': group['id'] }
+        )
+    except NotFound:
+        return False
     user_ids = [u[0] for u in users]
     user_id = toolkit.c.userobj.id
     return user_id in user_ids
