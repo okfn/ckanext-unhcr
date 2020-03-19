@@ -8,7 +8,7 @@
 
 {% block header_site_navigation_tabs %}
   {% if c.userobj %}
-    {% if c.userobj.sysadmin %}
+    {% if c.userobj.sysadmin or h.user_is_curator() %}
       {{
         h.build_nav_main(
           ('data-container_index', _('Organizations')),

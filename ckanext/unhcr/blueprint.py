@@ -2,6 +2,7 @@
 
 from flask import Blueprint
 import ckan.plugins.toolkit as toolkit
+from .helpers import user_is_curator
 from .metrics import (
     get_datasets_by_date,
     get_containers,
@@ -10,9 +11,9 @@ from .metrics import (
 )
 
 def metrics():
-    context = {'user': toolkit.c.user }
+    context = { 'user': toolkit.c.user }
 
-    if not toolkit.c.userobj.sysadmin:
+    if not (toolkit.c.userobj.sysadmin or user_is_curator()):
         return toolkit.abort(403, 'Forbidden')
 
     return toolkit.render('metrics/index.html', {
