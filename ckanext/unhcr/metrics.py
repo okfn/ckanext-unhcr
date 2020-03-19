@@ -41,7 +41,7 @@ def get_containers(context):
         reverse=True,
     )
     for row in data:
-        row['link'] = '/data-container/{}'.format(row['name'])
+        row['link'] = toolkit.url_for('data-container_read', id=row['name'])
 
     title = 'Data Containers'
     return {
