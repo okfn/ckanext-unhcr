@@ -69,6 +69,9 @@ pip install --upgrade -r requirements.txt
 # locally
 sed -i -e 's/config:..\/..\/src\/ckan\/test-core.ini/config:..\/ckan\/test-core.ini/' test.ini
 
+echo "Initialising unhcr extension tables..."
+paster --plugin=ckanext-unhcr unhcr init-db -c ckan/test-core.ini
+
 echo "Moving test.ini into a subdir..."
 mkdir subdir
 mv test.ini subdir
