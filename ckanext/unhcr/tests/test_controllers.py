@@ -1101,3 +1101,35 @@ class TestDataContainerController(base.FunctionalTestBase):
     def test_membership_remove_no_access(self):
         url = '/data-container/membership_remove?username=default_test&contname=container1'
         resp = self.get_request(url, user='user3', status=403)
+
+
+class TestMetricsController(base.FunctionalTestBase):
+
+    # Helpers
+
+    def get_request(self, url, user=None, **kwargs):
+        env = {'REMOTE_USER': user.encode('ascii')} if user else {}
+        resp = self.app.get(url, extra_environ=env, **kwargs)
+        return resp
+
+    # Tests
+
+    def test_metrics_standard_user(self):
+        user1 = core_factories.User(name='user1', id='user1')
+        resp = self.get_request('/metrics', user='user1', status=403)
+        assert '<a href="/metrics">' not in resp.body
+
+    def test_metrics_sysadmin(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        resp = self.get_request('/metrics', user='sysadmin', status=200)
+
+    def test_metrics_curator(self):
+        curator = core_factories.User(name='curator', id='curator')
+        deposit = factories.DataContainer(
+            users=[
+                {'name': 'curator', 'capacity': 'editor'},
+            ],
+            name='data-deposit',
+            id='data-deposit'
+        )
+        resp = self.get_request('/metrics', user='curator', status=200)
