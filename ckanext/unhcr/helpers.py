@@ -8,7 +8,6 @@ from ckan.logic import ValidationError
 from ckan.plugins import toolkit
 import ckan.lib.helpers as core_helpers
 import ckan.lib.plugins as lib_plugins
-from ckan.logic import NotFound
 from ckanext.hierarchy import helpers as hierarchy_helpers
 from ckanext.scheming.helpers import (
     scheming_get_dataset_schema, scheming_field_by_name
@@ -132,7 +131,7 @@ def user_is_curator():
             { 'user': user },
             { 'id': group['id'] }
         )
-    except NotFound:
+    except toolkit.ObjectNotFound:
         return False
     user_ids = [u[0] for u in users]
     user_id = toolkit.c.userobj.id
