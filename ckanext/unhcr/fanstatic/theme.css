@@ -680,6 +680,10 @@ body {
   content: "\f016";
 }
 
+.masthead .nav > li > a[href="/metrics"]::before {
+  content: "\f061";
+}
+
 @media (min-width: 768px) {
 
   .masthead .nav > li > a {
