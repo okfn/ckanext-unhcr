@@ -84,10 +84,12 @@ def get_tags(context):
     }
 
 def get_users(context):
-    data_dict = {
-        'order_by': 'number_created_packages'
-    }
-    users = toolkit.get_action('user_list')(context, data_dict)
+    users = toolkit.get_action('user_list')(context, {})
+    users = sorted(
+        users,
+        key=itemgetter('number_created_packages'),
+        reverse=True,
+    )
 
     title = 'Users'
     return {
