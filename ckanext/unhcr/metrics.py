@@ -97,7 +97,7 @@ def get_users(context):
         'title': title,
         'id': slugify(title),
         'total': len(users),
-        'headers': ['User', 'Datasets'],
+        'headers': ['User', 'Datasets Created'],
         'data': [
             {
                 'display_name': user['display_name'],
