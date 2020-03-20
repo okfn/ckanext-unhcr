@@ -2,17 +2,21 @@
 
 import sys
 
-from ckan.plugins.toolkit import CkanCommand
+from ckan.plugins import toolkit
 
-from ckanext.unhcr.models import tables_exist, create_tables
+import ckan.model as model
+from ckanext.unhcr.models import tables_exist, create_tables, TimeSeriesMetric
 
 
-class Unhcr(CkanCommand):
+class Unhcr(toolkit.CkanCommand):
     u'''Utilities for the CKAN UNHCR extension
 
     Usage:
         paster unhcr init-db
             Initialize database tables
+
+        paster unhcr snapshot-metrics
+            Take a snapshot of time-series metrics
 
     '''
     summary = __doc__.split('\n')[0]
@@ -33,6 +37,8 @@ class Unhcr(CkanCommand):
         cmd = self.args[0]
         if cmd == 'init-db':
             self.init_db()
+        elif cmd == 'snapshot-metrics':
+            self.snapshot_metrics()
         else:
             self.parser.print_usage()
             sys.exit(1)
@@ -44,3 +50,25 @@ class Unhcr(CkanCommand):
 
         create_tables()
         print(u'UNHCR tables created')
+
+    def snapshot_metrics(self):
+        context = { 'user': toolkit.c.user }
+
+        packages = toolkit.get_action('package_search')(context, {
+            'q': '*:*',
+            'rows': 0,
+            'include_private': True,
+        })
+        organizations = toolkit.get_action('organization_list')(
+            context,
+            { 'type': 'data-container' },
+        )
+
+        rec = TimeSeriesMetric(
+            datasets_count=packages['count'],
+            containers_count=len(organizations),
+        )
+        model.Session.add(rec)
+        model.Session.commit()
+        model.Session.refresh(rec)
+        print('Snapshot saved at {}'.format(rec.timestamp))
