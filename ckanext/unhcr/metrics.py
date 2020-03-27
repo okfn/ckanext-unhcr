@@ -16,13 +16,24 @@ def get_datasets_by_date(context):
     packages = toolkit.get_action('package_search')(context, data_dict)
 
     return {
-        'type': 'line_graph',
+        'type': 'timeseries_graph',
         'short_title': 'Datasets',
         'title': title,
         'id': slugify(title),
         'total': packages['count'],
-        'data': []
+
+        # TODO: real data
+        'data': [
+            [
+                'x',
+                '2020-03-20 11:42:35.412578',
+                '2020-03-21 12:00:14.193422',
+                '2020-03-22 15:34:02.744443'
+            ],
+            ['Datasets', 1, 2, 3],
+        ],
     }
+
 
 def get_containers(context):
     data_dict = {

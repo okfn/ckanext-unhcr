@@ -1,0 +1,22 @@
+<div id="chart-{{ metric.id }}" class="line-graph"></div>
+<script>
+document.addEventListener("DOMContentLoaded", function(event) {
+  c3.generate({
+      bindto: '#chart-{{ metric.id }}',
+      axis: {
+        y: {
+          tick: { format: d3.format("d") },
+        },
+        x: {
+          type: 'timeseries',
+          tick: { format: '%Y-%m-%d' },
+        },
+      },
+      data: {
+        x: 'x',
+        xFormat: '%Y-%m-%d %H:%M:%S.%f',
+        columns: {{ metric.data | tojson }},
+      },
+  });
+});
+</script>

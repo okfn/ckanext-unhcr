@@ -2,6 +2,13 @@
 
 {%- block subtitle %}Metrics{% endblock -%}
 
+{% block scripts %}
+  {{ super() }}
+  {% resource 'unhcr/graphs/c3__0_7_15__min.css' %}
+  {% resource 'unhcr/graphs/d3__5_15_0__min.js' %}
+  {% resource 'unhcr/graphs/c3__0_7_15__min.js' %}
+{% endblock %}
+
 {% block secondary_content %}
   <h2 class="module-heading"><i class="fa fa-line-chart"></i> Metrics</h2>
   <nav>
@@ -36,8 +43,8 @@
   <h2 id="{{ metric.id }}">{{ metric.title }}</h2>
   {% if metric.type == 'freq_table' %}
     {% snippet "metrics/snippets/freq_table.html", metric=metric %}
-  {% elif metric.type == 'line_graph' %}
-    {% snippet "metrics/snippets/line_graph.html", metric=metric %}
+  {% elif metric.type == 'timeseries_graph' %}
+    {% snippet "metrics/snippets/timeseries_graph.html", metric=metric %}
   {% else %}
     {# we don't know how to display this #}
   {% endif %}
