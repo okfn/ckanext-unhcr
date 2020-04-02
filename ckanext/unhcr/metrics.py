@@ -9,6 +9,7 @@ def get_datasets_by_date(context):
     title = 'Total number of Datasets'
     data_dict = {
         'q': '*:*',
+        'fq': "-type:deposited-dataset",
         'rows': 0,
         'include_private': True,
     }
@@ -26,6 +27,7 @@ def get_datasets_by_date(context):
 def get_containers(context):
     data_dict = {
         'q': '*:*',
+        'fq': "-type:deposited-dataset",
         'rows': 0,
         'facet.field': ['organization'],
         'facet.limit': 10,
@@ -59,6 +61,7 @@ def get_containers(context):
 def get_tags(context):
     data_dict = {
         'q': '*:*',
+        'fq': "-type:deposited-dataset",
         'rows': 0,
         'facet.field': ['tags'],
         'facet.limit': 10,
