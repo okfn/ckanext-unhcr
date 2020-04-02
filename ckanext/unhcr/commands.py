@@ -52,7 +52,7 @@ class Unhcr(toolkit.CkanCommand):
         print(u'UNHCR tables created')
 
     def snapshot_metrics(self):
-        context = { 'user': toolkit.c.user }
+        context = { 'ignore_auth': True }
 
         packages = toolkit.get_action('package_search')(context, {
             'q': '*:*',
