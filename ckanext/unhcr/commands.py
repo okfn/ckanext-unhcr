@@ -56,6 +56,7 @@ class Unhcr(toolkit.CkanCommand):
 
         packages = toolkit.get_action('package_search')(context, {
             'q': '*:*',
+            'fq': "-type:deposited-dataset",
             'rows': 0,
             'include_private': True,
         })
