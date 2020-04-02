@@ -123,6 +123,21 @@ def get_came_from_param():
     return toolkit.request.environ.get('CKAN_CURRENT_URL', '')
 
 
+def user_is_curator():
+    user = toolkit.c.user
+    group = get_data_deposit()
+    try:
+        users = toolkit.get_action('member_list')(
+            { 'user': user },
+            { 'id': group['id'] }
+        )
+    except toolkit.ObjectNotFound:
+        return False
+    user_ids = [u[0] for u in users]
+    user_id = toolkit.c.userobj.id
+    return user_id in user_ids
+
+
 # Linked datasets
 
 def get_linked_datasets_for_form(selected_ids=[], exclude_ids=[], context=None, user_id=None):

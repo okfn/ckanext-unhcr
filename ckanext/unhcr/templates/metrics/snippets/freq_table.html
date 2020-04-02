@@ -1,0 +1,20 @@
+<table class="table table-header table-hover table-bordered">
+  <thead>
+    <tr>
+      <th>{{ metric.headers.0 }}</th>
+      <th>{{ metric.headers.1 }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in metric.data %}
+      <tr>
+        {% if row.link %}
+          <td><a href="{{ row.link }}">{{ row.display_name }}</a></td>
+        {% else %}
+          <td>{{ row.display_name }}</td>
+        {% endif %}
+        <td>{{ row.count }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

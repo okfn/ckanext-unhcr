@@ -193,6 +193,12 @@
         }
       }
 
+      &[href="/metrics"] {
+        &::before {
+          @mixin icon-list;
+        }
+      }
+
       @media (--portrait-tablet-up) {
         border: solid 1px #fff;
         margin-left: 20px;
