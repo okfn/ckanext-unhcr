@@ -68,6 +68,23 @@ def get_containers(context):
         'data': data,
     }
 
+def get_containers_by_date(context):
+    title = 'Total number of Containers'
+
+    sql = select([TimeSeriesMetric])
+    result = model.Session.execute(sql).fetchall()
+
+    return {
+        'type': 'timeseries_graph',
+        'short_title': 'Containers',
+        'title': title,
+        'id': slugify(title),
+        'data': [
+            ['x'] + [str(row['timestamp']) for row in result],
+            ['Datasets'] + [row['containers_count'] for row in result],
+        ],
+    }
+
 def get_tags(context):
     data_dict = {
         'q': '*:*',
