@@ -82,7 +82,10 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points='''
         [ckan.plugins]
-        unhcr=ckanext.unhcr.plugin:UnhcrPlugin
+        unhcr = ckanext.unhcr.plugin:UnhcrPlugin
+
+        [paste.paster_command]
+        unhcr = ckanext.unhcr.commands:Unhcr
 
         [babel.extractors]
         ckan = ckan.lib.extract:extract_ckan
