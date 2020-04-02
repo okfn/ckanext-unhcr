@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
       axis: {
         y: {
           tick: { format: d3.format("d") },
+          min: 0,
+          padding: { bottom: 0 },
         },
         x: {
           type: 'timeseries',
