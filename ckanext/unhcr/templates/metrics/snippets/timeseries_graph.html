@@ -11,12 +11,16 @@ document.addEventListener("DOMContentLoaded", function(event) {
         },
         x: {
           type: 'timeseries',
-          tick: { format: '%Y-%m-%d' },
+          tick: {
+            format: '%Y-%m-%d',
+            culling: { count: 12 },
+            rotate: 75,
+          },
         },
       },
       data: {
         x: 'x',
-        xFormat: '%Y-%m-%d %H:%M:%S.%f',
+        xFormat: '%Y-%m-%d',
         columns: {{ metric.data | tojson }},
       },
   });

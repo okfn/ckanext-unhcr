@@ -2,7 +2,7 @@
 
 from operator import itemgetter
 from slugify import slugify
-from sqlalchemy import select
+from sqlalchemy import select, func
 import ckan.model as model
 import ckan.plugins.toolkit as toolkit
 from ckanext.unhcr.models import TimeSeriesMetric
@@ -18,8 +18,18 @@ def get_datasets_by_date(context):
     }
     packages = toolkit.get_action('package_search')(context, data_dict)
 
-    sql = select([TimeSeriesMetric])
+    sql = select([
+        func.date(TimeSeriesMetric.timestamp).label('date'),
+        TimeSeriesMetric.datasets_count
+    ]).order_by(
+        TimeSeriesMetric.timestamp
+    )
     result = model.Session.execute(sql).fetchall()
+    dates = {}
+    for row in result:
+        # De-dupe on date. As long as we've ordered our query by timestamp,
+        # we'll take the last value recorded on each date
+        dates[row['date']] = row['datasets_count']
 
     return {
         'type': 'timeseries_graph',
@@ -28,8 +38,8 @@ def get_datasets_by_date(context):
         'id': slugify(title),
         'total': packages['count'],
         'data': [
-            ['x'] + [str(row['timestamp']) for row in result],
-            ['Datasets'] + [row['datasets_count'] for row in result],
+            ['x'] + [str(date) for date in dates.keys()],
+            ['Datasets'] + [count for count in dates.values()],
         ],
     }
 
