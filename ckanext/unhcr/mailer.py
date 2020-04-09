@@ -90,6 +90,7 @@ def _get_new_packages(context, start_time):
             '-type:deposited-dataset AND ' +\
             'metadata_created:[{} TO NOW]'.format(start_time)
         ),
+        'sort': 'metadata_created desc',
         'include_private': True,
     }
     packages = toolkit.get_action('package_search')(context, data_dict)
@@ -104,6 +105,7 @@ def _get_new_deposits(context, start_time):
             '-curation_state:review AND ' +\
             'metadata_created:[{} TO NOW]'.format(start_time)
         ),
+        'sort': 'metadata_created desc',
         'include_private': True,
     }
     packages = toolkit.get_action('package_search')(context, data_dict)
@@ -118,6 +120,7 @@ def _get_deposits_awaiting_review(context, start_time):
             'curation_state:review AND ' +\
             'metadata_created:[{} TO NOW]'.format(start_time)
         ),
+        'sort': 'metadata_created desc',
         'include_private': True,
     }
     packages = toolkit.get_action('package_search')(context, data_dict)
@@ -135,8 +138,24 @@ def compose_summary_email_body(user_dict):
     context['site_title'] = config.get('ckan.site_title')
     context['site_url'] = config.get('ckan.site_url')
 
-    context['datasets_url'] = toolkit.url_for('search', qualified=True)
-    context['deposits_url'] = toolkit.url_for('data-deposit', qualified=True)
+    context['datasets_url'] = toolkit.url_for(
+        'search',
+        q=(
+            '-type:deposited-dataset AND ' +\
+            'metadata_created:[{} TO NOW]'.format(query_start_time)
+        ),
+        sort='metadata_created desc',
+        qualified=True
+    )
+    context['deposits_url'] = toolkit.url_for(
+        'search',
+        q=(
+            'type:deposited-dataset AND ' +\
+            'metadata_created:[{} TO NOW]'.format(query_start_time)
+        ),
+        sort='metadata_created desc',
+        qualified=True
+    )
 
     action_context = { 'user': user_dict['name'] }
     context['new_datasets'] = _get_new_packages(action_context, query_start_time)
