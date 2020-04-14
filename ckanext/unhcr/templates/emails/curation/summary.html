@@ -1,0 +1,65 @@
+{% extends "emails/curation/base.html" %}
+{% import 'macros/email.html' as email with context %}
+
+{% block email_body %}
+
+  {% call email.paragraph() %}
+    Dear <b>{{ recipient }}</b>,
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    Here is a summary of the activity in the RIDL site since {{ start_date }}.
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    <h1>New datasets ({{ new_datasets|length }})</h1>
+    <ul>
+    {% for ds in new_datasets %}
+      <li>
+        {{ h.link_to(ds.title or ds.name, h.url_for('dataset_read', id=ds.name, qualified=True)) }}
+      </li>
+    {% else %}
+      <li>No new datasets</li>
+    {% endfor %}
+    </ul>
+  {% endcall %}
+
+  {% call email.action(datasets_url) %}
+    See new Datasets
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    <h1>Data Deposit</h1>
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    <h2>New deposited datasets ({{ new_deposits|length }})</h2>
+    <ul>
+      {% for ds in new_deposits %}
+        <li>
+          {{ h.link_to(ds.title or ds.name, h.url_for('dataset_read', id=ds.name, qualified=True)) }}
+        </li>
+      {% else %}
+        <li>No new deposits</li>
+      {% endfor %}
+    </ul>
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    <h2>Datasets awaiting review ({{ awaiting_review|length }})</h2>
+    <ul>
+      {% for ds in awaiting_review %}
+        <li>
+          {{ h.link_to(ds.title or ds.name, h.url_for('dataset_read', id=ds.name, qualified=True)) }}
+        </li>
+      {% else %}
+        <li>Nothing awaiting review</li>
+      {% endfor %}
+    </ul>
+  {% endcall %}
+
+  {% call email.action(deposits_url) %}
+    See new Data Deposits
+  {% endcall %}
+
+{% endblock %}
