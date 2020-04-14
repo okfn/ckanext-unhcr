@@ -105,11 +105,7 @@ class TestMailer(base.FunctionalTestBase):
         recipients = get_summary_email_recipients()
         recipient_ids = [r['name'] for r in recipients]
 
-        assert len(recipient_ids) == 3
+        assert len(recipient_ids) == 2
         assert curator['name'] in recipient_ids
         assert self.sysadmin['name'] in recipient_ids
-        assert (
-            'default_test' in recipient_ids or  # local
-            'test.ckan.net' in recipient_ids  # travis
-        )
         assert user1['name'] not in recipient_ids

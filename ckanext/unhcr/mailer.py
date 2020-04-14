@@ -183,8 +183,11 @@ def get_summary_email_recipients():
     curator_ids = [c[0] for c in curators]
 
     all_users = toolkit.get_action('user_list')({ 'ignore_auth': True }, {})
+    default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
 
     for user in all_users:
+        if user['name'] == default_user['name']:
+            continue
         if user['sysadmin'] or user['id'] in curator_ids:
             recipients.append(user)
 
