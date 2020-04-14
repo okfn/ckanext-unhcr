@@ -1,5 +1,11 @@
 # RIDL Changelog
 
+## v1.1.0 - 2020-04-14
+
+* Add metrics dashboard with stats on how the site is used for curation team and sysadmins
+* Store number of datasets and containers over time
+* Add weekly sumary emails to curation team and sysadmins summarising activity for the past week
+
 ## v1.0.7 - 2020-02-11
 
 * Only show resources with erros on curation sidebar
