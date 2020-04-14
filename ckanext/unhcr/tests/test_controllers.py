@@ -1053,9 +1053,10 @@ class TestDataContainerController(base.FunctionalTestBase):
             'role': 'editor',
         }
         resp = self.post_request('/data-container/membership_add', data, user='sysadmin')
+        default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
         assert_equals(resp.status_int, 302)
         assert_equals(len(self.container1['users']), 2)
-        #  assert_equals(self.container1['users'][0]['name'], 'default_test')
+        assert_equals(self.container1['users'][0]['name'], default_user['name'])
         assert_equals(self.container1['users'][0]['capacity'], 'admin')
         assert_equals(self.container1['users'][1]['name'], 'user1')
         assert_equals(self.container1['users'][1]['capacity'], 'editor')
@@ -1067,14 +1068,15 @@ class TestDataContainerController(base.FunctionalTestBase):
             'role': 'editor',
         }
         resp = self.post_request('/data-container/membership_add', data, user='sysadmin')
+        default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
         assert_equals(resp.status_int, 302)
         assert_equals(len(self.container1['users']), 2)
-        #  assert_equals(self.container1['users'][0]['name'], 'default_test')
+        assert_equals(self.container1['users'][0]['name'], default_user['name'])
         assert_equals(self.container1['users'][0]['capacity'], 'admin')
         assert_equals(self.container1['users'][1]['name'], 'user1')
         assert_equals(self.container1['users'][1]['capacity'], 'editor')
         assert_equals(len(self.container2['users']), 2)
-        #  assert_equals(self.container2['users'][0]['name'], 'default_test')
+        assert_equals(self.container2['users'][0]['name'], default_user['name'])
         assert_equals(self.container2['users'][0]['capacity'], 'admin')
         assert_equals(self.container2['users'][1]['name'], 'user1')
         assert_equals(self.container2['users'][1]['capacity'], 'editor')
@@ -1093,9 +1095,10 @@ class TestDataContainerController(base.FunctionalTestBase):
         self.test_membership_add()
         url = '/data-container/membership_remove?username=user1&contname=container1'
         resp = self.get_request(url, user='sysadmin')
+        default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
         assert_equals(resp.status_int, 302)
         assert_equals(len(self.container1['users']), 1)
-        #  assert_equals(self.container1['users'][0]['name'], 'default_test')
+        assert_equals(self.container1['users'][0]['name'], default_user['name'])
         assert_equals(self.container1['users'][0]['capacity'], 'admin')
 
     def test_membership_remove_no_access(self):
