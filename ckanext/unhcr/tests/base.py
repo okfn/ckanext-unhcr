@@ -2,6 +2,7 @@ import pylons
 from ckan.lib.search import rebuild
 from paste.registry import Registry
 from ckan.tests import helpers as core_helpers, factories as core_factories
+from ckanext.unhcr.models import tables_exist, create_tables
 
 
 class FunctionalTestBase(core_helpers.FunctionalTestBase):
@@ -12,6 +13,9 @@ class FunctionalTestBase(core_helpers.FunctionalTestBase):
     def setup_class(cls):
         super(FunctionalTestBase, cls).setup_class()
         core_helpers.reset_db()
+
+        if not tables_exist():
+            create_tables()
 
         # Fix ckanext-hierarchy "c"
         c = pylons.util.AttribSafeContextObj()
