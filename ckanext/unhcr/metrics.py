@@ -8,6 +8,22 @@ import ckan.plugins.toolkit as toolkit
 from ckanext.unhcr.models import TimeSeriesMetric
 
 
+def _get_timeseries_metric(field):
+    sql = select([
+        func.date(TimeSeriesMetric.timestamp).label('date'),
+        getattr(TimeSeriesMetric, field)
+    ]).order_by(
+        TimeSeriesMetric.timestamp
+    )
+    result = model.Session.execute(sql).fetchall()
+    dates = {}
+    for row in result:
+        # De-dupe on date. As long as we've ordered our query by timestamp,
+        # we'll take the last value recorded on each date
+        dates[row['date']] = row[field]
+    return dates
+
+
 def get_datasets_by_date(context):
     title = 'Total number of Datasets'
     data_dict = {
@@ -17,19 +33,7 @@ def get_datasets_by_date(context):
         'include_private': True,
     }
     packages = toolkit.get_action('package_search')(context, data_dict)
-
-    sql = select([
-        func.date(TimeSeriesMetric.timestamp).label('date'),
-        TimeSeriesMetric.datasets_count
-    ]).order_by(
-        TimeSeriesMetric.timestamp
-    )
-    result = model.Session.execute(sql).fetchall()
-    dates = {}
-    for row in result:
-        # De-dupe on date. As long as we've ordered our query by timestamp,
-        # we'll take the last value recorded on each date
-        dates[row['date']] = row['datasets_count']
+    dates = _get_timeseries_metric('datasets_count')
 
     return {
         'type': 'timeseries_graph',
@@ -80,9 +84,7 @@ def get_containers(context):
 
 def get_containers_by_date(context):
     title = 'Total number of Containers'
-
-    sql = select([TimeSeriesMetric])
-    result = model.Session.execute(sql).fetchall()
+    dates = _get_timeseries_metric('containers_count')
 
     return {
         'type': 'timeseries_graph',
@@ -90,8 +92,8 @@ def get_containers_by_date(context):
         'title': title,
         'id': slugify(title),
         'data': [
-            ['x'] + [str(row['timestamp']) for row in result],
-            ['Datasets'] + [row['containers_count'] for row in result],
+            ['x'] + [str(date) for date in dates.keys()],
+            ['Datasets'] + [count for count in dates.values()],
         ],
     }
 
