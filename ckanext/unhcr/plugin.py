@@ -408,6 +408,8 @@ class UnhcrPlugin(
             'visibility_validator': validators.visibility_validator,
             'file_type_validator': validators.file_type_validator,
             'upload_not_empty': validators.upload_not_empty,
+            'object_id_validator': validators.object_id_validator,
+            'activity_type_exists': validators.activity_type_exists,
         }
 
     def get_dataset_labels(self, dataset_obj):

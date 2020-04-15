@@ -2,6 +2,7 @@ import logging
 from ckan import model
 from ckan.plugins import toolkit
 from ckan.plugins.toolkit import Invalid, missing, get_validator, _
+from ckan.logic import validators
 from ckanext.scheming.validation import scheming_validator
 from ckanext.scheming import helpers as sh
 from ckanext.unhcr import helpers, utils
@@ -183,3 +184,31 @@ def upload_not_empty(key, data, errors, context):
     index = key[1]
     if not (data[('resources', index, 'url_type')] == 'upload'):
         errors[('resources', index, 'url',)] = ['All resources require an uploaded file']
+
+
+# Custom Activities
+
+_object_id_validators = {
+    'download resource': validators.resource_id_exists,
+}
+
+def object_id_validator(key, activity_dict, errors, context):
+    '''Validate the 'object_id' value of an activity_dict.
+
+    This wraps ckan.logic.validators.object_id_validator to support additional
+    object types
+    '''
+    activity_type = activity_dict[('activity_type',)]
+    if activity_type in _object_id_validators:
+        object_id = activity_dict[('object_id',)]
+        return _object_id_validators[activity_type](object_id, context)
+    return validators.object_id_validator(key, activity_dict, errors, context)
+
+
+def activity_type_exists(activity_type):
+    '''Wrap ckan.logic.validators.activity_type_exists to support additional
+    activity stream types
+    '''
+    if activity_type in _object_id_validators:
+        return activity_type
+    return validators.activity_type_exists(activity_type)
