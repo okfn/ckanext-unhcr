@@ -6,7 +6,7 @@ from ckan.logic import NotFound
 from ckan.plugins import toolkit
 from nose.tools import assert_raises, assert_equals, nottest
 from ckan.tests import helpers as core_helpers, factories as core_factories
-from ckanext.unhcr.tests import base, factories
+from ckanext.unhcr.tests import base, factories, mocks
 
 assert_in = core_helpers.assert_in
 assert_not_in = core_helpers.assert_not_in
@@ -923,6 +923,8 @@ class TestExtendedPackageController(base.FunctionalTestBase):
             name='resource1',
             package_id='dataset1',
             url_type='upload',
+            upload=mocks.FakeFileStorage(),
+            url = "http://fakeurl/test.txt",
         )
 
     # Helpers
@@ -933,8 +935,19 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         resp = self.app.get(url=url, extra_environ=env, **kwargs)
         return resp
 
-    def make_resource_request(self, dataset_id=None, resource_id=None, user=None, **kwargs):
+    def make_resource_copy_request(self, dataset_id=None, resource_id=None, user=None, **kwargs):
         url = '/dataset/%s/resource_copy/%s' % (dataset_id, resource_id)
+        env = {'REMOTE_USER': user.encode('ascii')} if user else {}
+        resp = self.app.get(url=url, extra_environ=env, **kwargs)
+        return resp
+
+    def make_resource_download_request(self, dataset_id, resource_id, user=None, **kwargs):
+        url = toolkit.url_for(
+            controller='package',
+            action='resource_download',
+            id=dataset_id,
+            resource_id=resource_id
+        )
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
         resp = self.app.get(url=url, extra_environ=env, **kwargs)
         return resp
@@ -967,10 +980,10 @@ class TestExtendedPackageController(base.FunctionalTestBase):
     def test_dataset_copy_bad_dataset(self):
         resp = self.make_dataset_request(dataset_id='bad', user='user1', status=404)
 
-    # Resource
+    # Resource Copy
 
     def test_resource_copy(self):
-        resp = self.make_resource_request(
+        resp = self.make_resource_copy_request(
             dataset_id='dataset1', resource_id=self.resource1['id'], user='user1')
         assert_in('action="/dataset/new_resource/dataset1"', resp.body)
         assert_in('resource1 (copy)', resp.body)
@@ -978,12 +991,64 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         assert_in('Add', resp.body)
 
     def test_resource_copy_no_access(self):
-        resp = self.make_resource_request(
+        resp = self.make_resource_copy_request(
             dataset_id='dataset1', resource_id=self.resource1['id'], user='user2', status=403)
 
     def test_resource_copy_bad_resource(self):
-        resp = self.make_resource_request(
+        resp = self.make_resource_copy_request(
             dataset_id='dataset1', resource_id='bad', user='user1', status=404)
+
+    # Resource Download
+
+    def test_resource_download_anonymous(self):
+        resp = self.make_resource_download_request(
+            dataset_id='dataset1', resource_id=self.resource1['id'], user=None,
+            status=403
+        )
+
+    def test_resource_download_no_access(self):
+        dataset2 = factories.Dataset(
+            name='dataset2',
+            owner_org='container1',
+            user=self.user1,
+            visibility='private',
+        )
+        resource2 = factories.Resource(
+            name='resource2',
+            package_id='dataset2',
+            url_type='upload',
+        )
+        resp = self.make_resource_download_request(
+            dataset_id='dataset2', resource_id=resource2['id'], user='user3',
+            status=403
+        )
+
+    def test_resource_download_bad_resource(self):
+        resp = self.make_resource_download_request(
+            dataset_id='dataset1', resource_id='bad', user='user1',
+            status=404
+        )
+
+    def test_resource_download_valid(self):
+        # before we start, there should be 1 activity
+        # logged for this user: 'new user'
+        activities_before = core_helpers.call_action(
+            'user_activity_list', {'user': 'user3'}, id='user3'
+        )
+        assert_equals(1, len(activities_before))
+
+        resp = self.make_resource_download_request(
+            dataset_id='dataset1', resource_id=self.resource1['id'], user='user3',
+            status=200
+        )
+
+        # after we've downloaded the resource, we should also
+        # have also logged a 'download resource' action for this user
+        activities_after = core_helpers.call_action(
+            'user_activity_list', {'user': 'user3'}, id='user3'
+        )
+        assert_equals(2, len(activities_after))
+        assert_equals('download resource', activities_after[0]['activity_type'])
 
 
 class TestDataContainerController(base.FunctionalTestBase):
