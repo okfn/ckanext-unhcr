@@ -317,20 +317,53 @@ def package_activity_list_html(context, data_dict):
         context, activity_stream, extra_vars)
 
 
-# Without this action the `*_activity_list` is not overriden (ckan bug?)
+@toolkit.side_effect_free
 def dashboard_activity_list_html(context, data_dict):
-    activity_stream = dashboard_activity_list(context, data_dict)
-    model = context['model']
+    '''Override core ckan dashboard_activity_list_html action so download resource
+    activities are not rendered in the HTML.
+    '''
+    activity_stream = toolkit.get_action('dashboard_activity_list')(
+        context, data_dict)
+
+    filtered_activity_stream = [
+        a for a in activity_stream if a['activity_type'] != 'download resource'
+    ]
+
     user_id = context['user']
-    offset = data_dict.get('offset', 0)
+    offset = int(data_dict.get('offset', 0))
     extra_vars = {
         'controller': 'user',
         'action': 'dashboard',
+        'id': user_id,
         'offset': offset,
-        'id': user_id
     }
-    return activity_streams.activity_list_to_html(context, activity_stream,
-                                                  extra_vars)
+    return activity_streams.activity_list_to_html(
+        context, filtered_activity_stream, extra_vars
+    )
+
+
+@toolkit.side_effect_free
+def user_activity_list_html(context, data_dict):
+    '''Override core ckan user_activity_list_html action so download resource
+    activities are not rendered in the HTML.
+    '''
+    activity_stream = toolkit.get_action('user_activity_list')(
+        context, data_dict)
+
+    filtered_activity_stream = [
+        a for a in activity_stream if a['activity_type'] != 'download resource'
+    ]
+
+    offset = int(data_dict.get('offset', 0))
+    extra_vars = {
+        'controller': 'user',
+        'action': 'activity',
+        'id': data_dict['id'],
+        'offset': offset,
+    }
+    return activity_streams.activity_list_to_html(
+        context, filtered_activity_stream, extra_vars
+    )
 
 
 # Without this action the `*_activity_list` is not overriden (ckan bug?)
