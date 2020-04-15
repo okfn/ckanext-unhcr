@@ -32,7 +32,6 @@ class UnhcrPlugin(
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.IValidators)
     plugins.implements(plugins.IRoutes, inherit=True)
-    plugins.implements(plugins.IValidators)
     plugins.implements(plugins.IPermissionLabels)
     plugins.implements(plugins.IBlueprint)
 
