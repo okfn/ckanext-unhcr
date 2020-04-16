@@ -79,7 +79,7 @@ def get_datasets_by_downloads(context):
             'count': row['count'],
         })
 
-    title = 'Downloads'
+    title = 'Datasets (by downloads)'
     return {
         'type': 'freq_table',
         'title': title,
@@ -117,7 +117,6 @@ def get_containers(context):
         'type': 'freq_table',
         'title': title,
         'id': slugify(title),
-        'total': len(organizations),
         'headers': ['Data Container', 'Datasets'],
         'data': data,
     }
@@ -130,6 +129,7 @@ def get_containers_by_date(context):
         'type': 'timeseries_graph',
         'short_title': 'Containers',
         'title': title,
+        'total': dates.values()[-1],
         'id': slugify(title),
         'data': [
             ['x'] + [str(date) for date in dates.keys()],
@@ -173,9 +173,10 @@ def get_users(context):
         reverse=True,
     )
 
-    title = 'Users'
+    title = 'Users (by datasets created)'
     return {
         'type': 'freq_table',
+        'short_title': 'Users',
         'title': title,
         'id': slugify(title),
         'total': len(users),
@@ -188,4 +189,42 @@ def get_users(context):
             }
             for user in users[:10]
         ]
+    }
+
+def get_users_by_downloads(context):
+    activity_table = model.meta.metadata.tables['activity']
+    user_table = model.meta.metadata.tables['user']
+    join_obj = activity_table.join(
+        user_table, user_table.c.id==activity_table.c.user_id
+    )
+
+    sql = select([
+        model.User, func.count(model.User.id).label('count')
+    ]).select_from(
+        join_obj
+    ).where(
+        model.Activity.activity_type == 'download resource'
+    ).group_by(
+        model.User.id
+    ).order_by(
+        desc('count')
+    ).limit(10)
+
+    result = model.Session.execute(sql).fetchall()
+
+    data = []
+    for row in result:
+        data.append({
+            'display_name': row['fullname'] if row['fullname'] else row['name'],
+            'count': row['count'],
+            'link': toolkit.url_for('user.read', id=row['id']),
+        })
+
+    title = 'Users (by downloads)'
+    return {
+        'type': 'freq_table',
+        'title': title,
+        'id': slugify(title),
+        'headers': ['User', 'Downloads'],
+        'data': data,
     }
