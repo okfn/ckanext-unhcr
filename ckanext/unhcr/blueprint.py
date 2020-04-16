@@ -5,6 +5,7 @@ import ckan.plugins.toolkit as toolkit
 from .helpers import user_is_curator
 from .metrics import (
     get_datasets_by_date,
+    get_datasets_by_downloads,
     get_containers,
     get_containers_by_date,
     get_tags,
@@ -20,6 +21,7 @@ def metrics():
     return toolkit.render('metrics/index.html', {
         'metrics': [
             get_datasets_by_date(context),
+            get_datasets_by_downloads(context),
             get_containers(context),
             get_containers_by_date(context),
             get_tags(context),
