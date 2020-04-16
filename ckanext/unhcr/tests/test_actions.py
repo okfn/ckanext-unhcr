@@ -123,9 +123,6 @@ class TestPrivateResources(base.FunctionalTestBase):
 
         assert_equals(dataset['private'], True)
 
-    @nottest
-    # TODO: activate
-    # this test passes locally but fails on Travis
     def test_access_visibility_public(self):
 
         dataset = factories.Dataset(
@@ -197,9 +194,6 @@ class TestPrivateResources(base.FunctionalTestBase):
         res = app.get(url, extra_environ=environ)
         assert_equals(res.status_int, 200)
 
-    @nottest
-    # TODO: activate
-    # this test passes locally but fails on Travis
     def test_access_visibility_private(self):
 
         dataset = factories.Dataset(
