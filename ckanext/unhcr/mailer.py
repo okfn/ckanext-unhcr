@@ -167,7 +167,14 @@ def compose_summary_email_body(user_dict):
 
     context['h'] = toolkit.h
 
-    return render_jinja2('emails/curation/summary.html', context)
+    return {
+        'total_events': (
+            len(context['new_datasets']) +\
+            len(context['new_deposits']) +\
+            len(context['awaiting_review'])
+        ),
+        'body': render_jinja2('emails/curation/summary.html', context)
+    }
 
 
 def get_summary_email_recipients():

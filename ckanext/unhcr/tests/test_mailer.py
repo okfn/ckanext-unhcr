@@ -80,9 +80,10 @@ class TestMailer(base.FunctionalTestBase):
             ),
         ]
 
-        email_body = compose_summary_email_body(self.sysadmin)
-        regularised_body = regularise_html(email_body)
+        email = compose_summary_email_body(self.sysadmin)
+        regularised_body = regularise_html(email['body'])
 
+        assert 3 == email['total_events']
         for ev in expected_values:
             assert regularise_html(ev) in regularised_body
         assert 'Old Dataset' not in regularised_body
