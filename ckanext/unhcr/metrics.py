@@ -2,7 +2,7 @@
 
 from operator import itemgetter
 from slugify import slugify
-from sqlalchemy import select, func, desc
+from sqlalchemy import and_, desc, func, select
 import ckan.model as model
 import ckan.plugins.toolkit as toolkit
 from ckanext.unhcr.models import TimeSeriesMetric
@@ -62,7 +62,11 @@ def get_datasets_by_downloads(context):
     ]).select_from(
         join_obj
     ).where(
-        model.Activity.activity_type == 'download resource'
+        and_(
+            model.Package.state == 'active',
+            model.Package.type != 'deposited-dataset',
+            model.Activity.activity_type == 'download resource',
+        )
     ).group_by(
         model.Package.id
     ).order_by(
@@ -193,8 +197,14 @@ def get_users(context):
 
 def get_users_by_downloads(context):
     activity_table = model.meta.metadata.tables['activity']
+    resource_table = model.meta.metadata.tables['resource']
+    package_table = model.meta.metadata.tables['package']
     user_table = model.meta.metadata.tables['user']
     join_obj = activity_table.join(
+        resource_table, resource_table.c.id==activity_table.c.object_id
+    ).join(
+        package_table, package_table.c.id==resource_table.c.package_id
+    ).join(
         user_table, user_table.c.id==activity_table.c.user_id
     )
 
@@ -203,7 +213,11 @@ def get_users_by_downloads(context):
     ]).select_from(
         join_obj
     ).where(
-        model.Activity.activity_type == 'download resource'
+        and_(
+            model.Package.state == 'active',
+            model.Package.type != 'deposited-dataset',
+            model.Activity.activity_type == 'download resource',
+        )
     ).group_by(
         model.User.id
     ).order_by(
