@@ -90,13 +90,17 @@ class Unhcr(toolkit.CkanCommand):
 
         for recipient in recipients:
             if recipient['email']:
-                print('Sending summary email to: {}'.format(recipient['email']))
+                email = compose_summary_email_body(recipient)
 
-                body = compose_summary_email_body(recipient)
+                if email['total_events'] == 0:
+                    print('SKIPPING summary email to: {}'.format(recipient['email']))
+                    continue
+
+                print('SENDING summary email to: {}'.format(recipient['email']))
                 if self.verbose > 1:
-                    print(body)
+                    print(email['body'])
                     print('')
 
-                mail_user_by_id(recipient['id'], subject, body)
+                mail_user_by_id(recipient['id'], subject, email['body'])
 
         print('Sent weekly summary emails.')
