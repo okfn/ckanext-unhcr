@@ -1,8 +1,10 @@
 import nose
 import mock
 from nose.plugins.attrib import attr
+from sqlalchemy import and_, select
 from ckan.lib.helpers import url_for
 from ckan.logic import NotFound
+import ckan.model as model
 from ckan.plugins import toolkit
 from nose.tools import assert_raises, assert_equals, nottest
 from ckan.tests import helpers as core_helpers, factories as core_factories
@@ -1030,12 +1032,19 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         )
 
     def test_resource_download_valid(self):
-        # before we start, there should be 1 activity
-        # logged for this user: 'new user'
-        activities_before = core_helpers.call_action(
-            'user_activity_list', {'user': 'user3'}, id='user3'
+        sql = select([
+            model.Activity
+        ]).where(
+            and_(
+                model.Activity.activity_type == 'download resource',
+                model.Activity.object_id == self.resource1['id'],
+                model.Activity.user_id == 'user3',
+            )
         )
-        assert_equals(1, len(activities_before))
+
+        # before we start, this user has never downloaded this resource before
+        result = model.Session.execute(sql).fetchall()
+        assert_equals(0, len(result))
 
         resp = self.make_resource_download_request(
             dataset_id='dataset1', resource_id=self.resource1['id'], user='user3',
@@ -1043,12 +1052,9 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         )
 
         # after we've downloaded the resource, we should also
-        # have also logged a 'download resource' action for this user
-        activities_after = core_helpers.call_action(
-            'user_activity_list', {'user': 'user3'}, id='user3'
-        )
-        assert_equals(2, len(activities_after))
-        assert_equals('download resource', activities_after[0]['activity_type'])
+        # have also logged a 'download resource' action for this user/resource
+        result = model.Session.execute(sql).fetchall()
+        assert_equals(1, len(result))
 
 
 class TestDataContainerController(base.FunctionalTestBase):
