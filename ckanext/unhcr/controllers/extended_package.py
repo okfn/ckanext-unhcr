@@ -102,7 +102,7 @@ class ExtendedPackageController(PackageController):
 
     # Download
 
-    def _log_download_activity(self, context, resource):
+    def _log_download_activity(self, context, resource_id):
         """Log a resource download activity in the activity stream
         """
         user = context['user']
@@ -114,7 +114,7 @@ class ExtendedPackageController(PackageController):
         activity_dict = {
             'activity_type': 'download resource',
             'user_id': user_id,
-            'object_id': resource['id'],
+            'object_id': resource_id,
             'data': {}
         }
 
@@ -138,16 +138,17 @@ class ExtendedPackageController(PackageController):
 
         # Check resource_download access
         try:
-            resource = toolkit.get_action(u'resource_show')(context, {u'id': resource_id})
             toolkit.check_access(u'resource_download', context, {u'id': resource_id})
         except toolkit.ObjectNotFound:
             return toolkit.abort(404, toolkit._(u'Resource not found'))
         except toolkit.NotAuthorized:
             return toolkit.abort(403, toolkit._(u'Not Authorized to download the resource'))
 
-        self._log_download_activity(context, resource)
-        return super(ExtendedPackageController, self).resource_download(
-            id, resource_id, filename=filename)
+        resp = super(ExtendedPackageController, self).resource_download(
+            id, resource_id, filename=filename
+        )
+        self._log_download_activity(context, resource_id)
+        return resp
 
     # Publish
 
