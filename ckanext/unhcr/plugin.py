@@ -379,6 +379,7 @@ class UnhcrPlugin(
             'pending_requests_list': actions.pending_requests_list,
             'package_activity_list': actions.package_activity_list,
             'dashboard_activity_list': actions.dashboard_activity_list,
+            'user_activity_list': actions.user_activity_list,
             'group_activity_list': actions.group_activity_list,
             'organization_activity_list': actions.organization_activity_list,
             'recently_changed_packages_activity_list': actions.recently_changed_packages_activity_list,
