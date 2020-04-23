@@ -79,31 +79,58 @@ class TestAuthUI(AuthTestBase):
 
         app = self._get_test_app()
 
-        user1 = core_factories.User()
-        user2 = core_factories.User()
+        container_member = core_factories.User()
+        dataset_member = core_factories.User()
+        external_user = core_factories.User()
         data_container = factories.DataContainer(
-            users=[{'name': user1['name'], 'capacity': 'admin'}]
+            users=[{'name': container_member['name'], 'capacity': 'admin'}]
         )
         dataset = factories.Dataset(
             owner_org=data_container['id'],
             visibility='private'
         )
+        resource = factories.Resource(
+            package_id=dataset['id'],
+            url_type='upload',
+        )
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'],
+            user_id=dataset_member['id'],
+            capacity='member',
+        )
 
-        environ = {
-            'REMOTE_USER': str(user1['name'])
-        }
+        for user in [container_member, dataset_member]:
+            response = app.get(
+                '/dataset/{}'.format(dataset['name']),
+                extra_environ={ 'REMOTE_USER': str(user['name']) },
+                status=200,
+            )
+            # these users can see the dataset_read view
+            assert_not_in('You must be logged in', response.body)
+            # these users can also download the resource attached to dataset
+            assert_not_in(
+                'You are not authorized to download the resources from this dataset',
+                response.body
+            )
 
         response = app.get(
-            '/dataset/{}'.format(dataset['name']), extra_environ=environ)
+            '/dataset/{}'.format(dataset['name']),
+            extra_environ={ 'REMOTE_USER': str(external_user['name']) },
+            status=200,
+        )
+        # external_user is allowed to see the dataset_read view too
         assert_not_in('You must be logged in', response.body)
-
-        environ = {
-            'REMOTE_USER': str(user2['name'])
-        }
-
-        response = app.get(
-            '/dataset/{}'.format(dataset['name']), extra_environ=environ,
-            status=404)
+        # external_user is not allowed to download the resource
+        assert_in(
+            'You are not authorized to download the resources from this dataset',
+            response.body
+        )
+        # but they can request access to it if they like
+        assert_in(
+            '<i class="fa fa-key"></i>Request Access',
+            response.body
+        )
 
 
 class TestAuthAPI(AuthTestBase):
@@ -196,6 +223,39 @@ class TestAuthUnit(AuthTestBase):
         deposit = factories.DataContainer(name='data-deposit')
         result = auth.package_create({'user': 'creator'}, {'owner_org': deposit['id']})
         assert_equals(result['success'], True)
+
+    def test_resource_download(self):
+        container_member = core_factories.User()
+        dataset_member = core_factories.User()
+        external_user = core_factories.User()
+        data_container = factories.DataContainer(
+            users=[{'name': container_member['name'], 'capacity': 'admin'}]
+        )
+        dataset = factories.Dataset(
+            owner_org=data_container['id'],
+            visibility='private'
+        )
+        resource = factories.Resource(
+            package_id=dataset['id'],
+            url_type='upload',
+        )
+        helpers.call_action(
+            'dataset_collaborator_create',
+            id=dataset['id'],
+            user_id=dataset_member['id'],
+            capacity='member',
+        )
+
+        for user in [container_member, dataset_member]:
+            assert_equals(
+                {'success': True},
+                auth.resource_download({'user': user['name']}, resource)
+            )
+
+        assert_equals(
+            {'success': False},
+            auth.resource_download({'user': external_user['name']}, resource)
+        )
 
     # TODO: fix problems with context pupulation
     #  def test_package_update(self):
