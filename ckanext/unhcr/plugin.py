@@ -207,7 +207,6 @@ class UnhcrPlugin(
             'normalize_list': helpers.normalize_list,
             'get_field_label': helpers.get_field_label,
             'can_download': helpers.can_download,
-            'get_org_admins_email_link': helpers.get_org_admins_email_link,
             'get_choice_label': helpers.get_choice_label,
             'get_ridl_version': helpers.get_ridl_version,
         }
