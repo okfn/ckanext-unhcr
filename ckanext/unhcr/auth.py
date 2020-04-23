@@ -138,7 +138,8 @@ def package_create(context, data_dict):
     return auth_create_core.package_create(context, data_dict)
 
 
-def package_update(context, data_dict):
+@toolkit.chained_auth_function
+def package_update(next_auth, context, data_dict):
 
     # Get dataset
     dataset_id = None
@@ -157,7 +158,7 @@ def package_update(context, data_dict):
         return {'success': False, 'msg': 'Not authorized to edit deposited dataset'}
 
     # Regular dataset
-    return auth_update_core.package_update(context, data_dict)
+    return next_auth(context, data_dict)
 
 
 def package_activity_list(context, data_dict):
