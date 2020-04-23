@@ -209,6 +209,7 @@ class UnhcrPlugin(
             'can_download': helpers.can_download,
             'get_choice_label': helpers.get_choice_label,
             'get_ridl_version': helpers.get_ridl_version,
+            'nl_to_br': helpers.nl_to_br,
         }
 
     # IPackageController

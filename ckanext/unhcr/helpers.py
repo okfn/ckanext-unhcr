@@ -1,5 +1,7 @@
 import logging
+import re
 from urllib import quote
+from jinja2 import Markup, escape
 from ckan import model
 from ckan.lib import uploader
 from ckan.common import config
@@ -745,3 +747,11 @@ def get_sysadmins():
 
 def get_ridl_version():
     return __VERSION__
+
+
+_paragraph_re = re.compile(r'(?:\r\n|\r(?!\n)|\n){2,}')
+
+def nl_to_br(text):
+    result = u'\n\n'.join(u'<p>%s</p>' % p.replace('\n', Markup('<br>\n'))
+                          for p in _paragraph_re.split(escape(text)))
+    return Markup(result)
