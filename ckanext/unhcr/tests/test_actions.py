@@ -1,13 +1,11 @@
 import json
-import cgi
-from StringIO import StringIO
 import responses
 from ckan import model
 from ckan.common import config
 from ckan.plugins import toolkit
 from ckan.tests import helpers as core_helpers, factories as core_factories
 from nose.tools import assert_raises, assert_equals, nottest
-from ckanext.unhcr.tests import base, factories
+from ckanext.unhcr.tests import base, factories, mocks
 from ckanext.unhcr import helpers
 
 
@@ -125,9 +123,6 @@ class TestPrivateResources(base.FunctionalTestBase):
 
         assert_equals(dataset['private'], True)
 
-    @nottest
-    # TODO: activate
-    # this test passes locally but fails on Travis
     def test_access_visibility_public(self):
 
         dataset = factories.Dataset(
@@ -199,9 +194,6 @@ class TestPrivateResources(base.FunctionalTestBase):
         res = app.get(url, extra_environ=environ)
         assert_equals(res.status_int, 200)
 
-    @nottest
-    # TODO: activate
-    # this test passes locally but fails on Travis
     def test_access_visibility_private(self):
 
         dataset = factories.Dataset(
@@ -361,26 +353,15 @@ class TestDatastoreAuthRestrictedDownloads(base.FunctionalTestBase):
             resource_id=self.resource['id'])
 
 
-class FakeFileStorage(cgi.FieldStorage):
-    def __init__(self, fp, filename):
-        self.file = fp
-        self.filename = filename
-        self.name = "upload"
-
-
 class TestResourceUpload(base.FunctionalTestBase):
 
     def test_upload_present(self):
 
         dataset = factories.Dataset()
 
-        test_file = StringIO()
-        test_file.write('Some data')
-        test_upload = FakeFileStorage(test_file, "test.txt")
-
         resource = factories.Resource(
             package_id=dataset['id'],
-            upload=test_upload,
+            upload=mocks.FakeFileStorage(),
             url = "http://fakeurl/test.txt",
             url_type='upload',
         )

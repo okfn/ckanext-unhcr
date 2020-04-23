@@ -274,9 +274,20 @@ def package_activity_list(context, data_dict):
 @toolkit.side_effect_free
 def dashboard_activity_list(context, data_dict):
     full_list = get_core.dashboard_activity_list(context, data_dict)
-    normal_activities = [
-        a for a in full_list if 'curation_activity' not in a.get('data', {})]
-    return normal_activities
+    return [
+        a for a in full_list
+        if "curation_activity" not in a.get("data", {})
+        and a["activity_type"] != "download resource"
+    ]
+
+@toolkit.side_effect_free
+def user_activity_list(context, data_dict):
+    full_list = get_core.user_activity_list(context, data_dict)
+    return [
+        a for a in full_list
+        if "curation_activity" not in a.get("data", {})
+        and a["activity_type"] != "download resource"
+    ]
 
 
 @toolkit.side_effect_free
@@ -317,20 +328,45 @@ def package_activity_list_html(context, data_dict):
         context, activity_stream, extra_vars)
 
 
-# Without this action the `*_activity_list` is not overriden (ckan bug?)
+@toolkit.side_effect_free
 def dashboard_activity_list_html(context, data_dict):
-    activity_stream = dashboard_activity_list(context, data_dict)
-    model = context['model']
+    '''Override core ckan dashboard_activity_list_html action so download resource
+    activities are not rendered in the HTML.
+    '''
+    activity_stream = toolkit.get_action('dashboard_activity_list')(
+        context, data_dict)
+
     user_id = context['user']
-    offset = data_dict.get('offset', 0)
+    offset = int(data_dict.get('offset', 0))
     extra_vars = {
         'controller': 'user',
         'action': 'dashboard',
+        'id': user_id,
         'offset': offset,
-        'id': user_id
     }
-    return activity_streams.activity_list_to_html(context, activity_stream,
-                                                  extra_vars)
+    return activity_streams.activity_list_to_html(
+        context, activity_stream, extra_vars
+    )
+
+
+@toolkit.side_effect_free
+def user_activity_list_html(context, data_dict):
+    '''Override core ckan user_activity_list_html action so download resource
+    activities are not rendered in the HTML.
+    '''
+    activity_stream = toolkit.get_action('user_activity_list')(
+        context, data_dict)
+
+    offset = int(data_dict.get('offset', 0))
+    extra_vars = {
+        'controller': 'user',
+        'action': 'activity',
+        'id': data_dict['id'],
+        'offset': offset,
+    }
+    return activity_streams.activity_list_to_html(
+        context, activity_stream, extra_vars
+    )
 
 
 # Without this action the `*_activity_list` is not overriden (ckan bug?)

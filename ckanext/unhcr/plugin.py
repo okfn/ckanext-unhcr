@@ -32,7 +32,6 @@ class UnhcrPlugin(
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.IValidators)
     plugins.implements(plugins.IRoutes, inherit=True)
-    plugins.implements(plugins.IValidators)
     plugins.implements(plugins.IPermissionLabels)
     plugins.implements(plugins.IBlueprint)
 
@@ -380,11 +379,13 @@ class UnhcrPlugin(
             'pending_requests_list': actions.pending_requests_list,
             'package_activity_list': actions.package_activity_list,
             'dashboard_activity_list': actions.dashboard_activity_list,
+            'user_activity_list': actions.user_activity_list,
             'group_activity_list': actions.group_activity_list,
             'organization_activity_list': actions.organization_activity_list,
             'recently_changed_packages_activity_list': actions.recently_changed_packages_activity_list,
             'package_activity_list_html': actions.package_activity_list_html,
             'dashboard_activity_list_html': actions.dashboard_activity_list_html,
+            'user_activity_list_html': actions.user_activity_list_html,
             'group_activity_list_html': actions.group_activity_list_html,
             'organization_activity_list_html': actions.organization_activity_list_html,
             'recently_changed_packages_activity_list_html': actions.recently_changed_packages_activity_list_html,
@@ -409,6 +410,8 @@ class UnhcrPlugin(
             'visibility_validator': validators.visibility_validator,
             'file_type_validator': validators.file_type_validator,
             'upload_not_empty': validators.upload_not_empty,
+            'object_id_validator': validators.object_id_validator,
+            'activity_type_exists': validators.activity_type_exists,
         }
 
     def get_dataset_labels(self, dataset_obj):
