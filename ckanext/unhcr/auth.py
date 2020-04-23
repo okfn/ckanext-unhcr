@@ -1,4 +1,5 @@
 import logging
+from ckan import model
 from ckan.plugins import toolkit
 import ckan.logic.auth.create as auth_create_core
 import ckan.logic.auth.update as auth_update_core
@@ -187,7 +188,7 @@ def resource_download(context, data_dict):
     '''
 
     # Prepare all the parts
-    model = context.get('model') or model
+    context['model'] = context.get('model') or model
     user = context.get('user')
     resource = get_resource_object(context, data_dict)
     dataset = toolkit.get_action('package_show')(
