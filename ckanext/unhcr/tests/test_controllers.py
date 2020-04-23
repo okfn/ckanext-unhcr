@@ -914,11 +914,14 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         # Datasets
         self.dataset1 = factories.Dataset(
             name='dataset1',
+            title='Test Dataset 1',
             owner_org='container1',
             data_collection_technique = 'f2f',
             sampling_procedure = 'nonprobability',
             operational_purpose_of_data = 'cartography',
-            user=self.user1)
+            user=self.user1,
+            visibility='private',
+        )
 
         # Resources
         self.resource1 = factories.Resource(
@@ -952,6 +955,17 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         )
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
         resp = self.app.get(url=url, extra_environ=env, **kwargs)
+        return resp
+
+    def make_request_access_request(self, dataset_id, user, message, **kwargs):
+        url = '/dataset/{}/request_access'.format(dataset_id)
+        env = {'REMOTE_USER': user.encode('ascii')} if user else {}
+        resp = self.app.post(
+            url,
+            {'message': message},
+            extra_environ=env,
+            **kwargs
+        )
         return resp
 
     # Dataset
@@ -1009,20 +1023,21 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         )
 
     def test_resource_download_no_access(self):
-        dataset2 = factories.Dataset(
-            name='dataset2',
-            owner_org='container1',
-            user=self.user1,
-            visibility='private',
+        resp = self.make_resource_download_request(
+            dataset_id='dataset1', resource_id=self.resource1['id'], user='user3',
+            status=403
         )
-        resource2 = factories.Resource(
-            name='resource2',
-            package_id='dataset2',
-            url_type='upload',
+
+    def test_resource_download_collaborator(self):
+        core_helpers.call_action(
+            'dataset_collaborator_create',
+            id='dataset1',
+            user_id='user3',
+            capacity='member',
         )
         resp = self.make_resource_download_request(
-            dataset_id='dataset2', resource_id=resource2['id'], user='user3',
-            status=403
+            dataset_id='dataset1', resource_id=self.resource1['id'], user='user3',
+            status=200
         )
 
     def test_resource_download_bad_resource(self):
@@ -1038,7 +1053,7 @@ class TestExtendedPackageController(base.FunctionalTestBase):
             and_(
                 model.Activity.activity_type == 'download resource',
                 model.Activity.object_id == self.resource1['id'],
-                model.Activity.user_id == 'user3',
+                model.Activity.user_id == 'user1',
             )
         )
 
@@ -1047,7 +1062,7 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         assert_equals(0, len(result))
 
         resp = self.make_resource_download_request(
-            dataset_id='dataset1', resource_id=self.resource1['id'], user='user3',
+            dataset_id='dataset1', resource_id=self.resource1['id'], user='user1',
             status=200
         )
 
@@ -1056,6 +1071,70 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         result = model.Session.execute(sql).fetchall()
         assert_equals(1, len(result))
 
+    # Request Access
+
+    def test_request_access_invalid_method(self):
+        resp = self.app.get(
+            '/dataset/dataset1/request_access',
+            extra_environ={'REMOTE_USER': 'user3'},
+            status=405
+        )
+
+    def test_request_access_missing_message(self):
+        self.make_request_access_request(
+            dataset_id='dataset1', user='user3', message='',
+            status=400
+        )
+
+    def test_request_access_invalid_dataset(self):
+        self.make_request_access_request(
+            dataset_id='bad', user='user3', message='I can haz access?',
+            status=404
+        )
+
+    def test_request_access_not_authorized(self):
+        self.make_request_access_request(
+            dataset_id='dataset1', user=None, message='I can haz access?',
+            status=403
+        )
+
+    def test_request_access_valid(self):
+        mock_mailer = mock.Mock()
+        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+            resp = self.make_request_access_request(
+                dataset_id='dataset1', user='user3', message='I can haz access?',
+                status=302
+            )
+            mock_mailer.assert_called_once()
+            assert_equals('user1', mock_mailer.call_args[0][0])
+            assert_equals(
+                '[UNHCR RIDL] - Request for access to dataset: "dataset1"',
+                mock_mailer.call_args[0][1]
+            )
+            # call_args[0][2] is the HTML message body
+            # but we're not going to make any assertions about it here
+            # see the mailer tests for this
+
+            resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user3'}, status=200)
+            assert_in(
+                'Requested access to download resources from Test Dataset 1',
+                resp2.body
+            )
+
+    def test_request_access_user_already_has_access(self):
+        mock_mailer = mock.Mock()
+        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+            resp = self.make_request_access_request(
+                dataset_id='dataset1', user='user1', message='I can haz access?',
+                status=302
+            )
+            mock_mailer.assert_not_called()
+
+            resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user1'}, status=200)
+            assert_in(
+                'You already have access to download resources from Test Dataset 1',
+                resp2.body
+            )
 
 class TestDataContainerController(base.FunctionalTestBase):
 
