@@ -20,6 +20,18 @@
 {% endblock %}
 
 {% block content_action %}
+  {% if pkg.resources|length > 0 and not h.can_download(pkg) %}
+    <a
+      href="#collaboration-dataset-request-access"
+      role="button"
+      class="btn"
+      data-toggle="modal"
+      title="Request access to {{ pkg.title }}"
+      data-target="#collaboration-dataset-request-access"
+    >
+      <i class="fa fa-key"></i>Request Access
+    </a>
+  {% endif %}
   {% if h.organizations_available('create_dataset') %}
     {% link_for _('Copy'), controller='ckanext.unhcr.controllers.extended_package:ExtendedPackageController', action='copy', id=pkg.name, class_='btn', icon='copy' %}
   {% endif %}
@@ -39,6 +51,7 @@
 
 {% block footer %}
   {{ super() }}
+  {% snippet "package/snippets/collaboration_modals.html", pkg=pkg %}
   {% if pkg.type == 'deposited-dataset' %}
     {% snippet "package/snippets/curation_modals.html", pkg=pkg, curation=curation %}
   {% endif %}
