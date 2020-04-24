@@ -62,6 +62,12 @@ cd ckanext-hierarchy
 python setup.py develop
 cd -
 
+git clone https://github.com/okfn/ckanext-collaborators
+cd ckanext-collaborators
+git checkout 0.0.4
+python setup.py develop
+cd -
+
 echo "Installing ckanext-unhcr and its requirements..."
 python setup.py develop
 pip install --upgrade -r requirements.txt
@@ -71,6 +77,7 @@ sed -i -e 's/config:..\/..\/src\/ckan\/test-core.ini/config:..\/ckan\/test-core.
 
 echo "Initialising unhcr extension tables..."
 paster --plugin=ckanext-unhcr unhcr init-db -c ckan/test-core.ini
+paster --plugin=ckanext-collaborators collaborators init-db -c ckan/test-core.ini
 
 echo "Moving test.ini into a subdir..."
 mkdir subdir
