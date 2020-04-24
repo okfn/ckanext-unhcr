@@ -9,7 +9,7 @@ from .metrics import (
     get_containers,
     get_containers_by_date,
     get_tags,
-    get_users,
+    get_users_by_datasets,
     get_users_by_downloads,
 )
 
@@ -26,7 +26,7 @@ def metrics():
             get_containers_by_date(context),
             get_containers(context),
             get_tags(context),
-            get_users(context),
+            get_users_by_datasets(context),
             get_users_by_downloads(context),
         ]
     })

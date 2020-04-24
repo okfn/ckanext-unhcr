@@ -169,13 +169,39 @@ def get_tags(context):
         'data': data,
     }
 
-def get_users(context):
-    users = toolkit.get_action('user_list')(context, {})
-    users = sorted(
-        users,
-        key=itemgetter('number_created_packages'),
-        reverse=True,
+def get_users_by_datasets(context):
+    all_users = toolkit.get_action('user_list')(context, {})
+
+    package_table = model.meta.metadata.tables['package']
+    user_table = model.meta.metadata.tables['user']
+    join_obj = user_table.join(
+        package_table, package_table.c.creator_user_id == user_table.c.id
     )
+
+    sql = select([
+        model.User, func.count(model.Package.id).label('number_created_packages')
+    ]).select_from(
+        join_obj
+    ).where(
+        and_(
+            model.Package.state == 'active',
+            model.Package.type != 'deposited-dataset',
+        )
+    ).group_by(
+        model.User.id
+    ).order_by(
+        desc('number_created_packages')
+    ).limit(10)
+
+    result = model.Session.execute(sql).fetchall()
+
+    data = []
+    for row in result:
+        data.append({
+            'display_name': row['fullname'] if row['fullname'] else row['name'],
+            'count': row['number_created_packages'],
+            'link': toolkit.url_for('user.read', id=row['id']),
+        })
 
     title = 'Users (by datasets created)'
     return {
@@ -183,16 +209,9 @@ def get_users(context):
         'short_title': 'Users',
         'title': title,
         'id': slugify(title),
-        'total': len(users),
+        'total': len(all_users),
         'headers': ['User', 'Datasets Created'],
-        'data': [
-            {
-                'display_name': user['display_name'],
-                'count': user['number_created_packages'],
-                'link': toolkit.url_for('user.read', id=user['id']),
-            }
-            for user in users[:10]
-        ]
+        'data': data,
     }
 
 def get_users_by_downloads(context):
