@@ -1,0 +1,18 @@
+{% extends "emails/base.html" %}
+{% import 'macros/email.html' as email with context %}
+
+{% block email_body %}
+
+  {% call email.paragraph() %}
+    Dear <b>{{ user_name }}</b>,
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    Your permission as a {{ role }} on the dataset "{{ dataset_title }}" has been removed.
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    Please contact the site administrators for further information.
+  {% endcall %}
+
+{% endblock %}
