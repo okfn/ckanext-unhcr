@@ -183,9 +183,6 @@ class ExtendedPackageController(PackageController):
         toolkit.redirect_to('dataset_edit', id=dataset['name'])
 
     def request_access(self, id):
-        if toolkit.request.method != 'POST':
-            return toolkit.abort(405, 'Method Not Allowed')
-
         message = toolkit.request.params.get('message')
         if not message:
             return toolkit.abort(400, "'message' is required")

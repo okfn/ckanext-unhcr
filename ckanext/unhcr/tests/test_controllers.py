@@ -1077,7 +1077,8 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         resp = self.app.get(
             '/dataset/dataset1/request_access',
             extra_environ={'REMOTE_USER': 'user3'},
-            status=405
+            # for some reason, pylons throws this as a 404 instead of a 405
+            status=404
         )
 
     def test_request_access_missing_message(self):
