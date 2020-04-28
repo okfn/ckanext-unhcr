@@ -101,56 +101,6 @@ class ExtendedPackageController(PackageController):
 
         return self.new_resource(id, data=data)
 
-    # Download
-
-    def _log_download_activity(self, context, resource_id):
-        """Log a resource download activity in the activity stream
-        """
-        user = context['user']
-        user_id = None
-        user_by_name = model.User.by_name(user.decode('utf8'))
-        if user_by_name is not None:
-            user_id = user_by_name.id
-
-        activity_dict = {
-            'activity_type': 'download resource',
-            'user_id': user_id,
-            'object_id': resource_id,
-            'data': {}
-        }
-
-        activity_create_context = {
-            'model': model,
-            'user': user_id or user,
-            'defer_commit': False,
-            'ignore_auth': True,
-        }
-
-        create_activity = toolkit.get_action('activity_create')
-        create_activity(activity_create_context, activity_dict)
-
-    def resource_download(self, id, resource_id, filename=None):
-        """
-        Wraps default `resource_download` endpoint checking
-        the custom `resoruce_download` auth function
-        """
-        context = {'model': model, 'session': model.Session,
-                   'user': toolkit.c.user, 'auth_user_obj': toolkit.c.userobj}
-
-        # Check resource_download access
-        try:
-            toolkit.check_access(u'resource_download', context, {u'id': resource_id})
-        except toolkit.ObjectNotFound:
-            return toolkit.abort(404, toolkit._(u'Resource not found'))
-        except toolkit.NotAuthorized:
-            return toolkit.abort(403, toolkit._(u'Not Authorized to download the resource'))
-
-        resp = super(ExtendedPackageController, self).resource_download(
-            id, resource_id, filename=filename
-        )
-        self._log_download_activity(context, resource_id)
-        return resp
-
     # Publish
 
     def publish_microdata(self, id):
