@@ -207,18 +207,15 @@ class ExtendedPackageController(PackageController):
             return toolkit.redirect_to('dataset_read', id=dataset['id'])
 
         org_admins = mailer.get_request_access_email_recipients(dataset)
-        if not org_admins:
-            pass
-        else:
-            for recipient in org_admins:
-                subj = mailer.compose_request_access_email_subj(dataset)
-                body = mailer.compose_request_access_email_body(
-                    recipient,
-                    dataset,
-                    toolkit.c.user,
-                    message,
-                )
-                mailer.mail_user_by_id(recipient['name'], subj, body)
+        for recipient in org_admins:
+            subj = mailer.compose_request_access_email_subj(dataset)
+            body = mailer.compose_request_access_email_body(
+                recipient,
+                dataset,
+                toolkit.c.user,
+                message,
+            )
+            mailer.mail_user_by_id(recipient['name'], subj, body)
 
         toolkit.h.flash_notice(
             'Requested access to download resources from {}'.format(

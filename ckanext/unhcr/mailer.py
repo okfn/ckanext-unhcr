@@ -204,19 +204,29 @@ def get_summary_email_recipients():
 # Collaboration
 
 def get_request_access_email_recipients(package_dict):
-    try:
-        context = {'ignore_auth': True}
-        data_dict = {'id': package_dict['owner_org'], 'include_users': True}
-        org = toolkit.get_action('organization_show')(context, data_dict)
-    except toolkit.ObjectNotFound:
-        return []
+    context = {"ignore_auth": True}
+    default_user = toolkit.get_action("get_site_user")(context)
 
-    default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
-    return [
-        user
-        for user in org["users"]
-        if user["capacity"] == "admin" and user["name"] != default_user["name"]
-    ]
+    try:
+        data_dict = {"id": package_dict["owner_org"], "include_users": True}
+        org = toolkit.get_action("organization_show")(context, data_dict)
+        recipients = [
+            user for user in org["users"]
+            if user["capacity"] == "admin" and user["name"] != default_user["name"]
+        ]
+    except toolkit.ObjectNotFound:
+        recipients = []
+
+    # if we couldn't find any org admins, fall back to sysadmins
+    if not recipients:
+        all_users = toolkit.get_action("user_list")(context, {})
+        recipients = [
+            user for user in all_users
+            if user["sysadmin"] and user["name"] != default_user["name"]
+        ]
+
+    return recipients
+
 
 
 def compose_request_access_email_subj(package_dict):

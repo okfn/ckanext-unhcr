@@ -139,7 +139,7 @@ class TestCollaborationMailer(base.FunctionalTestBase):
         assert expected in regularised_body
         assert '<p>I can haz access?<br> kthxbye</p>' in regularised_body
 
-    def test_email_recipients(self):
+    def test_email_recipients_with_org_admins(self):
         editor = core_factories.User()
         admin = core_factories.User()
         external = core_factories.User()
@@ -160,3 +160,23 @@ class TestCollaborationMailer(base.FunctionalTestBase):
 
         assert len(recipients) == 1
         assert admin['name'] == recipients[0]['name']
+
+    def test_email_recipients_no_org_admins(self):
+        editor = core_factories.User()
+        external = core_factories.User()
+        container = factories.DataContainer(
+            users=[
+                {'name': editor['name'], 'capacity': 'editor'},
+            ],
+            name='container1',
+            id='container1'
+        )
+        dataset1 = factories.Dataset(
+            name='new-dataset',
+            title='New Dataset',
+            owner_org=container['id'],
+        )
+        recipients = mailer.get_request_access_email_recipients(dataset1)
+
+        assert len(recipients) == 1
+        assert self.sysadmin['name'] == recipients[0]['name']
