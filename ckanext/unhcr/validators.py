@@ -212,3 +212,19 @@ def activity_type_exists(activity_type):
     if activity_type in _object_id_validators:
         return activity_type
     return validators.activity_type_exists(activity_type)
+
+
+# Collaborators
+
+def owner_org_validator(key, data, errors, context):
+    user = context.get('user')
+    package = context.get('package')
+    action = toolkit.get_action('dataset_collaborator_list_for_user')
+    if user and action and package:
+        datasets = action(context, {'id': user})
+        if package.id in [d['dataset_id'] for d in datasets]:
+            if data.get(key) == package.owner_org:
+                return True
+            raise Invalid('You cannot move this dataset to another organization')
+
+    return validators.owner_org_validator(key, data, errors, context)

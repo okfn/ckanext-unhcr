@@ -19,12 +19,21 @@
   {% set organizations_available=h.organizations_available('create_dataset') | rejectattr('id', 'equalto', deposit.id) %}
   {% set org_required=not h.check_config_permission('create_unowned_dataset') or h.scheming_field_required(field) %}
 
-  {% snippet "scheming/form_snippets/_organization_select.html",
-    field=field,
-    data=data,
-    errors=errors,
-    organizations_available=organizations_available,
-    org_required=org_required,
-    organization_option_tag=organization_option_tag %}
+  {% if h.user_in_org_or_group(data.organization.id) %}
+    {% snippet "scheming/form_snippets/_organization_select.html",
+      field=field,
+      data=data,
+      errors=errors,
+      organizations_available=organizations_available,
+      org_required=org_required,
+      organization_option_tag=organization_option_tag %}
+  {% else %}
+    <input
+      id="field-organizations"
+      name="owner_org"
+      type="hidden"
+      value="{{ data.organization.id }}"
+    />
+  {% endif %}
 
 </div>
