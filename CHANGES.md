@@ -1,5 +1,15 @@
 # RIDL Changelog
 
+## v1.2.0 - 2020-04-30
+
+Features:
+* Log resource downloads
+* Show dataset downloads on metrics dashboard
+
+Fixes:
+* Exclude data deposits from users table on metrics dashboard
+* Supress summary emails if there are no events to report
+
 ## v1.1.0 - 2020-04-14
 
 * Add metrics dashboard with stats on how the site is used for curation team and sysadmins
