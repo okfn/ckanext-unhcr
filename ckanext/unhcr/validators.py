@@ -224,7 +224,7 @@ def owner_org_validator(key, data, errors, context):
         datasets = action(context, {'id': user})
         if package.id in [d['dataset_id'] for d in datasets]:
             if data.get(key) == package.owner_org:
-                return True
+                return
             raise Invalid('You cannot move this dataset to another organization')
 
     return validators.owner_org_validator(key, data, errors, context)
