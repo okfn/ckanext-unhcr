@@ -1188,6 +1188,9 @@ class TestMetricsController(base.FunctionalTestBase):
 
     # Tests
 
+    def test_metrics_not_logged_in(self):
+        resp = self.get_request('/metrics', status=403)
+
     def test_metrics_standard_user(self):
         user1 = core_factories.User(name='user1', id='user1')
         resp = self.get_request('/metrics', user='user1', status=403)

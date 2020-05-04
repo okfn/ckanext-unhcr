@@ -14,10 +14,14 @@ from .metrics import (
 )
 
 def metrics():
-    context = { 'user': toolkit.c.user }
+    if (
+        not hasattr(toolkit.c, "user") or
+        not toolkit.c.user or
+        not (toolkit.c.userobj.sysadmin or user_is_curator())
+    ):
+        return toolkit.abort(403, "Forbidden")
 
-    if not (toolkit.c.userobj.sysadmin or user_is_curator()):
-        return toolkit.abort(403, 'Forbidden')
+    context = { 'user': toolkit.c.user }
 
     return toolkit.render('metrics/index.html', {
         'metrics': [
