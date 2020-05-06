@@ -160,8 +160,8 @@ def package_update(next_auth, context, data_dict):
 
 
 def package_activity_list(context, data_dict):
-    if toolkit.asbool(data_dict.get('get_curation_activities')):
-        # Check if the user can see the curation activity,
+    if toolkit.asbool(data_dict.get('get_internal_activities')):
+        # Check if the user can see the internal activity,
         # for now we check if the user can edit the dataset
         return auth_update_core.package_update(context, data_dict)
     return {'success': True}

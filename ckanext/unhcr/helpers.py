@@ -436,7 +436,7 @@ def get_user_deposited_drafts():
     return datasets
 
 
-# Curation activity
+# Internal activity
 
 def create_curation_activity(
         activity_type, dataset_id, dataset_name, user_id,
@@ -479,10 +479,10 @@ def custom_activity_renderer(context, activity):
         output =  toolkit._("{actor} submitted dataset {dataset} for curation")
     elif activity_name == 'curator_assigned':
         curator_link = core_helpers.tags.link_to(
-	    activity['data']['curator_name'],
+            activity['data']['curator_name'],
             toolkit.url_for(
                 controller='user', action='read', id=activity['data']['curator_name'])
-	)
+        )
         output =  toolkit._("{actor} assigned %s as Curator for dataset {dataset}" % curator_link)
     elif activity_name == 'curator_removed':
         output =  toolkit._("{actor} removed the assigned Curator from dataset {dataset}")

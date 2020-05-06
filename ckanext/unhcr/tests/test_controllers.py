@@ -831,7 +831,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         env = {'REMOTE_USER': self.creator['name'].encode('ascii')}
         resp = self.app.get(
             url=url_for('deposited-dataset_read', id=self.dataset['id']), extra_environ=env)
-        assert_in('Curation Activity', resp.body)
+        assert_in('Internal Activity', resp.body)
 
     def test_activites_shown_on_normal_dataset(self):
         for user in ['sysadmin', 'editor']:
@@ -846,7 +846,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         resp = self.app.get(
             url=url_for('dataset_read', id=self.dataset['id']), extra_environ=env)
 
-        assert_in('Curation Activity', resp.body)
+        assert_in('Internal Activity', resp.body)
 
     def test_activites_not_shown_on_normal_dataset(self):
 
@@ -862,7 +862,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         resp = self.app.get(
             url=url_for('dataset_read', id=self.dataset['id']), extra_environ=env)
 
-        assert_not_in('Curation Activity', resp.body)
+        assert_not_in('Internal Activity', resp.body)
 
     @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
     def test_activity_created_in_deposited_dataset(self, mail):
@@ -874,7 +874,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         env = {'REMOTE_USER': self.curator['name'].encode('ascii')}
         resp = self.app.get(
-            url=url_for('deposited-dataset_curation_activity', dataset_id=self.dataset['name']), extra_environ=env)
+            url=url_for('deposited-dataset_internal_activity', dataset_id=self.dataset['name']), extra_environ=env)
 
         assert_in('deposited dataset', resp.body)
         assert_in('submitted dataset', resp.body)

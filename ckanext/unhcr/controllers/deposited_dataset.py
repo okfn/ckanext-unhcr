@@ -332,33 +332,6 @@ class DepositedDatasetController(toolkit.BaseController):
         toolkit.h.flash_error(message % dataset['title'])
         toolkit.redirect_to('data-container_read', id='data-deposit')
 
-    # Activity
-
-    def activity(self, dataset_id):
-        '''Render package's curation activity stream page.'''
-
-        context = _get_context()
-        data_dict = {'id': dataset_id}
-        try:
-            # We check for package_show because
-            # in some states package_update can be forbidden
-            toolkit.check_access('package_show', context, data_dict)
-            toolkit.c.pkg_dict = toolkit.get_action('package_show')(context, data_dict)
-            toolkit.c.pkg = context['package']
-            toolkit.c.package_activity_stream = toolkit.get_action(
-                'package_activity_list_html')(
-                context, {
-                    'id': dataset_id,
-                    'get_curation_activities': True
-                })
-        except toolkit.ObjectNotFound:
-            toolkit.abort(404, toolkit._('Dataset not found'))
-        except toolkit.NotAuthorized:
-            toolkit.abort(403, toolkit._('Unauthorized to read the curation activity for dataset %s') % dataset_id)
-
-        return toolkit.render('package/activity.html', {'dataset_type': 'deposited-dataset'})
-
-
 
 # Internal
 

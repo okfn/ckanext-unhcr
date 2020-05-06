@@ -256,11 +256,11 @@ def pending_requests_list(context, data_dict):
 
 @toolkit.side_effect_free
 def package_activity_list(context, data_dict):
-    get_curation_activities = toolkit.asbool(
-        data_dict.get('get_curation_activities'))
+    get_internal_activities = toolkit.asbool(
+        data_dict.get('get_internal_activities'))
     full_list = get_core.package_activity_list(context, data_dict)
     full_list = [a for a in full_list if a["activity_type"] != "download resource"]
-    curation_activities = [
+    internal_activities = [
         a for a in full_list if 'curation_activity' in a.get('data', {})]
     normal_activities = [
         a for a in full_list if 'curation_activity' not in a.get('data', {})]
@@ -271,8 +271,8 @@ def package_activity_list(context, data_dict):
             .get('data', {})
             .get('package_extra', {})
             .get('key') not in ('curation_state', 'curator_id'), normal_activities))
-    return (curation_activities
-        if get_curation_activities else normal_activities)
+    return (internal_activities
+        if get_internal_activities else normal_activities)
 
 
 @toolkit.side_effect_free
