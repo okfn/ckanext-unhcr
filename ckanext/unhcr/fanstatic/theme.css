@@ -2124,6 +2124,14 @@ i {
   width: 100%;
 }
 
+.collaboration-modals form {
+  margin: 0;
+}
+
+.collaboration-modals textarea {
+  width: 97%;
+}
+
 /* Search */
 
 .dataset-item-curation table {

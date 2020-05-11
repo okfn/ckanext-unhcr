@@ -1,4 +1,4 @@
-<div class="collaboration collaboration_modals-modals">
+<div class="collaboration collaboration-modals">
 
 {% if pkg.resources|length > 0 and not h.can_download(pkg) %}
   <div id="collaboration-dataset-request-access" class="modal fade" tabindex="-1" role="dialog">
@@ -13,7 +13,7 @@
 
           <div class="modal-body">
             <p>
-              Explain why you're asking for access to this dataset.
+              Please explain why you're asking for access to this dataset.
               Your message will be forwarded to the <strong>Admin</strong> team for review.
             </p>
             <textarea name="message" rows="5" placeholder="Add a message"></textarea>
