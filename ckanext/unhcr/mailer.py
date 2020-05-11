@@ -5,6 +5,7 @@ from ckan.common import config
 from ckan.plugins import toolkit
 from ckan.lib import mailer as core_mailer
 from ckan.lib.base import render_jinja2
+from ckan.lib.dictization import model_dictize
 from ckanext.unhcr import helpers
 log = logging.getLogger(__name__)
 
@@ -219,10 +220,10 @@ def get_request_access_email_recipients(package_dict):
 
     # if we couldn't find any org admins, fall back to sysadmins
     if not recipients:
-        all_users = toolkit.get_action("user_list")(context, {})
+        all_users = helpers.get_sysadmins()
         recipients = [
-            user for user in all_users
-            if user["sysadmin"] and user["name"] != default_user["name"]
+            model_dictize.user_dictize(user, context) for user in all_users
+            if user.sysadmin and user.name != default_user["name"]
         ]
 
     return recipients
