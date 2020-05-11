@@ -161,6 +161,7 @@ class TestValidators(FunctionalTestBase):
         context = {
             'user': container_member['name'],
             'package': model.package.Package.get(dataset['id']),
+            'model': model,
         }
         data = {
             'owner_org': data_container['id']
@@ -188,6 +189,7 @@ class TestValidators(FunctionalTestBase):
         context = {
             'user': user['name'],
             'package': model.package.Package.get(dataset['id']),
+            'model': model,
         }
 
         # user should be allowed to move dataset from data_container1 to
@@ -224,6 +226,7 @@ class TestValidators(FunctionalTestBase):
         context = {
             'user': user['name'],
             'package': model.package.Package.get(dataset['id']),
+            'model': model,
         }
         data = {
             'owner_org': data_container['id']
@@ -256,6 +259,7 @@ class TestValidators(FunctionalTestBase):
         context = {
             'user': user['name'],
             'package': model.package.Package.get(dataset['id']),
+            'model': model,
         }
 
         # user should not be allowed to move dataset to another container
