@@ -219,6 +219,11 @@ def activity_type_exists(activity_type):
 def owner_org_validator(key, data, errors, context):
     user = context.get('user')
     package = context.get('package')
+
+    userobj = model.User.get(user)
+    if userobj and userobj.sysadmin:
+        return validators.owner_org_validator(key, data, errors, context)
+
     action = toolkit.get_action('dataset_collaborator_list_for_user')
     if user and action and package:
         datasets = action(context, {'id': user})
