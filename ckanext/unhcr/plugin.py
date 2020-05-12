@@ -117,7 +117,7 @@ class UnhcrPlugin(
             _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
             _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
         else:
-            controller='ckanext.cloudstorage.controller:StorageController'
+            controller='ckanext.unhcr.controllers.extended_storage:ExtendedStorageController'
             _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
             _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
 
