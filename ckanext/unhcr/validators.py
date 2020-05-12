@@ -189,7 +189,7 @@ def upload_not_empty(key, data, errors, context):
 # Custom Activities
 
 _object_id_validators = {
-    'download resource': validators.resource_id_exists,
+    'download resource': validators.package_id_exists,
 }
 
 def object_id_validator(key, activity_dict, errors, context):

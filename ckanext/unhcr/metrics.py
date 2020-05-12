@@ -58,12 +58,9 @@ def get_datasets_by_date(context):
 
 def get_datasets_by_downloads(context):
     activity_table = model.meta.metadata.tables['activity']
-    resource_table = model.meta.metadata.tables['resource']
     package_table = model.meta.metadata.tables['package']
     join_obj = activity_table.join(
-        resource_table, resource_table.c.id==activity_table.c.object_id
-    ).join(
-        package_table, package_table.c.id==resource_table.c.package_id
+        package_table, package_table.c.id==activity_table.c.object_id
     )
 
     sql = select([
@@ -225,13 +222,10 @@ def get_users_by_datasets(context):
 
 def get_users_by_downloads(context):
     activity_table = model.meta.metadata.tables['activity']
-    resource_table = model.meta.metadata.tables['resource']
     package_table = model.meta.metadata.tables['package']
     user_table = model.meta.metadata.tables['user']
     join_obj = activity_table.join(
-        resource_table, resource_table.c.id==activity_table.c.object_id
-    ).join(
-        package_table, package_table.c.id==resource_table.c.package_id
+        package_table, package_table.c.id==activity_table.c.object_id
     ).join(
         user_table, user_table.c.id==activity_table.c.user_id
     )
