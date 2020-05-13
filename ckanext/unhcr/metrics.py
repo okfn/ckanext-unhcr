@@ -137,7 +137,7 @@ def get_containers_by_date(context):
         'id': slugify(title),
         'data': [
             ['x'] + [str(date) for date in dates.keys()],
-            ['Datasets'] + [count for count in dates.values()],
+            ['Containers'] + [count for count in dates.values()],
         ],
     }
 
