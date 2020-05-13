@@ -28,22 +28,31 @@ def get_datasets_by_date(context):
     title = 'Total number of Datasets'
     data_dict = {
         'q': '*:*',
-        'fq': "-type:deposited-dataset",
         'rows': 0,
         'include_private': True,
     }
-    packages = toolkit.get_action('package_search')(context, data_dict)
-    dates = _get_timeseries_metric('datasets_count')
+    datasets_total = toolkit.get_action('package_search')(
+        context, dict(data_dict, fq='-type:deposited-dataset')
+    )
+    deposits_total = toolkit.get_action('package_search')(
+        context, dict(data_dict, fq='type:deposited-dataset')
+    )
+    datasets = _get_timeseries_metric('datasets_count')
+    deposits = _get_timeseries_metric('deposits_count')
 
     return {
         'type': 'timeseries_graph',
         'short_title': 'Datasets',
         'title': title,
         'id': slugify(title),
-        'total': packages['count'],
+        'total': "{datasets} datasets / {deposits} deposits".format(
+            datasets=datasets_total['count'],
+            deposits=deposits_total['count']
+        ),
         'data': [
-            ['x'] + [str(date) for date in dates.keys()],
-            ['Datasets'] + [count for count in dates.values()],
+            ['x'] + [str(date) for date in datasets.keys()],
+            ['Datasets'] + [count for count in datasets.values()],
+            ['Deposits'] + [count for count in deposits.values()],
         ],
     }
 
@@ -137,7 +146,7 @@ def get_containers_by_date(context):
         'id': slugify(title),
         'data': [
             ['x'] + [str(date) for date in dates.keys()],
-            ['Datasets'] + [count for count in dates.values()],
+            ['Containers'] + [count for count in dates.values()],
         ],
     }
 
