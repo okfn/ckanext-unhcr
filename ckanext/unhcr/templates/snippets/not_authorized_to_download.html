@@ -1,7 +1,16 @@
 <div class="alert alert-warning">
-  <p>{{ _("You are not authorized to access the resources from this dataset.") }}</p>
   {% if pkg.owner_org %}
-    <p>{{ _("If you need access to the dataset please contact the <a href='{}'>Data Container Administrators</a>.").format(h.get_org_admins_email_link(pkg))|safe }}</p>
+    <p>
+      {{ _("You are not authorized to download the resources from this dataset.") }}
+      If you need access to the dataset, you can
+      <a
+        href="#collaboration-dataset-request-access"
+        data-toggle="modal"
+        title="Request access to {{ pkg.title }}"
+        data-target="#collaboration-dataset-request-access"
+      >
+        Request access
+      </a>
+    </p>
   {% endif %}
 </div>
-

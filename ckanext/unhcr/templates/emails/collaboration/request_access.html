@@ -1,0 +1,33 @@
+{% extends "emails/base.html" %}
+{% import 'macros/email.html' as email with context %}
+
+{% block email_body %}
+
+  {% call email.paragraph() %}
+    Dear <b>{{ recipient.fullname }}</b>,
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    User
+    {{ h.link_to(requesting_user.fullname or requesting_user.name, h.url_for('user.read', id=requesting_user.id, qualified=True)) }}
+    has requested access to download
+    {{ h.link_to(dataset.title or dataset.name, h.url_for('dataset_read', id=dataset.name, qualified=True)) }}.
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    {{ requesting_user.fullname or requesting_user.name }} supplied the following message:
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    {{ h.nl_to_br(message) }}
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    To add the user as a collaborator, visit the following page (logged in with your administrator account):
+  {% endcall %}
+
+  {% call email.action(collaborators_url) %}
+    Add Collaborator
+  {% endcall %}
+
+{% endblock %}

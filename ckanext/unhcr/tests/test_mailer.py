@@ -5,18 +5,15 @@ import ckan.lib.search as search
 from ckan.plugins import toolkit
 from ckan.tests import factories as core_factories
 from ckanext.unhcr.tests import base, factories
-from ckanext.unhcr.mailer import (
-    compose_summary_email_body,
-    get_summary_email_recipients
-)
+from ckanext.unhcr import mailer
 
 
-class TestMailer(base.FunctionalTestBase):
+class TestSummaryMailer(base.FunctionalTestBase):
 
     # General
 
     def setup(self):
-        super(TestMailer, self).setup()
+        super(TestSummaryMailer, self).setup()
 
         # Users
         self.sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
@@ -80,7 +77,7 @@ class TestMailer(base.FunctionalTestBase):
             ),
         ]
 
-        email = compose_summary_email_body(self.sysadmin)
+        email = mailer.compose_summary_email_body(self.sysadmin)
         regularised_body = regularise_html(email['body'])
 
         assert 3 == email['total_events']
@@ -103,10 +100,83 @@ class TestMailer(base.FunctionalTestBase):
             id='data-deposit'
         )
 
-        recipients = get_summary_email_recipients()
+        recipients = mailer.get_summary_email_recipients()
         recipient_ids = [r['name'] for r in recipients]
 
         assert len(recipient_ids) == 2
         assert curator['name'] in recipient_ids
         assert self.sysadmin['name'] in recipient_ids
         assert user1['name'] not in recipient_ids
+
+
+class TestCollaborationMailer(base.FunctionalTestBase):
+
+    # General
+
+    def setup(self):
+        super(TestCollaborationMailer, self).setup()
+
+        # Users
+        self.sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+
+    def test_email_body(self):
+        user1 = core_factories.User(name='user1', id='user1')
+        dataset1 = factories.Dataset(
+            name='new-dataset',
+            title='New Dataset',
+        )
+
+        user_message = 'I can haz access?\nkthxbye'
+        email_body = mailer.compose_request_access_email_body(self.sysadmin, dataset1, user1, user_message)
+        regularised_body = regularise_html(email_body)
+        expected = regularise_html(
+            'User <a href="{user_link}">Mr. Test User</a> has requested access to download <a href="{dataset_link}">New Dataset</a>'.format(
+                user_link=toolkit.url_for('user.read', id=user1['id'], qualified=True),
+                dataset_link=toolkit.url_for('dataset_read', id=dataset1['name'], qualified=True),
+            )
+        )
+
+        assert expected in regularised_body
+        assert '<p>I can haz access?<br> kthxbye</p>' in regularised_body
+
+    def test_email_recipients_with_org_admins(self):
+        editor = core_factories.User()
+        admin = core_factories.User()
+        external = core_factories.User()
+        container = factories.DataContainer(
+            users=[
+                {'name': editor['name'], 'capacity': 'editor'},
+                {'name': admin['name'], 'capacity': 'admin'},
+            ],
+            name='container1',
+            id='container1'
+        )
+        dataset1 = factories.Dataset(
+            name='new-dataset',
+            title='New Dataset',
+            owner_org=container['id'],
+        )
+        recipients = mailer.get_request_access_email_recipients(dataset1)
+
+        assert len(recipients) == 1
+        assert admin['name'] == recipients[0]['name']
+
+    def test_email_recipients_no_org_admins(self):
+        editor = core_factories.User()
+        external = core_factories.User()
+        container = factories.DataContainer(
+            users=[
+                {'name': editor['name'], 'capacity': 'editor'},
+            ],
+            name='container1',
+            id='container1'
+        )
+        dataset1 = factories.Dataset(
+            name='new-dataset',
+            title='New Dataset',
+            owner_org=container['id'],
+        )
+        recipients = mailer.get_request_access_email_recipients(dataset1)
+
+        assert len(recipients) == 1
+        assert self.sysadmin['name'] == recipients[0]['name']

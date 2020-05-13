@@ -5,6 +5,7 @@ from ckan.common import config
 from ckan.plugins import toolkit
 from ckan.lib import mailer as core_mailer
 from ckan.lib.base import render_jinja2
+from ckan.lib.dictization import model_dictize
 from ckanext.unhcr import helpers
 log = logging.getLogger(__name__)
 
@@ -199,3 +200,52 @@ def get_summary_email_recipients():
             recipients.append(user)
 
     return recipients
+
+
+# Collaboration
+
+def get_request_access_email_recipients(package_dict):
+    context = {"ignore_auth": True}
+    default_user = toolkit.get_action("get_site_user")(context)
+
+    try:
+        data_dict = {"id": package_dict["owner_org"], "include_users": True}
+        org = toolkit.get_action("organization_show")(context, data_dict)
+        recipients = [
+            user for user in org["users"]
+            if user["capacity"] == "admin" and user["name"] != default_user["name"]
+        ]
+    except toolkit.ObjectNotFound:
+        recipients = []
+
+    # if we couldn't find any org admins, fall back to sysadmins
+    if not recipients:
+        all_users = helpers.get_sysadmins()
+        recipients = [
+            model_dictize.user_dictize(user, context) for user in all_users
+            if user.sysadmin and user.name != default_user["name"]
+        ]
+
+    return recipients
+
+
+
+def compose_request_access_email_subj(package_dict):
+    return '[UNHCR RIDL] - Request for access to dataset: "{}"'.format(
+        package_dict['name']
+    )
+
+
+def compose_request_access_email_body(recipient, package_dict, requesting_user_dict, message):
+    context = {}
+    context['recipient'] = recipient
+    context['dataset'] = package_dict
+    context['requesting_user'] = requesting_user_dict
+    context['message'] = message
+    context['collaborators_url'] = toolkit.url_for(
+        'collaborators.new',
+        dataset_id=package_dict['id'],
+        qualified=True,
+    )
+    context['h'] = toolkit.h
+    return render_jinja2('emails/collaboration/request_access.html', context)

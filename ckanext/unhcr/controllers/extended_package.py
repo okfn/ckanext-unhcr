@@ -3,6 +3,7 @@ from ckan import model
 import ckan.plugins.toolkit as toolkit
 from ckan.controllers.package import PackageController
 from ckanext.scheming.helpers import scheming_get_dataset_schema
+from ckanext.unhcr import mailer
 log = logging.getLogger(__name__)
 
 
@@ -180,3 +181,43 @@ class ExtendedPackageController(PackageController):
             message = 'Dataset "%s" publishing to the Microdata library is not completed for the following reason: "%s"'
             toolkit.h.flash_error(message % (dataset['title'], error))
         toolkit.redirect_to('dataset_edit', id=dataset['name'])
+
+    def request_access(self, id):
+        message = toolkit.request.params.get('message')
+        if not message:
+            return toolkit.abort(400, "'message' is required")
+
+        action_context = {'model': model, 'user': toolkit.c.user}
+        try:
+            dataset = toolkit.get_action('package_show')(action_context, {'id': id})
+        except toolkit.ObjectNotFound:
+            return toolkit.abort(404, 'Dataset not found')
+        except toolkit.NotAuthorized:
+            return toolkit.abort(403, 'Not Authorized')
+
+        if toolkit.h.can_download(dataset):
+            toolkit.h.flash_notice(
+                'You already have access to download resources from {}'.format(
+                    dataset['title']
+                )
+            )
+            return toolkit.redirect_to('dataset_read', id=dataset['id'])
+
+        org_admins = mailer.get_request_access_email_recipients(dataset)
+        for recipient in org_admins:
+            subj = mailer.compose_request_access_email_subj(dataset)
+            body = mailer.compose_request_access_email_body(
+                recipient,
+                dataset,
+                toolkit.c.user,
+                message,
+            )
+            mailer.mail_user_by_id(recipient['name'], subj, body)
+
+        toolkit.h.flash_notice(
+            'Requested access to download resources from {}'.format(
+                dataset['title']
+            )
+        )
+
+        return toolkit.redirect_to('dataset_read', id=dataset['id'])

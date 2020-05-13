@@ -112,6 +112,7 @@ class UnhcrPlugin(
         _map.connect('/dataset/copy/{id}', controller=controller, action='copy')
         _map.connect('/dataset/{id}/resource_copy/{resource_id}', controller=controller, action='resource_copy')
         _map.connect('/dataset/{id}/publish_microdata', controller=controller, action='publish_microdata')
+        _map.connect('/dataset/{id}/request_access', controller=controller, action='request_access', conditions={'method': ['POST']})
         if 'cloudstorage' not in os.environ.get('CKAN__PLUGINS', ''):
             _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
             _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
@@ -207,9 +208,9 @@ class UnhcrPlugin(
             'normalize_list': helpers.normalize_list,
             'get_field_label': helpers.get_field_label,
             'can_download': helpers.can_download,
-            'get_org_admins_email_link': helpers.get_org_admins_email_link,
             'get_choice_label': helpers.get_choice_label,
             'get_ridl_version': helpers.get_ridl_version,
+            'nl_to_br': helpers.nl_to_br,
         }
 
     # IPackageController
@@ -412,6 +413,7 @@ class UnhcrPlugin(
             'upload_not_empty': validators.upload_not_empty,
             'object_id_validator': validators.object_id_validator,
             'activity_type_exists': validators.activity_type_exists,
+            'owner_org_validator': validators.owner_org_validator,
         }
 
     def get_dataset_labels(self, dataset_obj):

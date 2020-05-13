@@ -1,4 +1,5 @@
 import logging
+from ckan import model
 from ckan.plugins import toolkit
 import ckan.logic.auth.create as auth_create_core
 import ckan.logic.auth.update as auth_update_core
@@ -138,7 +139,8 @@ def package_create(context, data_dict):
     return auth_create_core.package_create(context, data_dict)
 
 
-def package_update(context, data_dict):
+@toolkit.chained_auth_function
+def package_update(next_auth, context, data_dict):
 
     # Get dataset
     dataset_id = None
@@ -157,7 +159,7 @@ def package_update(context, data_dict):
         return {'success': False, 'msg': 'Not authorized to edit deposited dataset'}
 
     # Regular dataset
-    return auth_update_core.package_update(context, data_dict)
+    return next_auth(context, data_dict)
 
 
 def package_activity_list(context, data_dict):
@@ -186,7 +188,7 @@ def resource_download(context, data_dict):
     '''
 
     # Prepare all the parts
-    model = context.get('model') or model
+    context['model'] = context.get('model') or model
     user = context.get('user')
     resource = get_resource_object(context, data_dict)
     dataset = toolkit.get_action('package_show')(
@@ -209,6 +211,16 @@ def resource_download(context, data_dict):
             org['id'] == dataset['owner_org'] for org in user_orgs)
         if user_in_owner_org:
             return {'success': True}
+
+    # Support for ckanext-collaborators style auth
+    action = toolkit.get_action('dataset_collaborator_list_for_user')
+    if user and action:
+        datasets = action(context, {'id': user})
+        return {
+            'success': resource.package_id in [
+                d['dataset_id'] for d in datasets
+            ]
+        }
 
     return {'success': False}
 

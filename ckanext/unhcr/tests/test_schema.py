@@ -2,13 +2,17 @@ from nose.plugins.attrib import attr
 from nose.tools import assert_equals, assert_raises
 
 from ckan.plugins.toolkit import ValidationError
+from ckan.tests import factories as core_factories
 from ckan.tests.helpers import call_action, FunctionalTestBase
-
 
 from ckanext.unhcr.tests import base, factories
 
 
 class TestResourceFields(base.FunctionalTestBase):
+
+    def setup(self):
+        super(TestResourceFields, self).setup()
+        self.sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
 
     def test_file_ment_fields(self):
 
@@ -26,7 +30,11 @@ class TestResourceFields(base.FunctionalTestBase):
 
         dataset['resources'] = [resource]
 
-        updated_dataset = call_action('package_update', {}, **dataset)
+        updated_dataset = call_action(
+            'package_update',
+            {'user': self.sysadmin['name']},
+            **dataset
+        )
 
         for field in [k for k in resource.keys() if k != 'url']:
             assert_equals(
@@ -54,7 +62,7 @@ class TestResourceFields(base.FunctionalTestBase):
         dataset['resources'] = [resource]
 
         with assert_raises(ValidationError) as e:
-            call_action('package_update', {}, **dataset)
+            call_action('package_update', {'user': self.sysadmin['name']}, **dataset)
 
         errors = e.exception.error_dict['resources'][0]
 
@@ -88,7 +96,7 @@ class TestResourceFields(base.FunctionalTestBase):
         dataset['resources'] = [resource1, resource2]
 
         with assert_raises(ValidationError) as e:
-            call_action('package_update', {}, **dataset)
+            call_action('package_update', {'user': self.sysadmin['name']}, **dataset)
 
         errors = e.exception.error_dict['resources'][1]
 

@@ -4,19 +4,19 @@
 {% block email_body %}
 
   {% call email.paragraph() %}
-    Dear <b>{{ recipient }}</b>,
+    Dear <b>{{ user_name }}</b>,
   {% endcall %}
 
   {% call email.paragraph() %}
-    The data container that you requested in the RIDL has been rejected.
+    You have been added as collaborator with role {{ role }} to the dataset "{{ dataset_title }}".
   {% endcall %}
 
   {% call email.paragraph() %}
-    <b>{{ container.title }}</b>
+    You can navigate to the dataset on the following page after logging in to the site:
   {% endcall %}
 
   {% call email.paragraph() %}
-    Please contact the site administrators for the further information.
+    <a href="{{ dataset_link }}">{{ dataset_link }}</a>
   {% endcall %}
 
 {% endblock %}
