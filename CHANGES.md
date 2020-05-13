@@ -1,5 +1,15 @@
 # RIDL Changelog
 
+## v1.3.0 - 2020-05-13
+
+Features:
+* Enable dataset-level permissions
+* Allow users to request access to a dataset
+* Show data deposits on metrics page
+
+Fixes:
+* Fix auth check on metrics page
+
 ## v1.2.0 - 2020-04-30
 
 Features:
