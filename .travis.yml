@@ -1,16 +1,21 @@
-dist: trusty
+dist: xenial
 
 language: python
 python:
     - "2.7"
 addons:
-    postgresql: '9.6'
+    postgresql: '11'
+    apt:
+        packages:
+            - postgresql-11
+            - postgresql-client-11
 env:
-    - CKANVERSION=2.8
+    global:
+        - PGPORT=5433
+        - CKANVERSION=2.8
 install:
     - bash bin/travis-build.bash
 services:
-    - postgresql
     - redis
 script: sh bin/travis-run.sh
 after_success: coveralls
