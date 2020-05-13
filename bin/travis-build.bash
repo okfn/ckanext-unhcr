@@ -64,7 +64,7 @@ cd -
 
 git clone https://github.com/okfn/ckanext-collaborators
 cd ckanext-collaborators
-git checkout 0.0.4
+git checkout 0.0.5
 python setup.py develop
 cd -
 
