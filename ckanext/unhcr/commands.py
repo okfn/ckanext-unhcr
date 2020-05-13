@@ -5,7 +5,7 @@ import sys
 from ckan.plugins import toolkit
 
 import ckan.model as model
-from ckanext.unhcr.models import tables_exist, create_tables, TimeSeriesMetric
+from ckanext.unhcr.models import create_columns, create_tables, TimeSeriesMetric
 from ckanext.unhcr.mailer import (
     compose_summary_email_body,
     get_summary_email_recipients,
@@ -54,12 +54,9 @@ class Unhcr(toolkit.CkanCommand):
             sys.exit(1)
 
     def init_db(self):
-        if tables_exist():
-            print(u'UNHCR tables already exist')
-            sys.exit(0)
-
         create_tables()
-        print(u'UNHCR tables created')
+        create_columns()
+        print(u'UNHCR tables initialized')
 
     def snapshot_metrics(self):
         context = { 'ignore_auth': True }
