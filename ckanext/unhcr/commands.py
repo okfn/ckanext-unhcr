@@ -61,12 +61,15 @@ class Unhcr(toolkit.CkanCommand):
     def snapshot_metrics(self):
         context = { 'ignore_auth': True }
 
-        packages = toolkit.get_action('package_search')(context, {
+        data_dict = {
             'q': '*:*',
-            'fq': "-type:deposited-dataset",
             'rows': 0,
             'include_private': True,
-        })
+        }
+        packages = toolkit.get_action('package_search')(
+            context, dict(data_dict, fq='-type:deposited-dataset'))
+        deposits = toolkit.get_action('package_search')(
+            context, dict(data_dict, fq='type:deposited-dataset'))
         organizations = toolkit.get_action('organization_list')(
             context,
             { 'type': 'data-container' },
@@ -74,6 +77,7 @@ class Unhcr(toolkit.CkanCommand):
 
         rec = TimeSeriesMetric(
             datasets_count=packages['count'],
+            deposits_count=deposits['count'],
             containers_count=len(organizations),
         )
         model.Session.add(rec)
