@@ -3,6 +3,7 @@ import os
 import json
 import logging
 
+from ckan.common import config
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan.lib.plugins import DefaultTranslation
@@ -113,7 +114,7 @@ class UnhcrPlugin(
         _map.connect('/dataset/{id}/resource_copy/{resource_id}', controller=controller, action='resource_copy')
         _map.connect('/dataset/{id}/publish_microdata', controller=controller, action='publish_microdata')
         _map.connect('/dataset/{id}/request_access', controller=controller, action='request_access', conditions={'method': ['POST']})
-        if 'cloudstorage' not in os.environ.get('CKAN__PLUGINS', ''):
+        if 'cloudstorage' not in config['ckan.plugins']:
             _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
             _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
         else:
