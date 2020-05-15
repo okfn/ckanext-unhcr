@@ -68,6 +68,11 @@ git checkout 0.0.5
 python setup.py develop
 cd -
 
+git clone https://github.com/TkTech/ckanext-cloudstorage
+cd ckanext-cloudstorage
+python setup.py develop
+cd -
+
 echo "Installing ckanext-unhcr and its requirements..."
 python setup.py develop
 pip install --upgrade -r requirements.txt
