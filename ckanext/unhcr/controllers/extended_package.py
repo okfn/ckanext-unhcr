@@ -184,7 +184,7 @@ class ExtendedPackageController(PackageController):
             body = mailer.compose_request_access_email_body(
                 recipient,
                 dataset,
-                toolkit.c.user,
+                toolkit.c.userobj,
                 message,
             )
             mailer.mail_user_by_id(recipient['name'], subj, body)
