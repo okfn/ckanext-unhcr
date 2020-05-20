@@ -4,7 +4,7 @@
 {% block email_body %}
 
   {% call email.paragraph() %}
-    Dear <b>{{ recipient.fullname }}</b>,
+    Dear <b>{{ recipient.fullname or recipient.name }}</b>,
   {% endcall %}
 
   {% call email.paragraph() %}
