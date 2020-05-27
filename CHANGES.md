@@ -1,5 +1,16 @@
 # RIDL Changelog
 
+## v1.4.0 - 2020-05-27
+
+Features:
+* Log downloads when using Cloud Storage backend
+
+Fixes:
+* Fix user names in "request access" emails
+
+Changes:
+* Log downloads with dataset_id, not resource_id
+
 ## v1.3.0 - 2020-05-13
 
 Features:
