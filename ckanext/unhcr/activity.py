@@ -11,11 +11,13 @@ def log_download_activity(context, resource_id):
     if user_by_name is not None:
         user_id = user_by_name.id
 
+    resource = toolkit.get_action('resource_show')(context, {'id': resource_id})
+
     activity_dict = {
         'activity_type': 'download resource',
         'user_id': user_id,
-        'object_id': resource_id,
-        'data': {}
+        'object_id': resource['package_id'],
+        'data': resource
     }
 
     activity_create_context = {

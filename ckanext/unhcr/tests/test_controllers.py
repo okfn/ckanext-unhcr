@@ -1052,7 +1052,7 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         ]).where(
             and_(
                 model.Activity.activity_type == 'download resource',
-                model.Activity.object_id == self.resource1['id'],
+                model.Activity.object_id == self.dataset1['id'],
                 model.Activity.user_id == 'user1',
             )
         )

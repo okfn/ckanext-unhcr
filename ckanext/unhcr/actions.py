@@ -256,6 +256,7 @@ def package_activity_list(context, data_dict):
     get_curation_activities = toolkit.asbool(
         data_dict.get('get_curation_activities'))
     full_list = get_core.package_activity_list(context, data_dict)
+    full_list = [a for a in full_list if a["activity_type"] != "download resource"]
     curation_activities = [
         a for a in full_list if 'curation_activity' in a.get('data', {})]
     normal_activities = [
