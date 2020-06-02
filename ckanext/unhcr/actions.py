@@ -1,5 +1,6 @@
 import logging
 import requests
+from sqlalchemy import and_, desc, or_, select
 from ckan import model
 from ckan.authz import has_user_permission_for_group_or_org
 from ckan.plugins import toolkit
@@ -12,6 +13,7 @@ import ckan.logic.action.update as update_core
 import ckan.logic.action.patch as patch_core
 import ckan.lib.activity_streams as activity_streams
 from ckanext.unhcr import helpers, mailer
+from ckanext.unhcr.models import AccessRequest
 from ckanext.scheming.helpers import scheming_get_dataset_schema
 
 log = logging.getLogger(__name__)
@@ -488,3 +490,104 @@ def datasets_validation_report(context, data_dict):
             })
 
     return out
+
+
+# Access Requests
+
+def extract_keys_by_prefix(dct, prefix):
+    return {
+        k.replace(prefix, '', 1): v for k, v in dct.items() if k.startswith(prefix)
+    }
+
+def dictize_access_request(req):
+    package = extract_keys_by_prefix(req, 'package_')
+    group = extract_keys_by_prefix(req, 'group_')
+    user = extract_keys_by_prefix(req, 'user_')
+    access_request = extract_keys_by_prefix(req, 'access_requests_')
+    access_request['user'] = user
+    access_request['object'] = group if group['id'] else package
+    return access_request
+
+
+@toolkit.side_effect_free
+def access_request_list_for_user(context, data_dict):
+    """
+    Return a list of all access requests the user can see
+
+    :param user_id: the id or name of the user
+    :type user_id: string
+    :param status: ``'requested'``, ``'approved'`` or ``'rejected'``
+      (default: ``'requested'``)
+    :type status: string
+
+    :returns: A list of AccessRequest objects
+    :rtype: list of dictionaries
+    """
+    user_id = toolkit.get_or_bust(data_dict, "user_id")
+    status = data_dict.get("status", "requested")
+
+    user = model.User.get(user_id)
+    if not user:
+        raise toolkit.ObjectNotFound("User not found")
+
+    toolkit.check_access('access_request_list_for_user', context, data_dict)
+
+    access_requests_table = model.meta.metadata.tables["access_requests"]
+    group_table = model.meta.metadata.tables["group"]
+    package_table = model.meta.metadata.tables["package"]
+    user_table = model.meta.metadata.tables["user"]
+    sql = select(
+        [AccessRequest, model.Package, model.Group, model.User],
+        use_labels=True,
+    ).select_from(
+        access_requests_table.join(
+            package_table,
+            and_(
+                access_requests_table.c.object_type == "dataset",
+                access_requests_table.c.object_id == package_table.c.id,
+            ), isouter=True,
+        ).join(
+            group_table,
+            and_(
+                access_requests_table.c.object_type == "container",
+                access_requests_table.c.object_id == group_table.c.id,
+            ), isouter=True,
+        ).join(
+            user_table,
+            access_requests_table.c.user_id == user_table.c.id
+        )
+    ).order_by(
+        desc(AccessRequest.timestamp)
+    ).where(
+        access_requests_table.c.status == status
+    )
+
+    if user.sysadmin:
+        return [dictize_access_request(req) for req in model.Session.execute(sql).fetchall()]
+
+    organizations = toolkit.get_action("organization_list_for_user")(
+        context, {"id": user_id, "permission": "admin"}
+    )
+    containers = [o["id"] for o in organizations]
+    if not containers:
+        return []
+
+    fq = "owner_org:({ids})".format(ids=" OR ".join(containers))
+    data_dict = {"q": "*:*", "fq": fq, "include_private": True}
+    packages = toolkit.get_action("package_search")(context, data_dict)
+    datasets = [p["id"] for p in packages["results"]]
+
+    sql = sql.where(
+        or_(
+            and_(
+                AccessRequest.object_type == "dataset",
+                AccessRequest.object_id.in_(datasets),
+            ),
+            and_(
+                AccessRequest.object_type == "container",
+                AccessRequest.object_id.in_(containers),
+            ),
+        )
+    )
+
+    return [dictize_access_request(req) for req in model.Session.execute(sql).fetchall()]

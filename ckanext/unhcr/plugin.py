@@ -380,12 +380,14 @@ class UnhcrPlugin(
         functions['package_create'] = auth.package_create
         functions['package_update'] = auth.package_update
         functions['dataset_collaborator_create'] = auth.dataset_collaborator_create
+        functions['access_request_list_for_user'] = auth.access_request_list_for_user
         return functions
 
     # IActions
 
     def get_actions(self):
         return {
+            'access_request_list_for_user': actions.access_request_list_for_user,
             'package_update': actions.package_update,
             'package_publish_microdata': actions.package_publish_microdata,
             'package_get_microdata_collections': actions.package_get_microdata_collections,

@@ -263,3 +263,9 @@ def dataset_collaborator_create(next_auth, context, data_dict):
     if dataset['type'] == 'deposited-dataset':
         return {'success': False, 'msg': "Can't add collaborators to a Data Deposit"}
     return next_auth(context, data_dict)
+
+
+# Access Requests
+
+def access_request_list_for_user(context, data_dict):
+    return {'success': True}
