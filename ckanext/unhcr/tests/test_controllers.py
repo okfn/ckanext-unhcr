@@ -8,6 +8,7 @@ import ckan.model as model
 from ckan.plugins import toolkit
 from nose.tools import assert_raises, assert_equals, nottest
 from ckan.tests import helpers as core_helpers, factories as core_factories
+from ckanext.unhcr.models import AccessRequest
 from ckanext.unhcr.tests import base, factories, mocks
 
 assert_in = core_helpers.assert_in
@@ -1184,6 +1185,15 @@ class TestExtendedPackageController(base.FunctionalTestBase):
             # but we're not going to make any assertions about it here
             # see the mailer tests for this
 
+            assert_equals(
+                1,
+                len(model.Session.query(AccessRequest).filter(
+                    AccessRequest.object_id == self.dataset1['id'],
+                    AccessRequest.user_id == self.user3['id'],
+                    AccessRequest.status == 'requested'
+                ).all())
+            )
+
             resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user3'}, status=200)
             assert_in(
                 'Requested access to download resources from Test Dataset 1',
@@ -1198,6 +1208,15 @@ class TestExtendedPackageController(base.FunctionalTestBase):
                 status=302
             )
             mock_mailer.assert_not_called()
+
+            assert_equals(
+                0,
+                len(model.Session.query(AccessRequest).filter(
+                    AccessRequest.object_id == self.dataset1['id'],
+                    AccessRequest.user_id == self.user1['id'],
+                    AccessRequest.status == 'requested'
+                ).all())
+            )
 
             resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user1'}, status=200)
             assert_in(
