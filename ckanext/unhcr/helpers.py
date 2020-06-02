@@ -139,6 +139,14 @@ def user_is_curator():
     return user_id in user_ids
 
 
+def user_is_container_admin():
+    orgs = toolkit.get_action("organization_list_for_user")(
+        {"user": toolkit.c.user},
+        {"id": toolkit.c.user, "permission": "admin"}
+    )
+    return len(orgs) > 0
+
+
 # Linked datasets
 
 def get_linked_datasets_for_form(selected_ids=[], exclude_ids=[], context=None, user_id=None):
@@ -197,9 +205,27 @@ def get_linked_datasets_for_display(value, context=None):
 
 # Pending requests
 
-def get_pending_requests(all_fields=False, context=None):
+def get_pending_requests_total(context=None):
     context = context or {'model': model, 'user': toolkit.c.user}
-    return toolkit.get_action('pending_requests_list')(context, {'all_fields': all_fields})
+    total = 0
+
+    try:
+        container_requests = toolkit.get_action('pending_requests_list')(
+            context, {'all_fields': False}
+        )
+        total += container_requests['count']
+    except (toolkit.NotAuthorized, toolkit.ObjectNotFound):
+        pass
+
+    try:
+        access_requests = toolkit.get_action('access_request_list_for_user')(
+            context, {'user_id': context['user']}
+        )
+        total += len(access_requests)
+    except (toolkit.NotAuthorized, toolkit.ObjectNotFound):
+        pass
+
+    return total
 
 
 # Deposited datasets

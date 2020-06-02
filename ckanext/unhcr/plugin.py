@@ -199,7 +199,8 @@ class UnhcrPlugin(
             'get_linked_datasets_for_form': helpers.get_linked_datasets_for_form,
             'get_linked_datasets_for_display': helpers.get_linked_datasets_for_display,
             # Pending requests
-            'get_pending_requests': helpers.get_pending_requests,
+            'get_pending_requests_total': helpers.get_pending_requests_total,
+            'user_is_container_admin': helpers.user_is_container_admin,
             # Deposited datasets
             'get_data_deposit': helpers.get_data_deposit,
             'get_data_curation_users': helpers.get_data_curation_users,
@@ -471,4 +472,7 @@ class UnhcrPlugin(
     # IBlueprint
 
     def get_blueprint(self):
-        return blueprint.unhcr_metrics_blueprint
+        return [
+            blueprint.unhcr_metrics_blueprint,
+            blueprint.unhcr_access_requests_blueprint,
+        ]
