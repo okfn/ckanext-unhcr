@@ -1,4 +1,5 @@
 import json
+import mock
 import responses
 from ckan import model
 from ckan.plugins import toolkit
@@ -9,6 +10,7 @@ from ckanext.unhcr.tests import base, factories, mocks
 from ckanext.unhcr import helpers
 from ckanext.unhcr.activity import log_download_activity
 
+assert_in = core_helpers.assert_in
 
 
 class TestMicrodata(base.FunctionalTestBase):
@@ -704,4 +706,196 @@ class TestAccessRequestListForUser(base.FunctionalTestBase):
             action,
             {"model": model, "user": self.sysadmin["name"]},
             {'id': self.sysadmin["name"], 'status': 'invalid-status'}
+        )
+
+
+class TestAccessRequestUpdate(base.FunctionalTestBase):
+    def setup(self):
+        super(TestAccessRequestUpdate, self).setup()
+
+        self.sysadmin = core_factories.Sysadmin()
+        self.requesting_user = core_factories.User()
+        self.standard_user = core_factories.User()
+
+        self.container1_admin = core_factories.User()
+        self.container1 = factories.DataContainer(
+            users=[{"name": self.container1_admin["name"], "capacity": "admin"}]
+        )
+        self.dataset1 = factories.Dataset(
+            owner_org=self.container1["id"], visibility="private"
+        )
+        self.container_request = AccessRequest(
+            user_id=self.requesting_user["id"],
+            object_id=self.container1["id"],
+            object_type="container",
+            message="",
+            role="member",
+        )
+        self.dataset_request = AccessRequest(
+            user_id=self.requesting_user["id"],
+            object_id=self.dataset1["id"],
+            object_type="dataset",
+            message="",
+            role="member",
+        )
+        model.Session.add(self.container_request)
+        model.Session.add(self.dataset_request)
+        model.Session.commit()
+
+    def test_access_request_update_approve_container_standard_user(self):
+        action = toolkit.get_action("access_request_update")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'id': self.container_request.id, 'status': 'approved'}
+        )
+
+        orgs = toolkit.get_action("organization_list_for_user")(
+            {"user": self.sysadmin["name"]},
+            {"id": self.requesting_user["name"], "permission": "read"}
+        )
+        assert_equals(0, len(orgs))
+        assert_equals('requested', self.container_request.status)
+
+    def test_access_request_update_approve_container_container_admin(self):
+        mock_mailer = mock.Mock()
+        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+            action = toolkit.get_action("access_request_update")
+            action(
+                {"model": model, "user": self.container1_admin["name"]},
+                {'id': self.container_request.id, 'status': 'approved'}
+            )
+
+            orgs = toolkit.get_action("organization_list_for_user")(
+                {"user": self.sysadmin["name"]},
+                {"id": self.requesting_user["name"], "permission": "read"}
+            )
+            assert_equals(self.container1['id'], orgs[0]['id'])
+            assert_equals('approved', self.container_request.status)
+
+            mock_mailer.assert_called_once()
+            assert_equals(
+                self.dataset_request.user_id,
+                mock_mailer.call_args[0][0]
+            )
+            assert_equals(
+                "[UNHCR RIDL] Membership: {}".format(self.container1["title"]),
+                mock_mailer.call_args[0][1]
+            )
+            assert_in("You have been added", mock_mailer.call_args[0][2])
+
+    def test_access_request_update_reject_container_standard_user(self):
+        action = toolkit.get_action("access_request_update")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'id': self.container_request.id, 'status': 'rejected'}
+        )
+
+        orgs = toolkit.get_action("organization_list_for_user")(
+            {"user": self.sysadmin["name"]},
+            {"id": self.requesting_user["name"], "permission": "read"}
+        )
+        assert_equals(0, len(orgs))
+        assert_equals('requested', self.container_request.status)
+
+    def test_access_request_update_reject_container_container_admin(self):
+        action = toolkit.get_action("access_request_update")
+        action(
+            {"model": model, "user": self.container1_admin["name"]},
+            {'id': self.container_request.id, 'status': 'rejected'}
+        )
+
+        orgs = toolkit.get_action("organization_list_for_user")(
+            {"user": self.sysadmin["name"]},
+            {"id": self.requesting_user["name"], "permission": "read"}
+        )
+        assert_equals(0, len(orgs))
+        assert_equals('rejected', self.container_request.status)
+
+    def test_access_request_update_approve_dataset_standard_user(self):
+        action = toolkit.get_action("access_request_update")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'id': self.dataset_request.id, 'status': 'approved'}
+        )
+
+        collaborators = toolkit.get_action("dataset_collaborator_list")(
+            {"user": self.sysadmin["name"]}, {"id": self.dataset1["id"]}
+        )
+        assert_equals(0, len(collaborators))
+        assert_equals('requested', self.dataset_request.status)
+
+    def test_access_request_update_approve_dataset_container_admin(self):
+        mock_mailer = mock.Mock()
+        with mock.patch('ckanext.collaborators.logic.action.mail_notification_to_collaborator', mock_mailer):
+            action = toolkit.get_action("access_request_update")
+            action(
+                {"model": model, "user": self.container1_admin["name"]},
+                {'id': self.dataset_request.id, 'status': 'approved'}
+            )
+
+            collaborators = toolkit.get_action("dataset_collaborator_list")(
+                {"user": self.sysadmin["name"]}, {"id": self.dataset1["id"]}
+            )
+            assert_equals(self.requesting_user["id"], collaborators[0]["user_id"])
+            assert_equals('approved', self.dataset_request.status)
+
+            mock_mailer.assert_called_once()
+            assert_equals(self.dataset_request.object_id, mock_mailer.call_args[0][0])
+            assert_equals(self.dataset_request.user_id, mock_mailer.call_args[0][1])
+            assert_equals('member', mock_mailer.call_args[0][2])
+            assert_equals('create', mock_mailer.call_args[1]['event'])
+
+    def test_access_request_update_reject_dataset_standard_user(self):
+        action = toolkit.get_action("access_request_update")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'id': self.dataset_request.id, 'status': 'rejected'}
+        )
+
+        collaborators = toolkit.get_action("dataset_collaborator_list")(
+            {"user": self.sysadmin["name"]}, {"id": self.dataset1["id"]}
+        )
+        assert_equals(0, len(collaborators))
+        assert_equals('requested', self.dataset_request.status)
+
+    def test_access_request_update_reject_dataset_container_admin(self):
+        action = toolkit.get_action("access_request_update")
+        action(
+            {"model": model, "user": self.container1_admin["name"]},
+            {'id': self.dataset_request.id, 'status': 'rejected'}
+        )
+
+        collaborators = toolkit.get_action("dataset_collaborator_list")(
+            {"user": self.sysadmin["name"]}, {"id": self.dataset1["id"]}
+        )
+        assert_equals(0, len(collaborators))
+        assert_equals('rejected', self.dataset_request.status)
+
+    def test_access_request_update_invalid_inputs(self):
+        action = toolkit.get_action("access_request_update")
+        assert_raises(
+            toolkit.ObjectNotFound,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'id': "invalid-id", 'status': 'approved'}
+        )
+        assert_raises(
+            toolkit.ValidationError,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'status': 'approved'}
+        )
+        assert_raises(
+            toolkit.ValidationError,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'id': self.dataset_request.id, 'status': 'invalid-status'}
         )
