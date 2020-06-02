@@ -2,10 +2,7 @@ import pylons
 from ckan.lib.search import rebuild
 from paste.registry import Registry
 from ckan.tests import helpers as core_helpers, factories as core_factories
-from ckanext.unhcr.models import (
-    create_tables as unhcr_create_tables,
-    create_columns as unhcr_create_columns,
-)
+from ckanext.unhcr.models import create_tables as unhcr_create_tables
 from ckanext.collaborators.model import (
     tables_exist as collaborators_tables_exist,
     create_tables as collaborators_create_tables,
@@ -22,7 +19,6 @@ class FunctionalTestBase(core_helpers.FunctionalTestBase):
         core_helpers.reset_db()
 
         unhcr_create_tables()
-        unhcr_create_columns()
         if not collaborators_tables_exist():
             collaborators_create_tables()
 
