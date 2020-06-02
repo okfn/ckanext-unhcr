@@ -275,8 +275,7 @@ def compose_request_access_email_body(recipient, package_dict, requesting_user_d
     context['requesting_user'] = requesting_user_dict
     context['message'] = message
     context['collaborators_url'] = toolkit.url_for(
-        'collaborators.new',
-        dataset_id=package_dict['id'],
+        'dashboard.requests',
         qualified=True,
     )
     context['h'] = toolkit.h
