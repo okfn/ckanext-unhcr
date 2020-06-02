@@ -279,4 +279,4 @@ def compose_request_access_email_body(recipient, package_dict, requesting_user_d
         qualified=True,
     )
     context['h'] = toolkit.h
-    return render_jinja2('emails/collaboration/request_access.html', context)
+    return render_jinja2('emails/access_requests/dataset_access_request.html', context)
