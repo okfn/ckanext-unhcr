@@ -190,7 +190,7 @@ class UnhcrPlugin(
             'page_authorized': helpers.page_authorized,
             'get_came_from_param': helpers.get_came_from_param,
             'user_is_curator': helpers.user_is_curator,
-            # Lined datasets
+            # Linked datasets
             'get_linked_datasets_for_form': helpers.get_linked_datasets_for_form,
             'get_linked_datasets_for_display': helpers.get_linked_datasets_for_display,
             # Pending requests
@@ -416,6 +416,8 @@ class UnhcrPlugin(
             'activity_type_exists': validators.activity_type_exists,
             'owner_org_validator': validators.owner_org_validator,
         }
+
+    # IPermissionLabels
 
     def get_dataset_labels(self, dataset_obj):
         # https://github.com/ckan/ckan/blob/master/ckanext/example_ipermissionlabels/plugin.py
