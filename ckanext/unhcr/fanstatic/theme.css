@@ -2124,14 +2124,6 @@ i {
   width: 100%;
 }
 
-.collaboration-modals form {
-  margin: 0;
-}
-
-.collaboration-modals textarea {
-  width: 97%;
-}
-
 /* Search */
 
 .dataset-item-curation table {
@@ -2202,6 +2194,14 @@ i {
   font-weight: bold;
   /* font-size: 1.2em; */
   color: #000;
+}
+
+.collaboration-modals form {
+  margin: 0;
+}
+
+.collaboration-modals textarea {
+  width: 97%;
 }
 
 .pending-requests-list h3 small a {
