@@ -335,7 +335,8 @@ class UnhcrPlugin(
 
     def after_create(self, context, data_dict):
         if not context.get('job'):
-            toolkit.enqueue_job(jobs.process_dataset_on_create, [data_dict['id']])
+            if data_dict.get('state') == 'active':
+                toolkit.enqueue_job(jobs.process_dataset_on_create, [data_dict['id']])
 
         if data_dict.get('type') == 'deposited-dataset':
             user_id = None
@@ -355,7 +356,8 @@ class UnhcrPlugin(
 
     def after_update(self, context, data_dict):
         if not context.get('job'):
-            toolkit.enqueue_job(jobs.process_dataset_on_update, [data_dict['id']])
+            if data_dict.get('state') == 'active':
+                toolkit.enqueue_job(jobs.process_dataset_on_update, [data_dict['id']])
 
     # IAuthFunctions
 
