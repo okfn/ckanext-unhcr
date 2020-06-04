@@ -391,9 +391,6 @@ class UnhcrPlugin(
             'group_activity_list_html': actions.group_activity_list_html,
             'organization_activity_list_html': actions.organization_activity_list_html,
             'recently_changed_packages_activity_list_html': actions.recently_changed_packages_activity_list_html,
-            'datastore_info': actions.datastore_info,
-            'datastore_search': actions.datastore_search,
-            'datastore_search_sql': actions.datastore_search_sql,
             'datasets_validation_report': actions.datasets_validation_report,
         }
 
