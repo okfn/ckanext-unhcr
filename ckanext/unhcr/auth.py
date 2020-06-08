@@ -60,6 +60,7 @@ def restrict_access_to_get_auth_functions():
     overriden_auth_functions['package_create'] = package_create
     overriden_auth_functions['package_update'] = package_update
     overriden_auth_functions['package_activity_list'] = package_activity_list
+    overriden_auth_functions['dataset_collaborator_create'] = dataset_collaborator_create
 
     return overriden_auth_functions
 
@@ -253,3 +254,12 @@ def unhcr_datastore_search_sql(context, data_dict):
 
 def datasets_validation_report(context, data_dict):
     return {'success': False}
+
+
+@toolkit.chained_auth_function
+def dataset_collaborator_create(next_auth, context, data_dict):
+    dataset = toolkit.get_action('package_show')(
+        {'ignore_auth': True}, {'id': data_dict['id']})
+    if dataset['type'] == 'deposited-dataset':
+        return {'success': False, 'msg': "Can't add collaborators to a Data Deposit"}
+    return next_auth(context, data_dict)
