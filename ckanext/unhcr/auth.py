@@ -26,7 +26,7 @@ def restrict_access_to_get_auth_functions():
     skip_actions = [
         'help_show',  # Let's not overreact
         'site_read',  # Because of madness in the API controller
-        'organiation_list_for_user',  # Because of #4097
+        'organization_list_for_user',  # Because of #4097
         'get_site_user',
         'user_reset',  # saml2
         'user_create',  # saml2
