@@ -56,11 +56,7 @@ def restrict_access_to_get_auth_functions():
     overriden_auth_functions['site_read'] = site_read
     overriden_auth_functions['organization_list_for_user'] = \
         organization_list_for_user
-    overriden_auth_functions['organization_create'] = organization_create
-    overriden_auth_functions['package_create'] = package_create
-    overriden_auth_functions['package_update'] = package_update
     overriden_auth_functions['package_activity_list'] = package_activity_list
-    overriden_auth_functions['dataset_collaborator_create'] = dataset_collaborator_create
 
     return overriden_auth_functions
 
