@@ -1,5 +1,13 @@
 # RIDL Changelog
 
+## v1.4.1 - 2020-06-10
+
+Fixes:
+* Fix race condition when saving resource using cloudstorage engine
+* Improve notification display when using cloudstorage plugin
+* Fix labels on "add member" form
+* Fix datastore api authentication failure from datapusher job
+
 ## v1.4.0 - 2020-05-27
 
 Features:
