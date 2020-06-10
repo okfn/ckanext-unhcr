@@ -189,7 +189,7 @@ class ExtendedPackageController(PackageController):
             )
             mailer.mail_user_by_id(recipient['name'], subj, body)
 
-        toolkit.h.flash_notice(
+        toolkit.h.flash_success(
             'Requested access to download resources from {}'.format(
                 dataset['title']
             )

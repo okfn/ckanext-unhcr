@@ -1402,14 +1402,6 @@ ol.unstyled {
 
 .homepage .featured.media-overlay {}
 
-.flash-messages {
-  position: fixed;
-  z-index: 2;
-  width: 100%;
-  left: 0;
-  top: 0
-}
-
 .flash-messages .alert {
   border-radius: 0;
   border: none;
@@ -1422,15 +1414,27 @@ ol.unstyled {
   text-shadow: none;
 }
 
-.flash-messages .alert.alert-success,
-    .flash-messages .alert.alert-info {
-  background-color: #FAEB00;
-  color: rgb(51, 51, 51);
+.flash-messages .alert.alert-success {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.flash-messages .alert.alert-success .close {
+  color: #fff;
+}
+
+.flash-messages .alert.alert-info {
+  background-color: #17a2b8;
+  color: #fff;
+}
+
+.flash-messages .alert.alert-info .close {
+  color: #fff;
 }
 
 .flash-messages .alert.alert-danger,
     .flash-messages .alert.alert-error {
-  background-color: rgb(51, 51, 51);
+  background-color: #dc3545;
   color: #fff;
 }
 

@@ -1,0 +1,32 @@
+<div class="login-splash">
+  <div class="prompt">
+    {% if g.site_logo %}
+    <img src="{{ h.url_for_static_or_external(g.site_logo) }}" alt="{{ g.site_title }}" title="{{ g.site_title }}" width="210" />
+    {% endif %}
+    <h2>{% trans %}You must be logged in to access the RIDL site.{% endtrans %}</h2>
+    <a class="btn btn-inverse btn-lg" href="{{ h.url_for('user.login', came_from=h.get_came_from_param()) }}">Log in</a>
+  </div>
+
+  <div class="info">
+    <div class="toggle">
+      <a><span class="icon"></span><span class="text">toggle</span></a>
+    </div>
+    <div class="content">
+      {% if intro %}
+        {{ h.render_markdown(intro) }}
+      {% else %}
+        <h2>{{ _("The Raw Internal Data Library is UNHCR’s secure globally-supported space for indexing, versioning and storing data that is collected or managed outside of the corporate data systems.") }}</h2>
+        <p>
+          {% trans %}Keeping and reusing raw data is important to create baselines for indicators and population data, new analytical products, updating maps, monitoring partner data management capacity, developing targeting models, cleaning data, and auditing previous analysis results. This includes most of UNHCR’s protection assessment and monitoring data, as there are no corporate systems for anonymized or personally identifiable operational microdata.{% endtrans %}
+        </p>
+        <p>
+          {% trans %}RIDL supports datasets that are still changing and being versioned, in addition to those that are final and will no longer be changed and can be considered the “official” versions for a particular information management project.{% endtrans %}
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="attribution">{% trans %}<span>Powered by</span> <a class="hide-text ckan-footer-logo" href="http://ckan.org">CKAN</a>{% endtrans %}</div>
+  </footer>
+</div>

@@ -1,10 +1,4 @@
 .flash-messages {
-  position: fixed;
-  z-index: 2;
-  width: 100%;
-  left: 0;
-  top: 0;
-
   & .alert {
     border-radius: 0;
     border: none;
@@ -15,15 +9,27 @@
       text-shadow: none;
     }
 
-    &.alert-success,
+    &.alert-success {
+      background-color: #28a745;
+      color: #fff;
+
+      & .close {
+        color: #fff;
+      }
+    }
+
     &.alert-info {
-      background-color: var(--warning-colour);
-      color: var(--heading-colour);
+      background-color: #17a2b8;
+      color: #fff;
+
+      & .close {
+        color: #fff;
+      }
     }
 
     &.alert-danger,
     &.alert-error {
-      background-color: var(--danger-colour);
+      background-color: #dc3545;
       color: #fff;
 
       & .close {
