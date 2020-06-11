@@ -1,5 +1,10 @@
 # RIDL Changelog
 
+## v1.4.2 - 2020-06-11
+
+Fixes:
+* Collaborators can not be added to a deposited dataset
+
 ## v1.4.1 - 2020-06-10
 
 Fixes:
