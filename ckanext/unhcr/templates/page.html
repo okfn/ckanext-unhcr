@@ -36,6 +36,9 @@
                   {% block flash %}
                     <div class="flash-messages">
                       {% block flash_inner %}
+                        <div class="alert fade in alert-info">
+                          RIDL will be offline for maintenance between midday and 2pm CEST on Thursday 18 June.
+                        </div>
                         {% for message in h.flash.pop_messages() | list %}
                           <div class="alert fade in {{ message.category }}">
                             {{ h.literal(message) }}
