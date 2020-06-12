@@ -180,7 +180,11 @@ def organization_create(context, data_dict):
             for user in helpers.get_sysadmins():
                 if user.email:
                     subj = mailer.compose_container_email_subj(org_dict, event='request')
-                    body = mailer.compose_container_email_body(org_dict, user, event='request')
+                    body = mailer.compose_request_container_email_body(
+                        org_dict,
+                        user,
+                        toolkit.c.userobj,
+                    )
                     mailer.mail_user(user, subj, body)
         except MailerException:
             message = '[email] Data container request notification is not sent: {0}'
