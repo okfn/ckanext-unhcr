@@ -23,6 +23,23 @@ def _get_timeseries_metric(field):
         dates[row['date']] = row[field]
     return dates
 
+def _get_facet_table(facet, context):
+    data_dict = {
+        'q': '*:*',
+        'fq': "-type:deposited-dataset",
+        'rows': 0,
+        'facet.field': [facet],
+        'facet.limit': 10,
+        'include_private': True,
+    }
+    packages = toolkit.get_action('package_search')(context, data_dict)
+
+    return sorted(
+        packages['search_facets'][facet]['items'],
+        key=itemgetter('count'),
+        reverse=True,
+    )
+
 
 def get_datasets_by_date(context):
     title = 'Total number of Datasets'
@@ -99,26 +116,7 @@ def get_datasets_by_downloads(context):
     }
 
 def get_containers(context):
-    data_dict = {
-        'q': '*:*',
-        'fq': "-type:deposited-dataset",
-        'rows': 0,
-        'facet.field': ['organization'],
-        'facet.limit': 10,
-        'include_private': True,
-    }
-    packages = toolkit.get_action('package_search')(context, data_dict)
-
-    organizations = toolkit.get_action('organization_list')(
-        context,
-        { 'type': 'data-container' }
-    )
-
-    data = sorted(
-        packages['search_facets']['organization']['items'],
-        key=itemgetter('count'),
-        reverse=True,
-    )
+    data = _get_facet_table('organization', context)
     for row in data:
         row['link'] = toolkit.url_for('data-container_read', id=row['name'])
 
@@ -148,21 +146,7 @@ def get_containers_by_date(context):
     }
 
 def get_tags(context):
-    data_dict = {
-        'q': '*:*',
-        'fq': "-type:deposited-dataset",
-        'rows': 0,
-        'facet.field': ['tags'],
-        'facet.limit': 10,
-        'include_private': True,
-    }
-    packages = toolkit.get_action('package_search')(context, data_dict)
-
-    data = sorted(
-        packages['search_facets']['tags']['items'],
-        key=itemgetter('count'),
-        reverse=True,
-    )
+    data = _get_facet_table('tags', context)
     for row in data:
         row['link'] = toolkit.url_for('dataset', tags=row['name'])
 
@@ -172,6 +156,20 @@ def get_tags(context):
         'title': title,
         'id': slugify(title),
         'headers': ['Tag', 'Datasets'],
+        'data': data,
+    }
+
+def get_keywords(context):
+    data = _get_facet_table('vocab_keywords', context)
+    for row in data:
+        row['link'] = toolkit.url_for('dataset', vocab_keywords=row['name'])
+
+    title = 'Keywords'
+    return {
+        'type': 'freq_table',
+        'title': title,
+        'id': slugify(title),
+        'headers': ['Keyword', 'Datasets'],
         'data': data,
     }
 
