@@ -21,9 +21,11 @@ class TestSummaryMailer(base.FunctionalTestBase):
     def test_email_body(self):
         deposit = factories.DataContainer(id='data-deposit')
         target = factories.DataContainer(id='data-target')
+        org = factories.DataContainer(name='test-org', title='Test Org')
         factories.Dataset(
             name='new-dataset',
             title='New Dataset',
+            owner_org=org['id'],
         )
         factories.Dataset(
             name='new-deposit',
@@ -44,6 +46,7 @@ class TestSummaryMailer(base.FunctionalTestBase):
         old_dataset = factories.Dataset(
             name='old-dataset',
             title='Old Dataset',
+            owner_org=org['id'],
         )
         # This is a little bit messy.
         # We can't set the `metadata_created` property via a factory or an
@@ -60,8 +63,10 @@ class TestSummaryMailer(base.FunctionalTestBase):
         expected_values = [
             '''
             <h1>New datasets (1)</h1>
-            <ul> <li> <a href="{}">New Dataset</a> </li> </ul>'''.format(
-                toolkit.url_for('dataset_read', id='new-dataset', qualified=True)
+            <h2> <a href="{org}">Test Org</a> (1) </h2>
+            <ul> <li> <a href="{ds}">New Dataset</a> in <a href="{org}">Test Org</a> </li> </ul>'''.format(
+                ds=toolkit.url_for('dataset_read', id='new-dataset', qualified=True),
+                org=toolkit.url_for('data-container_read', id='test-org', qualified=True)
             ),
 
             '''
@@ -86,6 +91,109 @@ class TestSummaryMailer(base.FunctionalTestBase):
         assert 'Old Dataset' not in regularised_body
         assert (
             toolkit.url_for("dataset_read", id="old-dataset", qualified=True)
+            not in regularised_body
+        )
+
+    def test_email_hierarchy(self):
+        africa = factories.DataContainer(name='africa', title='Africa')
+        europe = factories.DataContainer(name='europe', title='Europe')
+        americas = factories.DataContainer(name='americas', title='Americas')
+
+        central_africa = factories.DataContainer(
+            name='central-africa',
+            title='Central Africa and the Great Lakes',
+            groups=[{'name': africa['name']}],
+        )
+        eastern_europe = factories.DataContainer(
+            name='eastern-europe',
+            title='Eastern Europe',
+            groups=[{'name': europe['name']}],
+        )
+
+        burundi = factories.DataContainer(
+            name='burundi',
+            title='Burundi',
+            groups=[{'name': central_africa['name']}],
+        )
+        belarus = factories.DataContainer(
+            name='belarus',
+            title='Belarus',
+            groups=[{'name': eastern_europe['name']}],
+        )
+
+        factories.Dataset(
+            name='africa-dataset1',
+            title='Africa Dataset 1',
+            owner_org=africa['id'],
+        )
+        factories.Dataset(
+            name='central-africa-dataset1',
+            title='Central Africa Dataset 1',
+            owner_org=central_africa['id'],
+        )
+        factories.Dataset(
+            name='burundi-dataset1',
+            title='Burundi Dataset 1',
+            owner_org=burundi['id'],
+        )
+
+        factories.Dataset(
+            name='belarus-dataset1',
+            title='Belarus Dataset 1',
+            owner_org=belarus['id'],
+        )
+
+        email = mailer.compose_summary_email_body(self.sysadmin)
+        regularised_body = regularise_html(email['body'])
+
+        expected_values = [
+            '''
+            <h1>New datasets (4)</h1>
+            ''',
+
+            '''
+            <h2> <a href="{}">Africa</a> (3) </h2>
+            '''.format(toolkit.url_for('data-container_read', id='africa', qualified=True)),
+
+            '''
+            <li> <a href="{dataset}">Burundi Dataset 1</a> in <a href="{container}">Burundi</a> </li>
+            '''.format(
+                dataset=toolkit.url_for('dataset_read', id='burundi-dataset1', qualified=True),
+                container=toolkit.url_for('data-container_read', id='burundi', qualified=True),
+            ),
+
+            '''
+            <li> <a href="{dataset}">Central Africa Dataset 1</a> in <a href="{container}">Central Africa and the Great Lakes</a> </li>
+            '''.format(
+                dataset=toolkit.url_for('dataset_read', id='central-africa-dataset1', qualified=True),
+                container=toolkit.url_for('data-container_read', id='central-africa', qualified=True),
+            ),
+
+            '''
+            <li> <a href="{dataset}">Africa Dataset 1</a> in <a href="{container}">Africa</a> </li>
+            '''.format(
+                dataset=toolkit.url_for('dataset_read', id='africa-dataset1', qualified=True),
+                container=toolkit.url_for('data-container_read', id='africa', qualified=True),
+            ),
+
+            '''
+            <h2> <a href="{root}">Europe</a> (1) </h2>
+            <ul>
+              <li> <a href="{dataset}">Belarus Dataset 1</a> in <a href="{container}">Belarus</a> </li>
+            </ul>
+            '''.format(
+                root=toolkit.url_for('data-container_read', id='europe', qualified=True),
+                dataset=toolkit.url_for('dataset_read', id='belarus-dataset1', qualified=True),
+                container=toolkit.url_for('data-container_read', id='belarus', qualified=True),
+            ),
+        ]
+
+        assert 4 == email['total_events']
+        for ev in expected_values:
+            assert regularise_html(ev) in regularised_body
+        assert 'Americas' not in regularised_body
+        assert (
+            toolkit.url_for('data-container_read', id='americas', qualified=True)
             not in regularised_body
         )
 

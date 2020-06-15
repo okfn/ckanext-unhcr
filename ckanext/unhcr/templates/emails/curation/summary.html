@@ -12,16 +12,23 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    <h1>New datasets ({{ new_datasets|length }})</h1>
-    <ul>
-    {% for ds in new_datasets %}
-      <li>
-        {{ h.link_to(ds.title or ds.name, h.url_for('dataset_read', id=ds.name, qualified=True)) }}
-      </li>
+    <h1>New datasets ({{ new_datasets_total }})</h1>
+    {% for root in new_datasets %}
+      <h2>
+        {{ h.link_to(root.container.title or root.container.name, h.url_for('data-container_read', id=root.container.name, qualified=True)) }}
+        ({{ root.datasets|length }})
+      </h2>
+      <ul>
+        {% for ds in root.datasets %}
+          <li>
+            {{ h.link_to(ds.title or ds.name, h.url_for('dataset_read', id=ds.name, qualified=True)) }}
+            in {{ h.link_to(ds.organization.title or ds.organization.name, h.url_for('data-container_read', id=ds.organization.name, qualified=True)) }}
+          </li>
+        {% endfor %}
+      </ul>
     {% else %}
-      <li>No new datasets</li>
+      No new datasets
     {% endfor %}
-    </ul>
   {% endcall %}
 
   {% call email.action(datasets_url) %}
@@ -33,7 +40,7 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    <h2>New deposited datasets ({{ new_deposits|length }})</h2>
+    <h2>New deposited datasets ({{ new_deposits_total }})</h2>
     <ul>
       {% for ds in new_deposits %}
         <li>
@@ -46,7 +53,7 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    <h2>Datasets awaiting review ({{ awaiting_review|length }})</h2>
+    <h2>Datasets awaiting review ({{ awaiting_review_total }})</h2>
     <ul>
       {% for ds in awaiting_review %}
         <li>

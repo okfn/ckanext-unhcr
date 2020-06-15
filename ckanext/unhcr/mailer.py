@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import itertools
 import logging
 from ckan import model
 from ckan.common import config
@@ -94,8 +95,25 @@ def _get_new_packages(context, start_time):
         'sort': 'metadata_created desc',
         'include_private': True,
     }
-    packages = toolkit.get_action('package_search')(context, data_dict)
-    return packages['results']
+    query = toolkit.get_action('package_search')(context, data_dict)
+    packages = query['results']
+
+    for package in packages:
+        group = model.Group.get(package['organization']['id'])
+        parents = group.get_parent_group_hierarchy(type='data-container')
+        if not parents:
+            root_parent = group
+        else:
+            root_parent = parents[0]
+        package['root_parent'] = root_parent
+
+    packages = sorted(packages, key=lambda x: x['root_parent'].id)
+    grouped_packages = itertools.groupby(packages, lambda x: x['root_parent'])
+
+    return [
+        {"container": container, "datasets": list(packages)}
+        for container, packages in grouped_packages
+    ]
 
 
 def _get_new_deposits(context, start_time):
@@ -160,19 +178,22 @@ def compose_summary_email_body(user_dict):
 
     action_context = { 'user': user_dict['name'] }
     context['new_datasets'] = _get_new_packages(action_context, query_start_time)
+    context['new_datasets_total'] = sum([len(n['datasets']) for n in context['new_datasets']])
     context['new_deposits'] = _get_new_deposits(action_context, query_start_time)
+    context['new_deposits_total'] = len(context['new_deposits'])
     context['awaiting_review'] = _get_deposits_awaiting_review(
         action_context,
         query_start_time
     )
+    context['awaiting_review_total'] = len(context['awaiting_review'])
 
     context['h'] = toolkit.h
 
     return {
         'total_events': (
-            len(context['new_datasets']) +\
-            len(context['new_deposits']) +\
-            len(context['awaiting_review'])
+            context['new_datasets_total'] +\
+            context['new_deposits_total'] +\
+            context['awaiting_review_total']
         ),
         'body': render_jinja2('emails/curation/summary.html', context)
     }
