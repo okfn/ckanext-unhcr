@@ -152,7 +152,7 @@
     outline: none;
     top: 22px;
 
-    @media (--landscape-tablet-up) {
+    @media (--portrait-tablet-up) {
       display: none;
     }
   }
@@ -199,6 +199,14 @@
         }
       }
 
+      @media (--small-desktop) {
+        &[href^="/"] {
+          &::before {
+            content: none;
+          }
+        }
+      }
+
       @media (--portrait-tablet-up) {
         border: solid 1px #fff;
         margin-left: 20px;
@@ -215,6 +223,10 @@
         &::before {
           font-size: 28px;
         }
+      }
+
+      @media (--portrait-tablet-up) {
+        margin-bottom: 20px;
       }
     }
   }

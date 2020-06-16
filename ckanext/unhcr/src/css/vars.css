@@ -30,4 +30,5 @@
 @custom-media --phone-only (max-width: 767px);
 @custom-media --portrait-tablet-up (min-width: 768px);
 @custom-media --landscape-tablet-up (min-width: 992px);
+@custom-media --small-desktop (min-width: 992px) and (max-width: 1200px);
 @custom-media --desktop-up (min-width: 1200px);

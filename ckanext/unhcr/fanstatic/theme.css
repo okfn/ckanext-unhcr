@@ -628,7 +628,7 @@ body {
   top: 22px;
 }
 
-@media (min-width: 992px) {
+@media (min-width: 768px) {
 
   .masthead .navbar-toggle,
   .masthead .navbar-toggle:hover,
@@ -684,6 +684,13 @@ body {
   content: "\f061";
 }
 
+@media (min-width: 992px) and (max-width: 1200px) {
+
+  .masthead .nav > li > a[href^="/"]::before {
+    content: none;
+  }
+}
+
 @media (min-width: 768px) {
 
   .masthead .nav > li > a {
@@ -705,6 +712,13 @@ body {
 
   .masthead .nav > li > a::before {
     font-size: 28px;
+  }
+}
+
+@media (min-width: 768px) {
+
+  .masthead .nav > li > a {
+    margin-bottom: 20px;
   }
 }
 
