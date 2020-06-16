@@ -33,7 +33,7 @@ def compose_container_email_subj(container, event):
 
 def compose_container_email_body(container, user, event):
     context = {}
-    context['recipient'] = user.fullname or user.name
+    context['recipient'] = user.display_name
     context['site_title'] = config.get('ckan.site_title')
     context['site_url'] = config.get('ckan.site_url')
     context['container'] = container
@@ -41,14 +41,14 @@ def compose_container_email_body(container, user, event):
     return render_jinja2('emails/container/%s.html' % event, context)
 
 
-def compose_request_container_email_body(container, recipient, requesting_user_dict):
+def compose_request_container_email_body(container, recipient, requesting_user):
     context = {}
-    context['recipient'] = recipient.fullname or recipient.name
+    context['recipient'] = recipient.display_name
     context['site_title'] = config.get('ckan.site_title')
     context['site_url'] = config.get('ckan.site_url')
     context['container'] = container
     context['container_url'] = toolkit.url_for('data-container_read', id=container['name'], qualified=True)
-    context['requesting_user'] = requesting_user_dict
+    context['requesting_user'] = requesting_user
     context['h'] = toolkit.h
     return render_jinja2('emails/container/request.html', context)
 

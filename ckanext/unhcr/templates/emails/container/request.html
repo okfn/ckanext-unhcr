@@ -9,7 +9,7 @@
 
   {% call email.paragraph() %}
     User
-    {{ h.link_to(requesting_user.fullname or requesting_user.name, h.url_for('user.read', id=requesting_user.id, qualified=True)) }}
+    {{ h.link_to(requesting_user.display_name, h.url_for('user.read', id=requesting_user.id, qualified=True)) }}
     has requested a new data container in the RIDL site:
   {% endcall %}
 
