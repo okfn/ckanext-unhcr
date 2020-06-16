@@ -1,7 +1,6 @@
 import json
 import responses
 from ckan import model
-from ckan.common import config
 from ckan.plugins import toolkit
 from ckan.tests import helpers as core_helpers, factories as core_factories
 from nose.tools import assert_raises, assert_equals, nottest
@@ -17,7 +16,7 @@ class TestActions(base.FunctionalTestBase):
         super(TestActions, self).setup()
 
         # Config
-        config['ckanext.unhcr.microdata_api_key'] = 'API-KEY'
+        toolkit.config['ckanext.unhcr.microdata_api_key'] = 'API-KEY'
 
         # Users
         self.sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
@@ -85,7 +84,7 @@ class TestActions(base.FunctionalTestBase):
     def test_package_publish_microdata_not_set_api_key(self):
         context = {'model': model, 'user': self.sysadmin['name']}
         action = toolkit.get_action('package_publish_microdata')
-        del config['ckanext.unhcr.microdata_api_key']
+        del toolkit.config['ckanext.unhcr.microdata_api_key']
         assert_raises(toolkit.NotAuthorized,
             action, context, {'id': self.dataset['id']})
 
@@ -369,7 +368,7 @@ class TestResourceUpload(base.FunctionalTestBase):
         assert_equals(
             resource['url'],
             '{}/dataset/{}/resource/{}/download/test.txt'.format(
-                config['ckan.site_url'].rstrip('/'),
+                toolkit.config.get('ckan.site_url').rstrip('/'),
                 dataset['id'],
                 resource['id']
             )
@@ -394,7 +393,7 @@ class TestResourceUpload(base.FunctionalTestBase):
         assert_equals(
             updated_resource['url'],
             '{}/dataset/{}/resource/{}/download/test.txt'.format(
-                config['ckan.site_url'].rstrip('/'),
+                toolkit.config['ckan.site_url'].rstrip('/'),
                 dataset['id'],
                 resource['id']
             )

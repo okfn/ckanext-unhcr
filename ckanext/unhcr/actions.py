@@ -1,7 +1,6 @@
 import logging
 import requests
 from ckan import model
-from ckan.common import config
 from ckan.plugins import toolkit
 from ckan.lib.mailer import MailerException
 import ckan.lib.plugins as lib_plugins
@@ -57,7 +56,7 @@ def package_publish_microdata(context, data_dict):
 
     # Check access
     toolkit.check_access('sysadmin', context)
-    api_key = config.get('ckanext.unhcr.microdata_api_key')
+    api_key = toolkit.config.get('ckanext.unhcr.microdata_api_key')
     if not api_key:
         raise toolkit.NotAuthorized('Microdata API Key is not set')
 
@@ -131,7 +130,7 @@ def package_get_microdata_collections(context, data_dict):
 
     # Check access
     toolkit.check_access('sysadmin', context)
-    api_key = config.get('ckanext.unhcr.microdata_api_key')
+    api_key = toolkit.config.get('ckanext.unhcr.microdata_api_key')
     if not api_key:
         raise toolkit.NotAuthorized('Microdata API Key is not set')
 

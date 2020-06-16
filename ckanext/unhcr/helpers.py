@@ -4,7 +4,6 @@ from urllib import quote
 from jinja2 import Markup, escape
 from ckan import model
 from ckan.lib import uploader
-from ckan.common import config
 from operator import itemgetter
 from ckan.logic import ValidationError
 from ckan.plugins import toolkit
@@ -213,7 +212,7 @@ def get_data_deposit():
     # Check cache
     deposit = None
     global cached_deposit
-    if not config.get('testing'):
+    if not toolkit.config.get('testing'):
         deposit = cached_deposit
 
     # Load from db
@@ -222,7 +221,7 @@ def get_data_deposit():
             context = {'model': model, 'ignore_auth': True}
             deposit = toolkit.get_action('organization_show')(
                 context, {'id': 'data-deposit'})
-            if not config.get('testing'):
+            if not toolkit.config.get('testing'):
                 cached_deposit = deposit
         except toolkit.ObjectNotFound:
             log.error('Data Deposit is not created')

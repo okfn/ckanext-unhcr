@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 import itertools
 import logging
 from ckan import model
-from ckan.common import config
 from ckan.plugins import toolkit
 from ckan.lib import mailer as core_mailer
 from ckan.lib.base import render_jinja2
@@ -35,8 +34,8 @@ def compose_container_email_subj(container, event):
 def compose_container_email_body(container, user, event):
     context = {}
     context['recipient'] = user.display_name
-    context['site_title'] = config.get('ckan.site_title')
-    context['site_url'] = config.get('ckan.site_url')
+    context['site_title'] = toolkit.config.get('ckan.site_title')
+    context['site_url'] = toolkit.config.get('ckan.site_url')
     context['container'] = container
     context['container_url'] = toolkit.url_for('data-container_read', id=container['name'], qualified=True)
     return render_jinja2('emails/container/%s.html' % event, context)
@@ -63,8 +62,8 @@ def compose_curation_email_subj(dataset):
 def compose_curation_email_body(dataset, curation, recipient, event, message=None):
     context = {}
     context['recipient'] = recipient
-    context['site_title'] = config.get('ckan.site_title')
-    context['site_url'] = config.get('ckan.site_url')
+    context['site_title'] = toolkit.config.get('ckan.site_title')
+    context['site_url'] = toolkit.config.get('ckan.site_url')
     context['dataset'] = dataset
     context['dataset_url'] = toolkit.url_for('dataset_read', id=dataset['name'], qualified=True)
     context['curation'] = curation
@@ -81,8 +80,8 @@ def compose_membership_email_subj(container):
 def compose_membership_email_body(container, user_dict, event):
     context = {}
     context['recipient'] = user_dict.get('fullname') or user_dict.get('name')
-    context['site_title'] = config.get('ckan.site_title')
-    context['site_url'] = config.get('ckan.site_url')
+    context['site_title'] = toolkit.config.get('ckan.site_title')
+    context['site_url'] = toolkit.config.get('ckan.site_url')
     context['container'] = container
     # single
     if isinstance(container, dict):
@@ -166,8 +165,8 @@ def compose_summary_email_body(user_dict):
     query_start_time = start_time.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     context['recipient'] = user_dict.get('fullname') or user_dict.get('name')
-    context['site_title'] = config.get('ckan.site_title')
-    context['site_url'] = config.get('ckan.site_url')
+    context['site_title'] = toolkit.config.get('ckan.site_title')
+    context['site_url'] = toolkit.config.get('ckan.site_url')
 
     context['datasets_url'] = toolkit.url_for(
         'search',
