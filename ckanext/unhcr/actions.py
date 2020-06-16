@@ -112,7 +112,7 @@ def package_publish_microdata(context, data_dict):
                         file_url, headers=headers, files={'file': file}).json()
                 # TODO: update
                 # it's a hack to overcome incorrect Microdata responses
-                # usopported file types fail this way and we are skipping them
+                # unsupported file types fail this way and we are skipping them
                 if not isinstance(response, dict):
                     continue
                 if response.get('status') != 'success':
