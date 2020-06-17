@@ -254,25 +254,45 @@ def pending_requests_list(context, data_dict):
 
 # Activity
 
+
+def _package_internal_activity_list(context, data_dict):
+    full_list = get_core.package_activity_list(context, data_dict)
+    activities = [
+        a for a in full_list
+        if 'curation_activity' in a.get('data', {})
+        or a["activity_type"] == "download resource"
+    ]
+    return activities
+
+
+def _package_normal_activity_list(context, data_dict):
+    full_list = get_core.package_activity_list(context, data_dict)
+    activities = [
+        a for a in full_list
+        if 'curation_activity' not in a.get('data', {})
+        and a["activity_type"] != "download resource"
+    ]
+    # Filter out the activities that are related to `curation_state`
+    activities = list(
+        filter(
+            lambda activity: get_core.activity_detail_list(
+                context, {'id': activity['id']}).pop()
+                .get('data', {})
+                .get('package_extra', {})
+                .get('key') not in ('curation_state', 'curator_id'),
+            activities
+        )
+    )
+    return activities
+
+
 @toolkit.side_effect_free
 def package_activity_list(context, data_dict):
     get_internal_activities = toolkit.asbool(
         data_dict.get('get_internal_activities'))
-    full_list = get_core.package_activity_list(context, data_dict)
-    full_list = [a for a in full_list if a["activity_type"] != "download resource"]
-    internal_activities = [
-        a for a in full_list if 'curation_activity' in a.get('data', {})]
-    normal_activities = [
-        a for a in full_list if 'curation_activity' not in a.get('data', {})]
-    # Filter out the activities that are related `curation_state`
-    normal_activities = list(filter(
-        lambda activity: get_core.activity_detail_list(
-            context, {'id': activity['id']}).pop()
-            .get('data', {})
-            .get('package_extra', {})
-            .get('key') not in ('curation_state', 'curator_id'), normal_activities))
-    return (internal_activities
-        if get_internal_activities else normal_activities)
+    if get_internal_activities:
+         return _package_internal_activity_list(context, data_dict)
+    return _package_normal_activity_list(context, data_dict)
 
 
 @toolkit.side_effect_free
