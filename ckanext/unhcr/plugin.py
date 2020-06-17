@@ -10,7 +10,10 @@ from ckan.lib.plugins import DefaultTranslation
 from ckan.lib.plugins import DefaultPermissionLabels
 
 # 🙈
-from ckan.lib.activity_streams import activity_stream_string_functions
+from ckan.lib.activity_streams import (
+    activity_stream_string_functions,
+    activity_stream_string_icons,
+)
 
 from ckanext.unhcr import actions, auth, blueprint, helpers, jobs, validators
 
@@ -44,6 +47,8 @@ class UnhcrPlugin(
         toolkit.add_resource('fanstatic', 'unhcr')
 
         activity_stream_string_functions['changed package'] = helpers.custom_activity_renderer
+        activity_stream_string_functions['download resource'] = helpers.download_resource_renderer
+        activity_stream_string_icons['download resource'] = 'download'
 
     def update_config_schema(self, schema):
         schema.update({

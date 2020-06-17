@@ -460,6 +460,16 @@ def create_curation_activity(
     toolkit.get_action('activity_create')(activity_context, data_dict)
 
 
+def download_resource_renderer(context, activity):
+    resource_name = activity['data']['name'] or 'Unnamed resource'
+    resource_link = toolkit.url_for(
+        action='resource_read',
+        controller='package',
+        id=activity['object_id'],
+        resource_id=activity['data']['id']
+    )
+    return "{actor} downloaded " + core_helpers.tags.link_to(resource_name, resource_link)
+
 def custom_activity_renderer(context, activity):
     '''
     Before CKAN 2.9 the only way to customize the activty stream snippets was to
