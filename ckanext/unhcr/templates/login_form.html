@@ -1,7 +1,7 @@
 <div class="login-splash">
   <div class="prompt">
     {% if g.site_logo %}
-    <img src="{{ h.url_for_static_or_external(g.site_logo) }}" alt="{{ g.site_title }}" title="{{ g.site_title }}" width="210" />
+    <img src="/base/images/ckan-logo.png" alt="{{ g.site_title }}" title="{{ g.site_title }}" width="210" />
     {% endif %}
     <h2>{% trans %}You must be logged in to access the RIDL site.{% endtrans %}</h2>
     <a class="btn btn-inverse btn-lg" href="{{ h.url_for('user.login', came_from=h.get_came_from_param()) }}">Log in</a>
