@@ -180,9 +180,17 @@ def file_type_validator(key, data, errors, context):
 # Uploads
 
 def upload_not_empty(key, data, errors, context):
-
     index = key[1]
-    if not (data[('resources', index, 'url_type')] == 'upload'):
+
+    is_create = data.get(('resources', key, 'id')) is missing
+    is_update = not is_create
+
+    upload_missing = (
+        (is_create and not data[('resources', index, 'url_type')] == 'upload') or
+        (is_update and not data.get(('resources', index, 'url',)))
+    )
+
+    if upload_missing:
         errors[('resources', index, 'url',)] = ['All resources require an uploaded file']
 
 
