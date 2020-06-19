@@ -3,8 +3,8 @@
 import sys
 
 from ckan.plugins import toolkit
-
 import ckan.model as model
+
 from ckanext.unhcr.models import create_columns, create_tables, TimeSeriesMetric
 from ckanext.unhcr.mailer import (
     compose_summary_email_body,
@@ -86,6 +86,10 @@ class Unhcr(toolkit.CkanCommand):
         print('Snapshot saved at {}'.format(rec.timestamp))
 
     def send_summary_emails(self):
+        if not toolkit.asbool(toolkit.config.get('ckanext.unhcr.send_summary_emails', False)):
+            print('ckanext.unhcr.send_summary_emails is False. Not sending anything.')
+            return
+
         recipients = get_summary_email_recipients()
         subject = '[UNHCR RIDL] Weekly Summary'
 
