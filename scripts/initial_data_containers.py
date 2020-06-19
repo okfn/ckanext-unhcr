@@ -63,7 +63,7 @@ def create_data_containers(url, api_key):
     # Create orgs in CKAN
     for org in orgs:
         try:
-            ckan.action.organization_create(**org)
+            ckan.call_action('organization_create', org, requests_kwargs={'verify': False})
             print 'Created data container {}'.format(org['name'])
         except ckanapi.errors.ValidationError as e:
             print str(e)
