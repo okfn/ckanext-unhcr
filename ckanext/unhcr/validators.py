@@ -234,7 +234,10 @@ def owner_org_validator(key, data, errors, context):
 
     action = toolkit.get_action('dataset_collaborator_list_for_user')
     if user and action and package:
-        datasets = action(context, {'id': user})
+        try:
+            datasets = action(context, {'id': user})
+        except toolkit.ObjectNotFound:
+            datasets = []
         if package.id in [d['dataset_id'] for d in datasets]:
             if data.get(key) == package.owner_org:
                 try:
