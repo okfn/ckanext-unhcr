@@ -8,13 +8,13 @@ def create_data_deposit(url, api_key):
 
     # Create deposit in CKAN
     try:
-        ckan.action.organization_create(**{
+        ckan.call_action('organization_create', {
             'name': 'data-deposit',
             'title': 'Data Deposit',
             'type': 'data-container',
             'country': 'VAR',
             'geographic_area': 'World',
-        })
+        }, requests_kwargs={'verify': False})
         print('Created data deposit')
     except ckanapi.errors.ValidationError as e:
         print str(e)
