@@ -181,8 +181,9 @@ def file_type_validator(key, data, errors, context):
 
 def upload_not_empty(key, data, errors, context):
     index = key[1]
+    id_key = ('resources', key, 'id')
 
-    is_create = data.get(('resources', key, 'id')) is missing
+    is_create = not data.get(id_key) or data.get(id_key) is missing
     is_update = not is_create
 
     upload_missing = (
