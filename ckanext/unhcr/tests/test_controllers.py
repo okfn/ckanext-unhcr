@@ -996,6 +996,74 @@ class TestExtendedPackageController(base.FunctionalTestBase):
     def test_dataset_copy_bad_dataset(self):
         resp = self.make_dataset_request(dataset_id='bad', user='user1', status=404)
 
+    # Resource Upload
+
+    def test_edit_resource_works(self):
+        url = toolkit.url_for(
+            controller='package',
+            action='resource_edit',
+            id=self.dataset1['id'],
+            resource_id=self.resource1['id']
+        )
+        env = {'REMOTE_USER': self.sysadmin['name'].encode('ascii')}
+
+        # Mock a resource edit payload
+        data = {
+            'id': self.resource1['id'],
+            'name': self.resource1['name'],
+            'type': self.resource1['type'],
+            'description': 'updated',
+            'format': self.resource1['format'],
+            'file_type': self.resource1['file_type'],
+            'date_range_start': self.resource1['date_range_start'],
+            'date_range_end': self.resource1['date_range_end'],
+            'version': self.resource1['version'],
+            'process_status': self.resource1['process_status'],
+            'identifiability': self.resource1['identifiability'],
+
+            'url': 'test.txt',
+            'save': ''
+
+        }
+
+        resp = self.app.post(url, data, extra_environ=env)
+
+        assert 'The form contains invalid entries:' not in resp.body
+
+    def test_edit_resource_must_provide_upload(self):
+        url = toolkit.url_for(
+            controller='package',
+            action='resource_edit',
+            id=self.dataset1['id'],
+            resource_id=self.resource1['id']
+        )
+        env = {'REMOTE_USER': self.sysadmin['name'].encode('ascii')}
+
+        # Mock a resource edit payload
+        data = {
+            'id': self.resource1['id'],
+            'name': self.resource1['name'],
+            'type': self.resource1['type'],
+            'description': 'updated',
+            'format': self.resource1['format'],
+            'file_type': self.resource1['file_type'],
+            'date_range_start': self.resource1['date_range_start'],
+            'date_range_end': self.resource1['date_range_end'],
+            'version': self.resource1['version'],
+            'process_status': self.resource1['process_status'],
+            'identifiability': self.resource1['identifiability'],
+
+            'url': '',
+            'clear_upload': 'true',
+            'save': ''
+
+        }
+
+        resp = self.app.post(url, data, extra_environ=env)
+
+        assert 'The form contains invalid entries:' in resp.body
+        assert 'All resources require an uploaded file' in resp.body
+
     # Resource Copy
 
     def test_resource_copy(self):

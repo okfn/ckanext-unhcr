@@ -180,9 +180,18 @@ def file_type_validator(key, data, errors, context):
 # Uploads
 
 def upload_not_empty(key, data, errors, context):
-
     index = key[1]
-    if not (data[('resources', index, 'url_type')] == 'upload'):
+    id_key = ('resources', index, 'id')
+
+    is_create = not data.get(id_key) or data.get(id_key) is missing
+    is_update = not is_create
+
+    upload_missing = (
+        (is_create and not data[('resources', index, 'url_type')] == 'upload') or
+        (is_update and not data.get(('resources', index, 'url',)))
+    )
+
+    if upload_missing:
         errors[('resources', index, 'url',)] = ['All resources require an uploaded file']
 
 
@@ -226,7 +235,10 @@ def owner_org_validator(key, data, errors, context):
 
     action = toolkit.get_action('dataset_collaborator_list_for_user')
     if user and action and package:
-        datasets = action(context, {'id': user})
+        try:
+            datasets = action(context, {'id': user})
+        except toolkit.ObjectNotFound:
+            datasets = []
         if package.id in [d['dataset_id'] for d in datasets]:
             if data.get(key) == package.owner_org:
                 try:

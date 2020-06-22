@@ -375,6 +375,31 @@ class TestResourceUpload(base.FunctionalTestBase):
             )
         )
 
+    def test_upload_present_after_update(self):
+
+        dataset = factories.Dataset()
+
+        resource = factories.Resource(
+            package_id=dataset['id'],
+            upload=mocks.FakeFileStorage(),
+            url = "http://fakeurl/test.txt",
+            url_type='upload',
+        )
+
+        resource['name'] = 'updated'
+        updated_resource = core_helpers.call_action('resource_update', {}, **resource)
+
+        assert_equals(updated_resource['name'], 'updated')
+
+        assert_equals(
+            updated_resource['url'],
+            '{}/dataset/{}/resource/{}/download/test.txt'.format(
+                config['ckan.site_url'].rstrip('/'),
+                dataset['id'],
+                resource['id']
+            )
+        )
+
     def test_upload_external_url(self):
 
         dataset = factories.Dataset()
