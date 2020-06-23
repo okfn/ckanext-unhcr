@@ -1,5 +1,16 @@
 # RIDL Changelog
 
+## v1.5.0 - 2020-06-23
+
+Features:
+* Add 'keywords' table to metrics dashboard
+* Show regions/containers in digest emails
+* Allow summary emails to be disabled in UAT only
+* Include requesting user in "new container" request email
+
+Fixes:
+* Fix failure when editing metadata of existing resources
+
 ## v1.4.2 - 2020-06-11
 
 Fixes:
