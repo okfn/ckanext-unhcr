@@ -19,3 +19,23 @@
   </ul>
   </header>
 {% endblock %}
+
+{% block primary %}
+  {% block flash %}
+    <div class="row">
+      <div class="primary">
+        <div class="flash-messages">
+          {% block flash_inner %}
+            {% for message in h.flash.pop_messages() | list %}
+              <div class="alert fade in {{ message.category }}">
+                {{ h.literal(message) }}
+              </div>
+            {% endfor %}
+          {% endblock %}
+        </div>
+      </div>
+    </div>
+  {% endblock %}
+
+  {{ super() }}
+{% endblock %}
