@@ -376,6 +376,7 @@ class UnhcrPlugin(
         functions['unhcr_datastore_search_sql'] = auth.unhcr_datastore_search_sql
         functions['datasets_validation_report'] = auth.datasets_validation_report
         functions['organization_create'] = auth.organization_create
+        functions['package_activity_list'] = auth.package_activity_list
         functions['package_create'] = auth.package_create
         functions['package_update'] = auth.package_update
         functions['dataset_collaborator_create'] = auth.dataset_collaborator_create

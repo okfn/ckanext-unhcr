@@ -1,6 +1,7 @@
 import logging
 import requests
 from ckan import model
+from ckan.authz import has_user_permission_for_group_or_org
 from ckan.plugins import toolkit
 from ckan.lib.mailer import MailerException
 import ckan.lib.plugins as lib_plugins
@@ -255,15 +256,20 @@ def pending_requests_list(context, data_dict):
 # Activity
 
 
-def _package_internal_activity_list(context, data_dict):
+def _package_admin_activity_list(context, data_dict):
     full_list = get_core.package_activity_list(context, data_dict)
-    activities = [
+    return [
         a for a in full_list
         if 'curation_activity' in a.get('data', {})
         or a["activity_type"] == "download resource"
     ]
-    return activities
 
+def _package_curation_activity_list(context, data_dict):
+    full_list = get_core.package_activity_list(context, data_dict)
+    return [
+        a for a in full_list
+        if 'curation_activity' in a.get('data', {})
+    ]
 
 def _package_normal_activity_list(context, data_dict):
     full_list = get_core.package_activity_list(context, data_dict)
@@ -288,10 +294,22 @@ def _package_normal_activity_list(context, data_dict):
 
 @toolkit.side_effect_free
 def package_activity_list(context, data_dict):
+    toolkit.check_access('package_activity_list', context, data_dict)
     get_internal_activities = toolkit.asbool(
         data_dict.get('get_internal_activities'))
-    if get_internal_activities:
-         return _package_internal_activity_list(context, data_dict)
+    package_id = toolkit.get_or_bust(data_dict, 'id')
+
+    package = model.Package.get(package_id)
+    user_is_container_admin = has_user_permission_for_group_or_org(
+        package.owner_org,
+        context['user'],
+        'admin',
+    ) if package else False
+
+    if get_internal_activities and user_is_container_admin:
+        return _package_admin_activity_list(context, data_dict)
+    if get_internal_activities and not user_is_container_admin:
+        return _package_curation_activity_list(context, data_dict)
     return _package_normal_activity_list(context, data_dict)
 
 
