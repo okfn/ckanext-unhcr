@@ -163,7 +163,11 @@ def package_activity_list(context, data_dict):
     if toolkit.asbool(data_dict.get('get_internal_activities')):
         # Check if the user can see the internal activity,
         # for now we check if the user can edit the dataset
-        return auth_update_core.package_update(context, data_dict)
+        try:
+            toolkit.check_access('package_update', context, data_dict)
+            return {'success': True}
+        except toolkit.NotAuthorized:
+            return {'success': False}
     return {'success': True}
 
 
@@ -197,8 +201,11 @@ def resource_download(context, data_dict):
         dataset.get('type') == 'deposited-dataset' and
         dataset.get('creator_user_id') == getattr(context.get('auth_user_obj'), 'id', None))
     if not user or is_depositor or not visibility or visibility != 'restricted':
-        return {
-            'success': toolkit.check_access('resource_show', context, data_dict)}
+        try:
+            toolkit.check_access('resource_show', context, data_dict)
+            return {'success': True}
+        except toolkit.NotAuthorized:
+            return {'success': False}
 
     # Restricted visibility (public metadata but private downloads)
     if dataset.get('owner_org'):
