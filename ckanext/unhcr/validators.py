@@ -182,17 +182,24 @@ def file_type_validator(key, data, errors, context):
 def upload_not_empty(key, data, errors, context):
     index = key[1]
     id_key = ('resources', index, 'id')
+    type_key = ('resources', index, 'type')
 
+    # The two options here are "attachment" and "data"
+    # "data" must be a file upload, "attachment" can be a URL
+    is_data = data.get(type_key) == 'data'
+
+    # We only want to enforce this rule for "data" resources on create
+    # if we're editing an existing resource, we will already have an uploaded file
     is_create = not data.get(id_key) or data.get(id_key) is missing
     is_update = not is_create
 
     upload_missing = (
-        (is_create and not data[('resources', index, 'url_type')] == 'upload') or
-        (is_update and not data.get(('resources', index, 'url',)))
+        (is_data and is_create and not data[('resources', index, 'url_type')] == 'upload') or
+        (is_data and is_update and not data.get(('resources', index, 'url',)))
     )
 
     if upload_missing:
-        errors[('resources', index, 'url',)] = ['All resources require an uploaded file']
+        errors[('resources', index, 'url',)] = ['All data resources require an uploaded file']
 
 
 # Custom Activities

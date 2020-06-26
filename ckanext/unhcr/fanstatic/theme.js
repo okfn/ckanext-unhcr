@@ -224,6 +224,7 @@ this.ckan.module('resource-type', function ($) {
       })
       this.input.val('data')
       this._fixUploadButton()
+      this._hideLinkButton()
     },
 
     _onAttachmentButtonClick: function (ev) {
@@ -253,6 +254,10 @@ this.ckan.module('resource-type', function ($) {
       // Our resources setup breakes the width calcucations so we fix it here
       var input = $('#field-image-upload')
       input.css('width', input.next().outerWidth()).css('cursor', 'pointer')
+    },
+
+    _hideLinkButton: function() {
+      $('.dataset-resource-form div.image-upload a:last-child').hide()
     }
 
   };
