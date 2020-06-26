@@ -46,6 +46,10 @@ class UnhcrPlugin(
         toolkit.add_public_directory(config_, 'public')
         toolkit.add_resource('fanstatic', 'unhcr')
 
+        # TODO: in CKAN 2.9 we can add `icon='hdd-o'` here
+        # but not yet :(
+        toolkit.add_ckan_admin_tab(config_, 'unhcr_search_index.index', 'Cache')
+
         activity_stream_string_functions['changed package'] = helpers.custom_activity_renderer
         activity_stream_string_functions['download resource'] = helpers.download_resource_renderer
         activity_stream_string_icons['download resource'] = 'download'
@@ -479,5 +483,6 @@ class UnhcrPlugin(
             blueprints.unhcr_access_requests_blueprint,
             blueprints.unhcr_admin_blueprint,
             blueprints.unhcr_metrics_blueprint,
+            blueprints.unhcr_search_index_blueprint,
             blueprints.unhcr_user_blueprint,
         ]
