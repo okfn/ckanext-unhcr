@@ -105,8 +105,14 @@ class DataContainerController(toolkit.BaseController):
         if user:
             action = 'organization_list_for_user'
             user_containers = toolkit.get_action(action)(context, {'id': username})
-            user_containers = filter(
-                lambda cont: cont['name'] != deposit['name'], user_containers)
+            user_containers = list(
+                filter(lambda cont: cont['name'] != deposit['name'], user_containers)
+            )
+
+        for role in roles:
+            role['total'] = len([
+                uc for uc in user_containers if uc['capacity'] == role['name']
+            ])
 
         return toolkit.render('organization/membership.html', {
             'membership': {

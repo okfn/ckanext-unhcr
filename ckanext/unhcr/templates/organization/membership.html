@@ -83,6 +83,24 @@
     {% if membership.user %}
       <hr>
       <h2>{{ _('Current Containers') }}</h2>
+
+      <table class="table table-header table-hover table-bordered">
+        <thead>
+          <tr>
+              <th>{{ _('Role') }}</th>
+              <th>{{ _('Count') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for role in membership.roles %}
+            <tr>
+              <td>{{ role.title }}</td>
+              <td>{{ role.total }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
       <table class="table table-header table-hover table-bordered">
         <thead>
           <tr>
