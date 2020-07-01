@@ -805,6 +805,14 @@
                     "value": "infographics"
                 },
                 {
+                    "label": "Script",
+                    "value": "script"
+                },
+                {
+                    "label": "Concept Note",
+                    "value": "concept note"
+                },
+                {
                     "label": "Other",
                     "value": "other"
                 }

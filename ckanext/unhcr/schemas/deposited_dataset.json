@@ -853,7 +853,15 @@
                 {
                     "value": "infographics", 
                     "label": "Infographics & Dashboard"
-                }, 
+                },
+                {
+                    "label": "Script",
+                    "value": "script"
+                },
+                {
+                    "label": "Concept Note",
+                    "value": "concept note"
+                },
                 {
                     "value": "other", 
                     "label": "Other"
