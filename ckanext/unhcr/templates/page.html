@@ -10,6 +10,11 @@
 
 
 {% block page %}
+{% if h.get_envname() not in ('prod', 'dev') %}
+<div class="env-banner">
+  This is a {{ h.get_envname()|upper }} site: {{ g.site_url }}
+</div>
+{% endif %}
 <div class="page">
   {% if not h.page_authorized() %}
     {% snippet "login_form.html" %}

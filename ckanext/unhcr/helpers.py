@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 from urllib import quote
 from jinja2 import Markup, escape
@@ -747,6 +748,13 @@ def get_sysadmins():
 
 def get_ridl_version():
     return __VERSION__
+
+
+def get_envname():
+    envname = os.environ.get('ENV_NAME')
+    if not envname:
+        return 'dev'
+    return envname.lower()
 
 
 _paragraph_re = re.compile(r'(?:\r\n|\r(?!\n)|\n){2,}')
