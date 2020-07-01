@@ -25,7 +25,7 @@
         },
         {
             "field_name": "notes",
-            "form_placeholder": "Some useful notes about the data",
+            "form_placeholder": "Some useful notes about the data. Please include the number of observations.",
             "form_snippet": "markdown.html",
             "label": "Description",
             "required": true
