@@ -17,6 +17,7 @@ class ExtendedStorageController(StorageController):
         # Check resource_download access
         try:
             toolkit.check_access(u'resource_download', context, {u'id': resource_id})
+            toolkit.get_action('resource_show')(context, {u'id': resource_id})
         except toolkit.ObjectNotFound:
             return toolkit.abort(404, toolkit._(u'Resource not found'))
         except toolkit.NotAuthorized:

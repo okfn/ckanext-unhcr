@@ -107,7 +107,7 @@ class ExtendedPackageController(PackageController):
     def resource_download(self, id, resource_id, filename=None):
         """
         Wraps default `resource_download` endpoint checking
-        the custom `resoruce_download` auth function
+        the custom `resource_download` auth function
         """
         context = {'model': model, 'session': model.Session,
                    'user': toolkit.c.user, 'auth_user_obj': toolkit.c.userobj}
@@ -115,6 +115,7 @@ class ExtendedPackageController(PackageController):
         # Check resource_download access
         try:
             toolkit.check_access(u'resource_download', context, {u'id': resource_id})
+            toolkit.get_action('resource_show')(context, {u'id': resource_id})
         except toolkit.ObjectNotFound:
             return toolkit.abort(404, toolkit._(u'Resource not found'))
         except toolkit.NotAuthorized:
