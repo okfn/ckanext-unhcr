@@ -764,7 +764,7 @@
             "label": "Admin Notes - Cleaning"
         }, 
         {
-            "form_placeholder": "provide information about the restriction to access the dataset and the point of contact to access the dataset", 
+            "form_placeholder": "Provide information about the restrictions to access the dataset. Indicate who is the data owner (with authority to provide access). Indicate who is the focal point (with knowledge to answer questions on the dataset).", 
             "form_snippet": "markdown.html", 
             "required": false, 
             "field_name": "data_accs_notes", 
