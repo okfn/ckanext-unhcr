@@ -399,21 +399,37 @@ class TestResourceUpload(base.FunctionalTestBase):
             )
         )
 
-    def test_upload_external_url(self):
+    def test_upload_external_url_data(self):
 
         dataset = factories.Dataset()
 
         with assert_raises(toolkit.ValidationError) as exc:
 
             factories.Resource(
+                type='data',
                 package_id=dataset['id'],
-                url='https://example.com/some.data.csv')
+                url='https://example.com/some.data.csv'
+            )
 
         assert exc.exception.error_dict.keys() == ['url']
 
         assert_equals(
             exc.exception.error_dict['url'],
-            ['All resources require an uploaded file'])
+            ['All data resources require an uploaded file'])
+
+    def test_upload_external_url_attachment(self):
+        dataset = factories.Dataset()
+        resource = factories.Resource(
+            type='attachment',
+            package_id=dataset['id'],
+            url='https://example.com/some.data.csv',
+            file_type='other'
+        )
+
+        # tbh, the main thing we're testing here is that the line above
+        # runs without throwing a ValidationError
+        # but I supposed we should assert _something_
+        assert_equals(resource['url'], 'https://example.com/some.data.csv')
 
     def test_upload_missing(self):
 
@@ -427,4 +443,4 @@ class TestResourceUpload(base.FunctionalTestBase):
 
         assert_equals(
             exc.exception.error_dict['url'],
-            ['All resources require an uploaded file'])
+            ['All data resources require an uploaded file'])

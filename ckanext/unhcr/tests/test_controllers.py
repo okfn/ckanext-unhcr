@@ -1062,7 +1062,7 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         resp = self.app.post(url, data, extra_environ=env)
 
         assert 'The form contains invalid entries:' in resp.body
-        assert 'All resources require an uploaded file' in resp.body
+        assert 'All data resources require an uploaded file' in resp.body
 
     # Resource Copy
 

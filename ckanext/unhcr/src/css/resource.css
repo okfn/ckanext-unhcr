@@ -56,10 +56,3 @@
     vertical-align: baseline;
   }
 }
-
-/* Hide the "Link" button */
-.dataset-resource-form {
-  & div.image-upload a:last-child {
-    display: none !important;
-  }
-}
