@@ -68,7 +68,6 @@ def render_tree(top_nodes=None):
             data_dict={'type': 'data-container'})
 
     # Remove data deposit
-    # TODO: https://github.com/okfn/ckanext-unhcr/issues/78
     deposit = get_data_deposit()
     top_nodes = filter(lambda node: node['id'] != deposit['id'], top_nodes)
 
