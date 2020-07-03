@@ -514,8 +514,6 @@ def access_request_list_for_user(context, data_dict):
     """
     Return a list of all access requests the user can see
 
-    :param user_id: the id or name of the user
-    :type user_id: string
     :param status: ``'requested'``, ``'approved'`` or ``'rejected'``
       (default: ``'requested'``)
     :type status: string
@@ -523,8 +521,10 @@ def access_request_list_for_user(context, data_dict):
     :returns: A list of AccessRequest objects
     :rtype: list of dictionaries
     """
-    user_id = toolkit.get_or_bust(data_dict, "user_id")
+    user_id = toolkit.get_or_bust(context, "user")
     status = data_dict.get("status", "requested")
+    if status not in ['requested', 'approved', 'rejected']:
+        raise toolkit.ValidationError('Invalid status {}'.format(status))
 
     user = model.User.get(user_id)
     if not user:
@@ -573,8 +573,9 @@ def access_request_list_for_user(context, data_dict):
         return []
 
     fq = "owner_org:({ids})".format(ids=" OR ".join(containers))
-    data_dict = {"q": "*:*", "fq": fq, "include_private": True}
-    packages = toolkit.get_action("package_search")(context, data_dict)
+    packages = toolkit.get_action("package_search")(
+        context, {"q": "*:*", "fq": fq, "include_private": True}
+    )
     datasets = [p["id"] for p in packages["results"]]
 
     sql = sql.where(

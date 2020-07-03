@@ -26,7 +26,7 @@ class ExtendedUserController(UserController):
 
         try:
             access_requests = toolkit.get_action('access_request_list_for_user')(
-                context, {'user_id': toolkit.c.user}
+                context, {}
             )
         except (toolkit.NotAuthorized, toolkit.ObjectNotFound):
             access_requests = []

@@ -219,7 +219,7 @@ def get_pending_requests_total(context=None):
 
     try:
         access_requests = toolkit.get_action('access_request_list_for_user')(
-            context, {'user_id': context['user']}
+            context, {}
         )
         total += len(access_requests)
     except (toolkit.NotAuthorized, toolkit.ObjectNotFound):

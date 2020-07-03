@@ -268,4 +268,12 @@ def dataset_collaborator_create(next_auth, context, data_dict):
 # Access Requests
 
 def access_request_list_for_user(context, data_dict):
-    return {'success': True}
+    user = context.get('user')
+    orgs = toolkit.get_action("organization_list_for_user")(
+        {"user": user},
+        {"id": user, "permission": "admin"}
+    )
+    if len(orgs) > 0:
+        return {'success': True}
+
+    return {'success': False}

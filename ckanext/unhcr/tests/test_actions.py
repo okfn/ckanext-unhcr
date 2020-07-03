@@ -689,23 +689,21 @@ class TestAccessRequestListForUser(base.FunctionalTestBase):
 
         # sysadmin can see all the open access requests
         access_requests = toolkit.get_action("access_request_list_for_user")(
-            context, {"user_id": self.sysadmin["name"]}
+            context, {}
         )
         assert_equals(4, len(access_requests))
 
         # ..and if we pass "status": "approved", they can see that one too
         access_requests = toolkit.get_action("access_request_list_for_user")(
-            context, {"user_id": self.sysadmin["name"], "status": "approved"}
+            context, {"status": "approved"}
         )
         assert_equals(1, len(access_requests))
 
     def test_access_request_list_for_user_container_admins(self):
-        context = {"model": model, "user": self.sysadmin["name"]}
-
         # container admins can only see access requests for their own container(s)
         # and datasets owned by their own container(s)
         access_requests = toolkit.get_action("access_request_list_for_user")(
-            context, {"user_id": self.container1_admin["name"]}
+            {"model": model, "user": self.container1_admin["name"]}, {}
         )
         assert_equals(2, len(access_requests))
         ids = [req["object_id"] for req in access_requests]
@@ -713,7 +711,7 @@ class TestAccessRequestListForUser(base.FunctionalTestBase):
         assert self.dataset1["id"] in ids
 
         access_requests = toolkit.get_action("access_request_list_for_user")(
-            context, {"user_id": self.container2_admin["name"]}
+            {"model": model, "user": self.container2_admin["name"]}, {}
         )
         assert_equals(2, len(access_requests))
         ids = [req["object_id"] for req in access_requests]
@@ -721,46 +719,49 @@ class TestAccessRequestListForUser(base.FunctionalTestBase):
         assert self.dataset2["id"] in ids
 
         access_requests = toolkit.get_action("access_request_list_for_user")(
-            context, {"user_id": self.multi_container_admin["name"]}
+            {"model": model, "user": self.multi_container_admin["name"]}, {}
         )
         assert_equals(4, len(access_requests))
 
     def test_access_request_list_for_user_standard_users(self):
-        context = {"model": model, "user": self.sysadmin["name"]}
-
         # standard_user is a member of a container, but not an admin
         # they shouldn't be able to see any requests
-        access_requests = toolkit.get_action("access_request_list_for_user")(
-            context, {"user_id": self.container_member["name"]}
+        action = toolkit.get_action("access_request_list_for_user")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"model": model, "user": self.container_member["name"]},
+            {}
         )
-        assert_equals(0, len(access_requests))
 
         # requesting_user also has no priveledges - they shouldn't be able to see any
         # requests either (including the ones they submitted themselves)
-        access_requests = toolkit.get_action("access_request_list_for_user")(
-            context, {"user_id": self.requesting_user["name"]}
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"model": model, "user": self.requesting_user["name"]},
+            {}
         )
-        assert_equals(0, len(access_requests))
 
     def test_access_request_list_invalid_inputs(self):
         action = toolkit.get_action("access_request_list_for_user")
         assert_raises(
             toolkit.ObjectNotFound,
             action,
-            {"model": model, "user": self.sysadmin["name"]},
-            {'user_id': "invalid-user", 'status': 'requested'}
+            {"model": model, "user": "invalid-user"},
+            {}
         )
         assert_raises(
-            toolkit.ValidationError,
+            toolkit.ObjectNotFound,
             action,
-            {"model": model, "user": self.sysadmin["name"]},
+            {"model": model},
             {'status': 'requested'}
         )
         assert_raises(
             toolkit.ValidationError,
             action,
             {"model": model, "user": self.sysadmin["name"]},
-            {'id': self.sysadmin["name"], 'status': 'invalid-status'}
+            {'status': 'invalid-status'}
         )
 
 
