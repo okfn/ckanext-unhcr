@@ -543,13 +543,13 @@ def access_request_list_for_user(context, data_dict):
         access_requests_table.join(
             package_table,
             and_(
-                access_requests_table.c.object_type == "dataset",
+                access_requests_table.c.object_type == "package",
                 access_requests_table.c.object_id == package_table.c.id,
             ), isouter=True,
         ).join(
             group_table,
             and_(
-                access_requests_table.c.object_type == "container",
+                access_requests_table.c.object_type == "organization",
                 access_requests_table.c.object_id == group_table.c.id,
             ), isouter=True,
         ).join(
@@ -580,11 +580,11 @@ def access_request_list_for_user(context, data_dict):
     sql = sql.where(
         or_(
             and_(
-                AccessRequest.object_type == "dataset",
+                AccessRequest.object_type == "package",
                 AccessRequest.object_id.in_(datasets),
             ),
             and_(
-                AccessRequest.object_type == "container",
+                AccessRequest.object_type == "organization",
                 AccessRequest.object_id.in_(containers),
             ),
         )
@@ -611,7 +611,7 @@ def access_request_update(context, data_dict):
     if not request:
         raise toolkit.ObjectNotFound("Access Request not found")
 
-    if request.object_type == 'dataset':
+    if request.object_type == 'package':
         data_dict = {
             'id': request.object_id,
             'user_id': request.user_id,
@@ -622,7 +622,7 @@ def access_request_update(context, data_dict):
             toolkit.get_action('dataset_collaborator_create')(
                 context, data_dict
             )
-    elif request.object_type == 'container':
+    elif request.object_type == 'organization':
         data_dict = {
             'id': request.object_id,
             'username': request.user_id,

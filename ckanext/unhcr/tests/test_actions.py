@@ -643,28 +643,28 @@ class TestAccessRequestListForUser(base.FunctionalTestBase):
             AccessRequest(
                 user_id=self.requesting_user["id"],
                 object_id=self.container1["id"],
-                object_type="container",
+                object_type="organization",
                 message="",
                 role="member",
             ),
             AccessRequest(
                 user_id=self.requesting_user["id"],
                 object_id=self.dataset1["id"],
-                object_type="dataset",
+                object_type="package",
                 message="",
                 role="member",
             ),
             AccessRequest(
                 user_id=self.requesting_user["id"],
                 object_id=self.container2["id"],
-                object_type="container",
+                object_type="organization",
                 message="",
                 role="member",
             ),
             AccessRequest(
                 user_id=self.requesting_user["id"],
                 object_id=self.dataset2["id"],
-                object_type="dataset",
+                object_type="package",
                 message="",
                 role="member",
             ),
@@ -674,7 +674,7 @@ class TestAccessRequestListForUser(base.FunctionalTestBase):
             AccessRequest(
                 user_id=self.requesting_user["id"],
                 object_id=self.container3["id"],
-                object_type="dataset",
+                object_type="package",
                 message="",
                 role="member",
                 status="approved",
@@ -782,14 +782,14 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         self.container_request = AccessRequest(
             user_id=self.requesting_user["id"],
             object_id=self.container1["id"],
-            object_type="container",
+            object_type="organization",
             message="",
             role="member",
         )
         self.dataset_request = AccessRequest(
             user_id=self.requesting_user["id"],
             object_id=self.dataset1["id"],
-            object_type="dataset",
+            object_type="package",
             message="",
             role="member",
         )

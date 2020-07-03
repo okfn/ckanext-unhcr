@@ -32,10 +32,10 @@ class ExtendedUserController(UserController):
             access_requests = []
 
         container_access_requests = [
-            req for req in access_requests if req['object_type'] == 'container'
+            req for req in access_requests if req['object_type'] == 'organization'
         ]
         dataset_access_requests = [
-            req for req in access_requests if req['object_type'] == 'dataset'
+            req for req in access_requests if req['object_type'] == 'package'
         ]
 
         return toolkit.render('user/dashboard_requests.html', {

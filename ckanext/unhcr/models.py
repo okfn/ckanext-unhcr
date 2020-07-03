@@ -43,7 +43,7 @@ class AccessRequest(Base):
         nullable=False,
     )
     object_type = Column(
-        Enum('dataset', 'container', name='access_request_object_type_enum'),
+        Enum('package', 'organization', name='access_request_object_type_enum'),
         nullable=False,
     )
     object_id = Column(UnicodeText, nullable=False)

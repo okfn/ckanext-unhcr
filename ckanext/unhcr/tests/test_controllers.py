@@ -1244,21 +1244,21 @@ class TestAccessRequests(base.FunctionalTestBase):
         self.container1_request = AccessRequest(
             user_id=self.requesting_user["id"],
             object_id=self.container1["id"],
-            object_type="container",
+            object_type="organization",
             message="",
             role="member",
         )
         self.container2_request = AccessRequest(
             user_id=self.requesting_user["id"],
             object_id=self.container2["id"],
-            object_type="container",
+            object_type="organization",
             message="",
             role="member",
         )
         self.dataset_request = AccessRequest(
             user_id=self.requesting_user["id"],
             object_id=self.dataset1["id"],
-            object_type="dataset",
+            object_type="package",
             message="",
             role="member",
         )

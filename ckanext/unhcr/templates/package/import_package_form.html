@@ -44,7 +44,7 @@
       {% set field = h.scheming_field_by_name(schema.dataset_fields, 'visibility') %}
       {%- snippet 'scheming/snippets/form_field.html',
       field=field, data={'visibility': 'public'}, errors=errors, licenses=[],
-      entity_type='dataset', object_type='dataset' -%}
+      entity_type='dataset', object_type='package' -%}
     {% endblock %}
   {% endif %}
 
@@ -53,7 +53,7 @@
     {% set field = h.scheming_field_by_name(schema.dataset_fields, 'external_access_level') %}
     {%- snippet 'scheming/snippets/form_field.html',
     field=field, data=data, errors=errors, licenses=[],
-    entity_type='dataset', object_type='dataset' -%}
+    entity_type='dataset', object_type='package' -%}
   {% endblock %}
 
   {% if show_organizations_selector and show_visibility_selector %}

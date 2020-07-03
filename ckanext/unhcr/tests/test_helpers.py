@@ -158,7 +158,7 @@ class TestHelpers(FunctionalTestBase):
             AccessRequest(
                 user_id=requesting_user["id"],
                 object_id=container3["id"],
-                object_type="container",
+                object_type="organization",
                 message="",
                 role="member",
             )
@@ -167,7 +167,7 @@ class TestHelpers(FunctionalTestBase):
             AccessRequest(
                 user_id=requesting_user["id"],
                 object_id=dataset1["id"],
-                object_type="dataset",
+                object_type="package",
                 message="",
                 role="member",
             )

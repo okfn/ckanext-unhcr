@@ -208,7 +208,7 @@ class ExtendedPackageController(PackageController):
         rec = AccessRequest(
             user_id=toolkit.c.userobj.id,
             object_id=dataset['id'],
-            object_type='dataset',
+            object_type='package',
             message=message,
             role='member',
         )
