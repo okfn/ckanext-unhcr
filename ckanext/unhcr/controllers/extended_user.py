@@ -18,7 +18,7 @@ class ExtendedUserController(UserController):
         self._custom_setup_template_variables(context)
 
         try:
-            new_container_requests = toolkit.get_action('pending_requests_list')(
+            new_container_requests = toolkit.get_action('container_request_list')(
                 context, {'all_fields': True}
             )
         except (toolkit.NotAuthorized, toolkit.ObjectNotFound):

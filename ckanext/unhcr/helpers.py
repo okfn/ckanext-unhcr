@@ -210,7 +210,7 @@ def get_pending_requests_total(context=None):
     total = 0
 
     try:
-        container_requests = toolkit.get_action('pending_requests_list')(
+        container_requests = toolkit.get_action('container_request_list')(
             context, {'all_fields': False}
         )
         total += container_requests['count']

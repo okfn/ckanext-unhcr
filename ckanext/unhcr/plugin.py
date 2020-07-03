@@ -396,7 +396,7 @@ class UnhcrPlugin(
             'organization_create': actions.organization_create,
             'organization_member_create': actions.organization_member_create,
             'organization_member_delete': actions.organization_member_delete,
-            'pending_requests_list': actions.pending_requests_list,
+            'container_request_list': actions.container_request_list,
             'package_activity_list': actions.package_activity_list,
             'dashboard_activity_list': actions.dashboard_activity_list,
             'user_activity_list': actions.user_activity_list,

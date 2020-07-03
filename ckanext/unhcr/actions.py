@@ -229,7 +229,7 @@ def organization_member_delete(context, data_dict):
 
 # Pending requests
 
-def pending_requests_list(context, data_dict):
+def container_request_list(context, data_dict):
     all_fields = data_dict.get('all_fields', False)
 
     # Check permissions
