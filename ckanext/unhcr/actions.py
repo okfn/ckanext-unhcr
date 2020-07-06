@@ -606,13 +606,14 @@ def access_request_update(context, data_dict):
     if not request:
         raise toolkit.ObjectNotFound("Access Request not found")
 
+    toolkit.check_access('access_request_update', context, data_dict)
+
     if request.object_type == 'package':
         data_dict = {
             'id': request.object_id,
             'user_id': request.user_id,
             'capacity': request.role,
         }
-        toolkit.check_access('dataset_collaborator_create', context, data_dict)
         if status == 'approved':
             toolkit.get_action('dataset_collaborator_create')(
                 context, data_dict
@@ -623,7 +624,6 @@ def access_request_update(context, data_dict):
             'username': request.user_id,
             'role': request.role,
         }
-        toolkit.check_access('organization_member_create', context, data_dict)
         if status == 'approved':
             toolkit.get_action('organization_member_create')(
                 context, data_dict

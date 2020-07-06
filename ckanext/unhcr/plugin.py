@@ -382,6 +382,7 @@ class UnhcrPlugin(
         functions['package_update'] = auth.package_update
         functions['dataset_collaborator_create'] = auth.dataset_collaborator_create
         functions['access_request_list_for_user'] = auth.access_request_list_for_user
+        functions['access_request_update'] = auth.access_request_update
         return functions
 
     # IActions
