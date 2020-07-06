@@ -1456,6 +1456,24 @@ ol.unstyled {
   color: #fff;
 }
 
+.env-banner {
+  position: fixed;
+  z-index: 2;
+  width: 100%;
+  left: 0;
+  top: 100px;
+  height: 1.3em;
+  background-color: rgb(51, 51, 51);
+  color: #fff;
+  text-align: center;
+}
+
+@media (min-width: 992px) {
+  .env-banner {
+    top: 0px;
+  }
+}
+
 .site-footer {
   background-color: #000;
   color: rgba(255,255,255, 0.8);
