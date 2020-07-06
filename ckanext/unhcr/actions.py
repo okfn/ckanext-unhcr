@@ -572,17 +572,11 @@ def access_request_list_for_user(context, data_dict):
     if not containers:
         return []
 
-    fq = "owner_org:({ids})".format(ids=" OR ".join(containers))
-    packages = toolkit.get_action("package_search")(
-        context, {"q": "*:*", "fq": fq, "include_private": True}
-    )
-    datasets = [p["id"] for p in packages["results"]]
-
     sql = sql.where(
         or_(
             and_(
                 AccessRequest.object_type == "package",
-                AccessRequest.object_id.in_(datasets),
+                model.Package.owner_org.in_(containers),
             ),
             and_(
                 AccessRequest.object_type == "organization",
