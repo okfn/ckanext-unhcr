@@ -1,0 +1,11 @@
+.modal-content form {
+  margin: 0;
+}
+
+.modal-content textarea {
+  width: 97%;
+}
+
+.modal-content select {
+  width: 100%;
+}

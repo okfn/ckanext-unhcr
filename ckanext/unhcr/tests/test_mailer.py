@@ -288,3 +288,27 @@ class TestCollaborationMailer(base.FunctionalTestBase):
 
         assert len(recipients) == 1
         assert self.sysadmin['name'] == recipients[0]['name']
+
+class TestRejectAccessRequestMailer(base.FunctionalTestBase):
+
+    def test_email_body_dataset(self):
+        user1 = core_factories.User(name='user1', id='user1')
+        dataset1 = factories.Dataset(title='Test Dataset 1')
+
+        message = 'Nope\nNot today thank you'
+        email_body = mailer.compose_request_rejected_email_body(user1, dataset1, message)
+        regularised_body = regularise_html(email_body)
+
+        assert 'Your request to access <strong>Test Dataset 1</strong> has been rejected.' in regularised_body
+        assert '<p>Nope<br> Not today thank you</p>' in regularised_body
+
+    def test_email_body_container(self):
+        user1 = core_factories.User(name='user1', id='user1')
+        container1 = factories.DataContainer(title='Test Organization 1')
+
+        message = 'Nope\nNot today thank you'
+        email_body = mailer.compose_request_rejected_email_body(user1, container1, message)
+        regularised_body = regularise_html(email_body)
+
+        assert 'Your request to access <strong>Test Organization 1</strong> has been rejected.' in regularised_body
+        assert '<p>Nope<br> Not today thank you</p>' in regularised_body

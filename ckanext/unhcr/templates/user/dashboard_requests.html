@@ -80,3 +80,9 @@
   {% endif %}
 
 {% endblock %}
+
+{% block footer %}
+  {{ super() }}
+  {% snippet 'user/snippets/access_request_modals.html', requests=container_access_requests %}
+  {% snippet 'user/snippets/access_request_modals.html', requests=dataset_access_requests %}
+{% endblock %}

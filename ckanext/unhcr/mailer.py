@@ -280,3 +280,16 @@ def compose_request_access_email_body(recipient, package_dict, requesting_user_d
     )
     context['h'] = toolkit.h
     return render_jinja2('emails/access_requests/dataset_access_request.html', context)
+
+
+def compose_request_rejected_email_subj(obj):
+    return '[UNHCR RIDL] - Request for access to: "{}"'.format(obj['name'])
+
+
+def compose_request_rejected_email_body(recipient, obj, message):
+    context = {}
+    context['recipient'] = recipient
+    context['object'] = obj
+    context['message'] = message
+    context['h'] = toolkit.h
+    return render_jinja2('emails/access_requests/rejection.html', context)

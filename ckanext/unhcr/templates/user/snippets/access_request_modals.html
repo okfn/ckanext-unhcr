@@ -1,0 +1,34 @@
+{% for req in requests %}
+<div id="access-requests-reject-{{ req.id }}" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+
+      <form
+        action="{{ h.url_for('unhcr_access_requests.access_requests_reject', request_id=req.id, qualified=True) }}"
+        method="POST"
+      >
+
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3>Reject Access Request</h3>
+        </div>
+
+        <div class="modal-body">
+          <p>
+            Explain why you are rejecting the request. This message will be sent to
+            {{ h.link_to(req.user.fullname or req.user.name, h.url_for('user.read', id=req.user.id, qualified=True)) }}
+          </p>
+          <textarea name="message" rows="5" placeholder="Add a message" required ></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+          <button class="btn btn-primary">Reject</button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endfor %}

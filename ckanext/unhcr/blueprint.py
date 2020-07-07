@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from flask import Blueprint
+from ckan import model
 import ckan.plugins.toolkit as toolkit
+from ckanext.unhcr import mailer
+from ckanext.unhcr.models import AccessRequest
 from .helpers import user_is_curator
 from .metrics import (
     get_datasets_by_date,
@@ -74,10 +77,23 @@ def access_requests_reject(request_id):
     if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
         return toolkit.abort(403, "Forbidden")
 
+    message = toolkit.request.form.get('message')
+    if not message:
+        return toolkit.abort(400, "'message' is required")
+
     try:
         toolkit.get_action('access_request_update')(
             {'user': toolkit.c.user}, {'id': request_id, 'status': 'rejected'}
         )
+
+        request = model.Session.query(AccessRequest).get(request_id)
+        recipient = model.User.get(request.user_id)
+        obj = toolkit.get_action('{}_show'.format(request.object_type))(
+            {'user': toolkit.c.user}, {'id': request.object_id}
+        )
+        subj = mailer.compose_request_rejected_email_subj(obj)
+        body = mailer.compose_request_rejected_email_body(recipient, obj, message)
+        mailer.mail_user_by_id(recipient.name, subj, body)
     except toolkit.ObjectNotFound as e:
         return toolkit.abort(404, toolkit._(str(e)))
     except toolkit.NotAuthorized:
@@ -91,11 +107,11 @@ def access_requests_reject(request_id):
 unhcr_access_requests_blueprint.add_url_rule(
     rule=u'/access-requests/approve/<request_id>',
     view_func=access_requests_approve,
-    methods=['GET',]
+    methods=['POST',]
 )
 
 unhcr_access_requests_blueprint.add_url_rule(
     rule=u'/access-requests/reject/<request_id>',
     view_func=access_requests_reject,
-    methods=['GET',]
+    methods=['POST',]
 )

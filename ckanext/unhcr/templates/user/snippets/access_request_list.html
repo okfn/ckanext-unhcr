@@ -18,20 +18,25 @@
         <p>{{ h.nl_to_br(req.message) }}</p>
       </div>
       <p>
-        <a
-          class="btn btn-primary"
-          href="{{ h.url_for('unhcr_access_requests.access_requests_approve', request_id=req.id, qualified=True) }}"
-          title="Approve"
+        <form
+          method="POST"
+          action="{{ h.url_for('unhcr_access_requests.access_requests_approve', request_id=req.id, qualified=True) }}"
         >
-          Approve
-        </a>
-        <a
-          class="btn btn-danger"
-          href="{{ h.url_for('unhcr_access_requests.access_requests_reject', request_id=req.id, qualified=True) }}"
-          title="Reject"
-        >
-          Reject
-        </a>
+          <button type="submit" class="btn btn-primary" title="Approve">
+            Approve
+          </button>
+
+          <a
+            href="#access-requests-reject-{{ req.id }}"
+            role="button"
+            class="btn btn-danger"
+            data-toggle="modal"
+            title="Reject"
+            data-target="#access-requests-reject-{{ req.id }}"
+          >
+            Reject
+          </a>
+        </form>
       </p>
     </li>
   {% endfor %}

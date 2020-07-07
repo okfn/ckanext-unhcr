@@ -37,18 +37,6 @@
   }
 }
 
-.curation-modals {
-  & form {
-    margin: 0;
-  }
-  & textarea {
-    width: 97%;
-  }
-  & select {
-    width: 100%;
-  }
-}
-
 /* Search */
 
 .dataset-item-curation {

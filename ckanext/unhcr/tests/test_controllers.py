@@ -1267,12 +1267,12 @@ class TestAccessRequests(base.FunctionalTestBase):
         model.Session.add(self.dataset_request)
         model.Session.commit()
 
-    def make_action_request(self, action, request_id, user=None, **kwargs):
+    def make_action_request(self, action, request_id, user=None, data=None, **kwargs):
         url = '/access-requests/{action}/{request_id}'.format(
             action=action, request_id=request_id
         )
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
-        resp = self.app.get(url=url, extra_environ=env, **kwargs)
+        resp = self.app.post(url, data, extra_environ=env, **kwargs)
         return resp
 
     def make_list_request(self, user=None, **kwargs):
@@ -1281,32 +1281,53 @@ class TestAccessRequests(base.FunctionalTestBase):
         resp = self.app.get(url=url, extra_environ=env, **kwargs)
         return resp
 
+    def test_access_requests_reject_missing_param(self):
+        self.make_action_request(
+            action='reject',
+            request_id=self.container1_request.id,
+            user=self.container1_admin["name"],
+            status=400,
+            data={},
+        )
+
     def test_access_requests_invalid_id(self):
-        for action in ["approve", "reject"]:
+        for action, data in [("approve", {}), ("reject", {'message': 'nope'})]:
             self.make_action_request(
                 action=action,
                 request_id='invalid-id',
                 user=self.container1_admin["name"],
-                status=404
+                status=404,
+                data=data,
             )
 
     def test_access_requests_invalid_user(self):
-        for action in ["approve", "reject"]:
+        for action, data in [("approve", {}), ("reject", {'message': 'nope'})]:
             for user in [None, self.standard_user["name"]]:
                 self.make_action_request(
                     action=action,
                     request_id=self.container1_request.id,
                     user=user,
-                    status=403
+                    status=403,
+                    data=data,
                 )
 
     def test_access_requests_approve_container_admin(self):
-        resp = self.make_action_request(
-            action='approve',
-            request_id=self.container1_request.id,
-            user=self.container1_admin["name"],
-            status=302
+        mock_mailer = mock.Mock()
+        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+            resp = self.make_action_request(
+                action='approve',
+                request_id=self.container1_request.id,
+                user=self.container1_admin["name"],
+                status=302,
+                data={},
+            )
+        mock_mailer.assert_called_once()
+        # standard 'you've been added to a container' email
+        assert_equals(
+            '[UNHCR RIDL] Membership: {}'.format(self.container1['title']),
+            mock_mailer.call_args[0][1]
         )
+
         resp2 = resp.follow(
             extra_environ={'REMOTE_USER': self.container1_admin["name"].encode('ascii')},
             status=200
@@ -1320,12 +1341,22 @@ class TestAccessRequests(base.FunctionalTestBase):
         assert_in('Access Request Approved', resp2.body)
 
     def test_access_requests_reject_container_admin(self):
-        resp = self.make_action_request(
-            action='reject',
-            request_id=self.container1_request.id,
-            user=self.container1_admin["name"],
-            status=302
+        mock_mailer = mock.Mock()
+        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+            resp = self.make_action_request(
+                action='reject',
+                request_id=self.container1_request.id,
+                user=self.container1_admin["name"],
+                status=302,
+                data={'message': 'nope'},
+            )
+        mock_mailer.assert_called_once()
+        # your request has been rejected email
+        assert_equals(
+            '[UNHCR RIDL] - Request for access to: "{}"'.format(self.container1['name']),
+            mock_mailer.call_args[0][1]
         )
+
         resp2 = resp.follow(
             extra_environ={'REMOTE_USER': self.container1_admin["name"].encode('ascii')},
             status=200
