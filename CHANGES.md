@@ -1,5 +1,18 @@
 # RIDL Changelog
 
+## v1.6.0 - 2020-07-08
+
+Features:
+* Show container counts on Manage Membership page
+* Allow attachment resources to be a URL
+* Updates to helper text when creating datasets
+* Add more File Types for attachments
+* Allow search results to be ordered by creation date
+* Add a banner to visually distinguish UAT from production
+
+Fixes:
+* Improve menu styling on mid-resolution screens
+
 ## v1.5.0 - 2020-06-23
 
 Features:
