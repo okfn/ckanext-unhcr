@@ -1,0 +1,33 @@
+{% ckan_extends %}
+
+{% block secondary_content %}
+  {% snippet 'package/snippets/resource_help.html' %}
+  <section class="module module-narrow module-shallow">
+    <h2 class="module-heading"><i class="fa fa-info-circle"></i> {{ _('Draft Dataset') }}</h2>
+    <div class="module-content">
+      <p>
+        This dataset is saved as a <strong>draft</strong>. You can
+        <strong>
+        {{
+          h.link_to(
+            'edit or publish it',
+            h.url_for(controller='package', action='edit', id=pkg_name)
+          )
+        }}
+        </strong>
+        later.
+      </p>
+      <p>
+        All your Draft datasets are listed at
+        <strong>
+        {{
+          h.link_to(
+            'My Datasets',
+            h.url_for(controller='user', action='read', id=c.user)
+          )
+        }}
+        </strong>
+      </p>
+    </div>
+  </section>
+{% endblock %}
