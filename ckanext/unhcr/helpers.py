@@ -755,6 +755,10 @@ def get_envname():
     return envname.lower()
 
 
+def get_max_resource_size():
+    return toolkit.config.get('ckan.max_resource_size', 10)
+
+
 _paragraph_re = re.compile(r'(?:\r\n|\r(?!\n)|\n){2,}')
 
 def nl_to_br(text):
