@@ -212,6 +212,7 @@ class UnhcrPlugin(
             'get_choice_label': helpers.get_choice_label,
             'get_ridl_version': helpers.get_ridl_version,
             'get_envname': helpers.get_envname,
+            'get_max_resource_size': helpers.get_max_resource_size,
             'nl_to_br': helpers.nl_to_br,
         }
 

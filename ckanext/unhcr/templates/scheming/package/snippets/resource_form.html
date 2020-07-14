@@ -1,0 +1,9 @@
+{% ckan_extends %}
+
+{% block basic_fields %}
+  <div class="info-block" id="upload-size-info-block" style="display:none;">
+    <i class="fa fa-info-circle"></i>
+    Max upload size: {{ h.get_max_resource_size() }}Mb
+  </div>
+  {{ super() }}
+{% endblock %}

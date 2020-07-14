@@ -225,6 +225,7 @@ this.ckan.module('resource-type', function ($) {
       this.input.val('data')
       this._fixUploadButton()
       this._hideLinkButton()
+      this._appendUploadSizeInfoBlock()
     },
 
     _onAttachmentButtonClick: function (ev) {
@@ -241,6 +242,7 @@ this.ckan.module('resource-type', function ($) {
       })
       this.input.val('attachment')
       this._fixUploadButton()
+      this._appendUploadSizeInfoBlock()
     },
 
     _onPreviousButtonClick: function (ev) {
@@ -258,6 +260,12 @@ this.ckan.module('resource-type', function ($) {
 
     _hideLinkButton: function() {
       $('.dataset-resource-form div.image-upload a:last-child').hide()
+    },
+
+    _appendUploadSizeInfoBlock: function() {
+      $("#upload-size-info-block").insertAfter(
+        $("#field-image-upload").siblings(":last")
+      ).show()
     }
 
   };
