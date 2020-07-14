@@ -256,23 +256,20 @@ def pending_requests_list(context, data_dict):
 # Activity
 
 
-def _package_admin_activity_list(context, data_dict):
-    full_list = get_core.package_activity_list(context, data_dict)
+def _package_admin_activity_list(full_list):
     return [
         a for a in full_list
         if 'curation_activity' in a.get('data', {})
         or a["activity_type"] == "download resource"
     ]
 
-def _package_curation_activity_list(context, data_dict):
-    full_list = get_core.package_activity_list(context, data_dict)
+def _package_curation_activity_list(full_list):
     return [
         a for a in full_list
         if 'curation_activity' in a.get('data', {})
     ]
 
-def _package_normal_activity_list(context, data_dict):
-    full_list = get_core.package_activity_list(context, data_dict)
+def _package_normal_activity_list(context, full_list):
     activities = [
         a for a in full_list
         if 'curation_activity' not in a.get('data', {})
@@ -293,7 +290,8 @@ def _package_normal_activity_list(context, data_dict):
 
 
 @toolkit.side_effect_free
-def package_activity_list(context, data_dict):
+@toolkit.chained_action
+def package_activity_list(up_func, context, data_dict):
     toolkit.check_access('package_activity_list', context, data_dict)
     get_internal_activities = toolkit.asbool(
         data_dict.get('get_internal_activities'))
@@ -306,11 +304,12 @@ def package_activity_list(context, data_dict):
         'admin',
     ) if package else False
 
+    full_list = up_func(context, data_dict)
     if get_internal_activities and user_is_container_admin:
-        return _package_admin_activity_list(context, data_dict)
+        return _package_admin_activity_list(full_list)
     if get_internal_activities and not user_is_container_admin:
-        return _package_curation_activity_list(context, data_dict)
-    return _package_normal_activity_list(context, data_dict)
+        return _package_curation_activity_list(full_list)
+    return _package_normal_activity_list(context, full_list)
 
 
 @toolkit.side_effect_free
@@ -358,7 +357,7 @@ def recently_changed_packages_activity_list(context, data_dict):
 
 # Without this action our `*_activity_list` is not overriden (ckan bug?)
 def package_activity_list_html(context, data_dict):
-    activity_stream = package_activity_list(context, data_dict)
+    activity_stream = toolkit.get_action('package_activity_list')(context, data_dict)
     offset = int(data_dict.get('offset', 0))
     extra_vars = {
         'controller': 'package',
