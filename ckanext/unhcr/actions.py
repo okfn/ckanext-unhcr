@@ -633,3 +633,9 @@ def access_request_update(context, data_dict):
 
     request.status = status
     model.Session.commit()
+    model.Session.refresh(request)
+
+    return {
+        col.name: getattr(request, col.name)
+        for col in request.__table__.columns
+    }

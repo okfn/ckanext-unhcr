@@ -82,14 +82,13 @@ def access_requests_reject(request_id):
         return toolkit.abort(400, "'message' is required")
 
     try:
-        toolkit.get_action('access_request_update')(
+        request = toolkit.get_action('access_request_update')(
             {'user': toolkit.c.user}, {'id': request_id, 'status': 'rejected'}
         )
 
-        request = model.Session.query(AccessRequest).get(request_id)
-        recipient = model.User.get(request.user_id)
-        obj = toolkit.get_action('{}_show'.format(request.object_type))(
-            {'user': toolkit.c.user}, {'id': request.object_id}
+        recipient = model.User.get(request['user_id'])
+        obj = toolkit.get_action('{}_show'.format(request['object_type']))(
+            {'user': toolkit.c.user}, {'id': request['object_id']}
         )
         subj = mailer.compose_request_rejected_email_subj(obj)
         body = mailer.compose_request_rejected_email_body(recipient, obj, message)
