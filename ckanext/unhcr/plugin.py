@@ -199,7 +199,8 @@ class UnhcrPlugin(
             'get_linked_datasets_for_form': helpers.get_linked_datasets_for_form,
             'get_linked_datasets_for_display': helpers.get_linked_datasets_for_display,
             # Pending requests
-            'get_pending_requests': helpers.get_pending_requests,
+            'get_pending_requests_total': helpers.get_pending_requests_total,
+            'user_is_container_admin': helpers.user_is_container_admin,
             # Deposited datasets
             'get_data_deposit': helpers.get_data_deposit,
             'get_data_curation_users': helpers.get_data_curation_users,
@@ -380,19 +381,23 @@ class UnhcrPlugin(
         functions['package_create'] = auth.package_create
         functions['package_update'] = auth.package_update
         functions['dataset_collaborator_create'] = auth.dataset_collaborator_create
+        functions['access_request_list_for_user'] = auth.access_request_list_for_user
+        functions['access_request_update'] = auth.access_request_update
         return functions
 
     # IActions
 
     def get_actions(self):
         return {
+            'access_request_list_for_user': actions.access_request_list_for_user,
+            'access_request_update': actions.access_request_update,
             'package_update': actions.package_update,
             'package_publish_microdata': actions.package_publish_microdata,
             'package_get_microdata_collections': actions.package_get_microdata_collections,
             'organization_create': actions.organization_create,
             'organization_member_create': actions.organization_member_create,
             'organization_member_delete': actions.organization_member_delete,
-            'pending_requests_list': actions.pending_requests_list,
+            'container_request_list': actions.container_request_list,
             'package_activity_list': actions.package_activity_list,
             'dashboard_activity_list': actions.dashboard_activity_list,
             'user_activity_list': actions.user_activity_list,
@@ -468,4 +473,7 @@ class UnhcrPlugin(
     # IBlueprint
 
     def get_blueprint(self):
-        return blueprint.unhcr_metrics_blueprint
+        return [
+            blueprint.unhcr_metrics_blueprint,
+            blueprint.unhcr_access_requests_blueprint,
+        ]

@@ -1,20 +1,24 @@
 import json
+import mock
 import responses
 from ckan import model
 from ckan.plugins import toolkit
 from ckan.tests import helpers as core_helpers, factories as core_factories
 from nose.tools import assert_raises, assert_equals, nottest
+from ckanext.unhcr.models import AccessRequest
 from ckanext.unhcr.tests import base, factories, mocks
 from ckanext.unhcr import helpers
 from ckanext.unhcr.activity import log_download_activity
 
+assert_in = core_helpers.assert_in
 
-class TestActions(base.FunctionalTestBase):
+
+class TestMicrodata(base.FunctionalTestBase):
 
     # General
 
     def setup(self):
-        super(TestActions, self).setup()
+        super(TestMicrodata, self).setup()
 
         # Config
         toolkit.config['ckanext.unhcr.microdata_api_key'] = 'API-KEY'
@@ -540,4 +544,414 @@ class TestResourceUpload(base.FunctionalTestBase):
 
         assert_equals(
             exc.exception.error_dict['url'],
-            ['All data resources require an uploaded file'])
+            ['All data resources require an uploaded file']
+        )
+
+
+class TestPendingRequestsList(base.FunctionalTestBase):
+    def setup(self):
+        super(TestPendingRequestsList, self).setup()
+
+    def test_container_request_list(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        container1 = factories.DataContainer(
+            name='container1',
+            id='container1',
+            state='approval_needed',
+        )
+        container2 = factories.DataContainer(
+            name='container2',
+            id='container2',
+            state='approval_needed',
+        )
+        context = {'model': model, 'user': 'sysadmin'}
+        requests = toolkit.get_action("container_request_list")(
+            context, {'all_fields': False}
+        )
+        assert_equals(requests['count'], 2)
+        assert_equals(requests['containers'], [container1['id'], container2['id']])
+
+    def test_container_request_list_all_fields(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        container1 = factories.DataContainer(
+            name='container1',
+            id='container1',
+            state='approval_needed',
+        )
+        context = {'model': model, 'user': 'sysadmin'}
+        requests = toolkit.get_action("container_request_list")(
+            context, {'all_fields': True}
+        )
+        assert_equals(requests['count'], 1)
+        assert_equals(requests['containers'][0]['name'], 'container1')
+
+    def test_container_request_list_empty(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        context = {'model': model, 'user': 'sysadmin'}
+        requests = toolkit.get_action("container_request_list")(
+            context, {'all_fields': True}
+        )
+        assert_equals(requests['count'], 0)
+        assert_equals(requests['containers'], [])
+
+    def test_container_request_list_not_authorized(self):
+        user = core_factories.User(name='user', id='user')
+        context = {'model': model, 'user': 'user'}
+        with assert_raises(toolkit.NotAuthorized):
+            toolkit.get_action("container_request_list")(
+                context, {'all_fields': True}
+            )
+
+
+class TestAccessRequestListForUser(base.FunctionalTestBase):
+    def setup(self):
+        super(TestAccessRequestListForUser, self).setup()
+
+        self.sysadmin = core_factories.Sysadmin()
+        self.requesting_user = core_factories.User()
+        self.container_member = core_factories.User()
+        self.multi_container_admin = core_factories.User()
+        self.container1_admin = core_factories.User()
+        self.container1 = factories.DataContainer(
+            users=[
+                {"name": self.multi_container_admin["name"], "capacity": "admin"},
+                {"name": self.container1_admin["name"], "capacity": "admin"},
+                {"name": self.container_member["name"], "capacity": "member"}
+            ]
+        )
+        self.dataset1 = factories.Dataset(
+            owner_org=self.container1["id"], visibility="private"
+        )
+
+        self.container2_admin = core_factories.User()
+        self.container2 = factories.DataContainer(
+            users=[
+                {"name": self.multi_container_admin["name"], "capacity": "admin"},
+                {"name": self.container2_admin["name"], "capacity": "admin"}
+            ]
+        )
+        self.dataset2 = factories.Dataset(
+            owner_org=self.container2["id"], visibility="private"
+        )
+
+        self.container3 = factories.DataContainer()
+
+        requests = [
+            # These requests all have the default status of 'requested'
+            # so they'll be returned when we call access_request_list_for_user
+            # with the default arguments
+            AccessRequest(
+                user_id=self.requesting_user["id"],
+                object_id=self.container1["id"],
+                object_type="organization",
+                message="",
+                role="member",
+            ),
+            AccessRequest(
+                user_id=self.requesting_user["id"],
+                object_id=self.dataset1["id"],
+                object_type="package",
+                message="",
+                role="member",
+            ),
+            AccessRequest(
+                user_id=self.requesting_user["id"],
+                object_id=self.container2["id"],
+                object_type="organization",
+                message="",
+                role="member",
+            ),
+            AccessRequest(
+                user_id=self.requesting_user["id"],
+                object_id=self.dataset2["id"],
+                object_type="package",
+                message="",
+                role="member",
+            ),
+
+            # This request is already approved,
+            # so it will only be visible if we explicitly filter for it
+            AccessRequest(
+                user_id=self.requesting_user["id"],
+                object_id=self.container3["id"],
+                object_type="package",
+                message="",
+                role="member",
+                status="approved",
+            ),
+        ]
+        for req in requests:
+            model.Session.add(req)
+        model.Session.commit()
+
+    def test_access_request_list_for_user_sysadmin(self):
+        context = {"model": model, "user": self.sysadmin["name"]}
+
+        # sysadmin can see all the open access requests
+        access_requests = toolkit.get_action("access_request_list_for_user")(
+            context, {}
+        )
+        assert_equals(4, len(access_requests))
+
+        # ..and if we pass "status": "approved", they can see that one too
+        access_requests = toolkit.get_action("access_request_list_for_user")(
+            context, {"status": "approved"}
+        )
+        assert_equals(1, len(access_requests))
+
+    def test_access_request_list_for_user_container_admins(self):
+        # container admins can only see access requests for their own container(s)
+        # and datasets owned by their own container(s)
+        access_requests = toolkit.get_action("access_request_list_for_user")(
+            {"model": model, "user": self.container1_admin["name"]}, {}
+        )
+        assert_equals(2, len(access_requests))
+        ids = [req["object_id"] for req in access_requests]
+        assert self.container1["id"] in ids
+        assert self.dataset1["id"] in ids
+
+        access_requests = toolkit.get_action("access_request_list_for_user")(
+            {"model": model, "user": self.container2_admin["name"]}, {}
+        )
+        assert_equals(2, len(access_requests))
+        ids = [req["object_id"] for req in access_requests]
+        assert self.container2["id"] in ids
+        assert self.dataset2["id"] in ids
+
+        access_requests = toolkit.get_action("access_request_list_for_user")(
+            {"model": model, "user": self.multi_container_admin["name"]}, {}
+        )
+        assert_equals(4, len(access_requests))
+
+    def test_access_request_list_for_user_standard_users(self):
+        # standard_user is a member of a container, but not an admin
+        # they shouldn't be able to see any requests
+        action = toolkit.get_action("access_request_list_for_user")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"model": model, "user": self.container_member["name"]},
+            {}
+        )
+
+        # requesting_user also has no priveledges - they shouldn't be able to see any
+        # requests either (including the ones they submitted themselves)
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"model": model, "user": self.requesting_user["name"]},
+            {}
+        )
+
+    def test_access_request_list_invalid_inputs(self):
+        action = toolkit.get_action("access_request_list_for_user")
+        assert_raises(
+            toolkit.ObjectNotFound,
+            action,
+            {"model": model, "user": "invalid-user"},
+            {}
+        )
+        assert_raises(
+            toolkit.ObjectNotFound,
+            action,
+            {"model": model},
+            {'status': 'requested'}
+        )
+        assert_raises(
+            toolkit.ValidationError,
+            action,
+            {"model": model, "user": self.sysadmin["name"]},
+            {'status': 'invalid-status'}
+        )
+
+
+class TestAccessRequestUpdate(base.FunctionalTestBase):
+    def setup(self):
+        super(TestAccessRequestUpdate, self).setup()
+
+        self.sysadmin = core_factories.Sysadmin()
+        self.requesting_user = core_factories.User()
+        self.standard_user = core_factories.User()
+
+        self.container1_admin = core_factories.User()
+        self.container1 = factories.DataContainer(
+            users=[{"name": self.container1_admin["name"], "capacity": "admin"}]
+        )
+        self.dataset1 = factories.Dataset(
+            owner_org=self.container1["id"], visibility="private"
+        )
+        self.container_request = AccessRequest(
+            user_id=self.requesting_user["id"],
+            object_id=self.container1["id"],
+            object_type="organization",
+            message="",
+            role="member",
+        )
+        self.dataset_request = AccessRequest(
+            user_id=self.requesting_user["id"],
+            object_id=self.dataset1["id"],
+            object_type="package",
+            message="",
+            role="member",
+        )
+        model.Session.add(self.container_request)
+        model.Session.add(self.dataset_request)
+        model.Session.commit()
+
+    def test_access_request_update_approve_container_standard_user(self):
+        action = toolkit.get_action("access_request_update")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'id': self.container_request.id, 'status': 'approved'}
+        )
+
+        orgs = toolkit.get_action("organization_list_for_user")(
+            {"user": self.sysadmin["name"]},
+            {"id": self.requesting_user["name"], "permission": "read"}
+        )
+        assert_equals(0, len(orgs))
+        assert_equals('requested', self.container_request.status)
+
+    def test_access_request_update_approve_container_container_admin(self):
+        mock_mailer = mock.Mock()
+        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+            action = toolkit.get_action("access_request_update")
+            action(
+                {"model": model, "user": self.container1_admin["name"]},
+                {'id': self.container_request.id, 'status': 'approved'}
+            )
+
+            orgs = toolkit.get_action("organization_list_for_user")(
+                {"user": self.sysadmin["name"]},
+                {"id": self.requesting_user["name"], "permission": "read"}
+            )
+            assert_equals(self.container1['id'], orgs[0]['id'])
+            assert_equals('approved', self.container_request.status)
+
+            mock_mailer.assert_called_once()
+            assert_equals(
+                self.dataset_request.user_id,
+                mock_mailer.call_args[0][0]
+            )
+            assert_equals(
+                "[UNHCR RIDL] Membership: {}".format(self.container1["title"]),
+                mock_mailer.call_args[0][1]
+            )
+            assert_in("You have been added", mock_mailer.call_args[0][2])
+
+    def test_access_request_update_reject_container_standard_user(self):
+        action = toolkit.get_action("access_request_update")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'id': self.container_request.id, 'status': 'rejected'}
+        )
+
+        orgs = toolkit.get_action("organization_list_for_user")(
+            {"user": self.sysadmin["name"]},
+            {"id": self.requesting_user["name"], "permission": "read"}
+        )
+        assert_equals(0, len(orgs))
+        assert_equals('requested', self.container_request.status)
+
+    def test_access_request_update_reject_container_container_admin(self):
+        action = toolkit.get_action("access_request_update")
+        action(
+            {"model": model, "user": self.container1_admin["name"]},
+            {'id': self.container_request.id, 'status': 'rejected'}
+        )
+
+        orgs = toolkit.get_action("organization_list_for_user")(
+            {"user": self.sysadmin["name"]},
+            {"id": self.requesting_user["name"], "permission": "read"}
+        )
+        assert_equals(0, len(orgs))
+        assert_equals('rejected', self.container_request.status)
+
+    def test_access_request_update_approve_dataset_standard_user(self):
+        action = toolkit.get_action("access_request_update")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'id': self.dataset_request.id, 'status': 'approved'}
+        )
+
+        collaborators = toolkit.get_action("dataset_collaborator_list")(
+            {"user": self.sysadmin["name"]}, {"id": self.dataset1["id"]}
+        )
+        assert_equals(0, len(collaborators))
+        assert_equals('requested', self.dataset_request.status)
+
+    def test_access_request_update_approve_dataset_container_admin(self):
+        mock_mailer = mock.Mock()
+        with mock.patch('ckanext.collaborators.logic.action.mail_notification_to_collaborator', mock_mailer):
+            action = toolkit.get_action("access_request_update")
+            action(
+                {"model": model, "user": self.container1_admin["name"]},
+                {'id': self.dataset_request.id, 'status': 'approved'}
+            )
+
+            collaborators = toolkit.get_action("dataset_collaborator_list")(
+                {"user": self.sysadmin["name"]}, {"id": self.dataset1["id"]}
+            )
+            assert_equals(self.requesting_user["id"], collaborators[0]["user_id"])
+            assert_equals('approved', self.dataset_request.status)
+
+            mock_mailer.assert_called_once()
+            assert_equals(self.dataset_request.object_id, mock_mailer.call_args[0][0])
+            assert_equals(self.dataset_request.user_id, mock_mailer.call_args[0][1])
+            assert_equals('member', mock_mailer.call_args[0][2])
+            assert_equals('create', mock_mailer.call_args[1]['event'])
+
+    def test_access_request_update_reject_dataset_standard_user(self):
+        action = toolkit.get_action("access_request_update")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'id': self.dataset_request.id, 'status': 'rejected'}
+        )
+
+        collaborators = toolkit.get_action("dataset_collaborator_list")(
+            {"user": self.sysadmin["name"]}, {"id": self.dataset1["id"]}
+        )
+        assert_equals(0, len(collaborators))
+        assert_equals('requested', self.dataset_request.status)
+
+    def test_access_request_update_reject_dataset_container_admin(self):
+        action = toolkit.get_action("access_request_update")
+        action(
+            {"model": model, "user": self.container1_admin["name"]},
+            {'id': self.dataset_request.id, 'status': 'rejected'}
+        )
+
+        collaborators = toolkit.get_action("dataset_collaborator_list")(
+            {"user": self.sysadmin["name"]}, {"id": self.dataset1["id"]}
+        )
+        assert_equals(0, len(collaborators))
+        assert_equals('rejected', self.dataset_request.status)
+
+    def test_access_request_update_invalid_inputs(self):
+        action = toolkit.get_action("access_request_update")
+        assert_raises(
+            toolkit.ObjectNotFound,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'id': "invalid-id", 'status': 'approved'}
+        )
+        assert_raises(
+            toolkit.ValidationError,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'status': 'approved'}
+        )
+        assert_raises(
+            toolkit.ValidationError,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'id': self.dataset_request.id, 'status': 'invalid-status'}
+        )

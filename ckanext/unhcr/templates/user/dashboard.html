@@ -2,21 +2,40 @@
 
 {% block page_header %}
   <header class="module-content page-header hug">
-	<div class="content_action">
+  <div class="content_action">
       {% link_for _('Edit settings'), controller='user', action='edit', id=user_dict.name, class_='btn', icon='cog' %}
-	</div>
-	<ul class="nav nav-tabs">
-	  {{ h.build_nav_icon('dashboard.index', _('News feed')) }}
-	  {{ h.build_nav_icon('dashboard.datasets', _('My Datasets')) }}
-	  {{ h.build_nav_icon('dashboard.organizations', _('My Organizations')) }}
+  </div>
+  <ul class="nav nav-tabs">
+    {{ h.build_nav_icon('dashboard.index', _('News feed')) }}
+    {{ h.build_nav_icon('dashboard.datasets', _('My Datasets')) }}
+    {{ h.build_nav_icon('dashboard.organizations', _('My Organizations')) }}
     {# Pending Requests #}
-    {% if h.check_access('sysadmin') %}
-      {% set requests = h.get_pending_requests() %}
-      {% set prefix = ' (%s)' % requests.count %}
-      {% set icon = 'exclamation' if requests.count else 'check' %}
-      {{ h.build_nav_icon('dashboard.requests', _('Pending Requests') + prefix, icon=icon) }}
+    {% if h.user_is_container_admin() or h.check_access('sysadmin') %}
+      {% set total = h.get_pending_requests_total() %}
+      {% set suffix = ' (%s)' % total %}
+      {% set icon = 'exclamation' if total else 'check' %}
+      {{ h.build_nav_icon('dashboard.requests', _('Pending Requests') + suffix, icon=icon) }}
     {% endif %}
-	</ul>
+  </ul>
   </header>
 {% endblock %}
 
+{% block primary %}
+  {% block flash %}
+    <div class="row">
+      <div class="primary">
+        <div class="flash-messages">
+          {% block flash_inner %}
+            {% for message in h.flash.pop_messages() | list %}
+              <div class="alert fade in {{ message.category }}">
+                {{ h.literal(message) }}
+              </div>
+            {% endfor %}
+          {% endblock %}
+        </div>
+      </div>
+    </div>
+  {% endblock %}
+
+  {{ super() }}
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "emails/base.html" %}
+{% import 'macros/email.html' as email with context %}
+
+{% block email_body %}
+
+{% call email.paragraph() %}
+Dear <b>{{ recipient.fullname or recipient.name }}</b>,
+{% endcall %}
+
+  {% call email.paragraph() %}
+    Your request to access
+    <strong>{{ object.title or object.name }}</strong>
+    has been rejected.
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    An administrator supplied the following message:
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    {{ h.nl_to_br(message) }}
+  {% endcall %}
+
+{% endblock %}

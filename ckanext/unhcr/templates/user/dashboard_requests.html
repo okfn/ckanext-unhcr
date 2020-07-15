@@ -4,24 +4,27 @@
 {% endblock %}
 
 {% block primary_content_inner %}
-  <h2>{{ _('Requested Data Containers') }}</h2>
-  {% if requests.containers %}
-    <hr>
+  <h2><i class="fa fa-plus"></i>{{ _('Requests for new Data Containers') }}</h2>
+  <hr>
+  {% if new_container_requests.containers %}
     <ul class="dataset-list unstyled pending-requests-list">
-      {% for container in requests.containers %}
+      {% for container in new_container_requests.containers %}
         <li class="dataset-item">
           <div class="dataset-content">
-            <h3 class="dataset-heading">
-              {% if container.groups %}
-                <a href="/data-container/{{ container.groups[0].name }}" title="Parent data container">{{ container.groups[0].name|capitalize }}</a>
-                /
+            <h3>
+              {% if container.users and container.users[0] %}
+                {{ h.link_to(container.users[0].fullname or container.users[0].name, h.url_for('user.read', id=container.users[0].id, qualified=True)) }}
+                requested new container
               {% endif %}
               <a href="/data-container/{{ container.name }}" title="Requested data container">{{ container.display_name }}</a>
+              {% if container.groups %}
+                under
+                <a href="/data-container/{{ container.groups[0].name }}" title="Parent data container">{{ container.groups[0].name|capitalize }}</a>
+              {% endif %}
               {% if container.users and container.users[0] %}
                 {% set creator = container.users[0] %}
                 <small>
-                  (created by <a href="/user/{{ creator.name }}">{{ creator.display_name }}</a>
-                  on {{ h.render_datetime(container.created, '%Y-%m-%d') }})
+                  ({{ h.render_datetime(container.created, '%Y-%m-%d') }})
                 </small>
               {% endif %}
             </h3>
@@ -44,7 +47,42 @@
     </ul>
   {% else %}
     <p class="empty">
-      {{ _('No Pending Data Containers') }}
+      No outstanding requests
     </p>
   {% endif %}
+
+  <h2><i class="fa fa-key"></i>Requests for Access to Data Containers</h2>
+  <hr>
+  {% if container_access_requests %}
+    {% snippet
+      'user/snippets/access_request_list.html',
+      requests=container_access_requests,
+      table_type='Container'
+    %}
+  {% else %}
+    <p class="empty">
+      No outstanding requests
+    </p>
+  {% endif %}
+
+  <h2><i class="fa fa-key"></i>Requests for Access to Datasets</h2>
+  <hr>
+  {% if dataset_access_requests %}
+    {% snippet
+      'user/snippets/access_request_list.html',
+      requests=dataset_access_requests,
+      table_type='Dataset'
+    %}
+  {% else %}
+    <p class="empty">
+      No outstanding requests
+    </p>
+  {% endif %}
+
+{% endblock %}
+
+{% block footer %}
+  {{ super() }}
+  {% snippet 'user/snippets/access_request_modals.html', requests=container_access_requests %}
+  {% snippet 'user/snippets/access_request_modals.html', requests=dataset_access_requests %}
 {% endblock %}

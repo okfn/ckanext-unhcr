@@ -8,6 +8,7 @@ import ckan.model as model
 from ckan.plugins import toolkit
 from nose.tools import assert_raises, assert_equals, nottest
 from ckan.tests import helpers as core_helpers, factories as core_factories
+from ckanext.unhcr.models import AccessRequest
 from ckanext.unhcr.tests import base, factories, mocks
 
 assert_in = core_helpers.assert_in
@@ -1184,6 +1185,15 @@ class TestExtendedPackageController(base.FunctionalTestBase):
             # but we're not going to make any assertions about it here
             # see the mailer tests for this
 
+            assert_equals(
+                1,
+                len(model.Session.query(AccessRequest).filter(
+                    AccessRequest.object_id == self.dataset1['id'],
+                    AccessRequest.user_id == self.user3['id'],
+                    AccessRequest.status == 'requested'
+                ).all())
+            )
+
             resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user3'}, status=200)
             assert_in(
                 'Requested access to download resources from Test Dataset 1',
@@ -1199,11 +1209,202 @@ class TestExtendedPackageController(base.FunctionalTestBase):
             )
             mock_mailer.assert_not_called()
 
+            assert_equals(
+                0,
+                len(model.Session.query(AccessRequest).filter(
+                    AccessRequest.object_id == self.dataset1['id'],
+                    AccessRequest.user_id == self.user1['id'],
+                    AccessRequest.status == 'requested'
+                ).all())
+            )
+
             resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user1'}, status=200)
             assert_in(
                 'You already have access to download resources from Test Dataset 1',
                 resp2.body
             )
+
+
+class TestAccessRequests(base.FunctionalTestBase):
+    def setup(self):
+        super(TestAccessRequests, self).setup()
+
+        self.sysadmin = core_factories.Sysadmin()
+        self.requesting_user = core_factories.User()
+        self.standard_user = core_factories.User()
+
+        self.container1_admin = core_factories.User()
+        self.container1 = factories.DataContainer(
+            users=[{"name": self.container1_admin["name"], "capacity": "admin"}]
+        )
+        self.container2 = factories.DataContainer()
+        self.dataset1 = factories.Dataset(
+            owner_org=self.container1["id"], visibility="private"
+        )
+        self.container1_request = AccessRequest(
+            user_id=self.requesting_user["id"],
+            object_id=self.container1["id"],
+            object_type="organization",
+            message="",
+            role="member",
+        )
+        self.container2_request = AccessRequest(
+            user_id=self.requesting_user["id"],
+            object_id=self.container2["id"],
+            object_type="organization",
+            message="",
+            role="member",
+        )
+        self.dataset_request = AccessRequest(
+            user_id=self.requesting_user["id"],
+            object_id=self.dataset1["id"],
+            object_type="package",
+            message="",
+            role="member",
+        )
+        model.Session.add(self.container1_request)
+        model.Session.add(self.container2_request)
+        model.Session.add(self.dataset_request)
+        model.Session.commit()
+
+    def make_action_request(self, action, request_id, user=None, data=None, **kwargs):
+        url = '/access-requests/{action}/{request_id}'.format(
+            action=action, request_id=request_id
+        )
+        env = {'REMOTE_USER': user.encode('ascii')} if user else {}
+        resp = self.app.post(url, data, extra_environ=env, **kwargs)
+        return resp
+
+    def make_list_request(self, user=None, **kwargs):
+        url = '/dashboard/requests'
+        env = {'REMOTE_USER': user.encode('ascii')} if user else {}
+        resp = self.app.get(url=url, extra_environ=env, **kwargs)
+        return resp
+
+    def test_access_requests_reject_missing_param(self):
+        self.make_action_request(
+            action='reject',
+            request_id=self.container1_request.id,
+            user=self.container1_admin["name"],
+            status=400,
+            data={},
+        )
+
+    def test_access_requests_invalid_id(self):
+        for action, data in [("approve", {}), ("reject", {'message': 'nope'})]:
+            self.make_action_request(
+                action=action,
+                request_id='invalid-id',
+                user=self.container1_admin["name"],
+                status=404,
+                data=data,
+            )
+
+    def test_access_requests_invalid_user(self):
+        for action, data in [("approve", {}), ("reject", {'message': 'nope'})]:
+            for user in [None, self.standard_user["name"]]:
+                self.make_action_request(
+                    action=action,
+                    request_id=self.container1_request.id,
+                    user=user,
+                    status=403,
+                    data=data,
+                )
+
+    def test_access_requests_approve_container_admin(self):
+        mock_mailer = mock.Mock()
+        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+            resp = self.make_action_request(
+                action='approve',
+                request_id=self.container1_request.id,
+                user=self.container1_admin["name"],
+                status=302,
+                data={},
+            )
+        mock_mailer.assert_called_once()
+        # standard 'you've been added to a container' email
+        assert_equals(
+            '[UNHCR RIDL] Membership: {}'.format(self.container1['title']),
+            mock_mailer.call_args[0][1]
+        )
+
+        resp2 = resp.follow(
+            extra_environ={'REMOTE_USER': self.container1_admin["name"].encode('ascii')},
+            status=200
+        )
+        orgs = toolkit.get_action("organization_list_for_user")(
+            {"user": self.requesting_user["name"]},
+            {"id": self.requesting_user["name"], "permission": "read"}
+        )
+        assert_equals(self.container1['id'], orgs[0]['id'])
+        assert_equals('approved', self.container1_request.status)
+        assert_in('Access Request Approved', resp2.body)
+
+    def test_access_requests_reject_container_admin(self):
+        mock_mailer = mock.Mock()
+        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+            resp = self.make_action_request(
+                action='reject',
+                request_id=self.container1_request.id,
+                user=self.container1_admin["name"],
+                status=302,
+                data={'message': 'nope'},
+            )
+        mock_mailer.assert_called_once()
+        # your request has been rejected email
+        assert_equals(
+            '[UNHCR RIDL] - Request for access to: "{}"'.format(self.container1['name']),
+            mock_mailer.call_args[0][1]
+        )
+
+        resp2 = resp.follow(
+            extra_environ={'REMOTE_USER': self.container1_admin["name"].encode('ascii')},
+            status=200
+        )
+        orgs = toolkit.get_action("organization_list_for_user")(
+            {"user": self.requesting_user["name"]},
+            {"id": self.requesting_user["name"], "permission": "read"}
+        )
+        assert_equals(0, len(orgs))
+        assert_equals('rejected', self.container1_request.status)
+        assert_in('Access Request Rejected', resp2.body)
+
+    def test_access_requests_list_invalid_user(self):
+        for user in [None, self.standard_user["name"]]:
+            self.make_list_request(user=user, status=403)
+
+    def test_access_requests_list_sysadmin(self):
+        resp = self.make_list_request(user=self.sysadmin['name'], status=200)
+        # sysadmin can see all the requests
+        assert_in(
+            '/access-requests/approve/{}'.format(self.container1_request.id),
+            resp.body
+        )
+        assert_in(
+            '/access-requests/approve/{}'.format(self.container2_request.id),
+            resp.body
+        )
+        assert_in(
+            '/access-requests/approve/{}'.format(self.dataset_request.id),
+            resp.body
+        )
+
+    def test_access_requests_list_container_admin(self):
+        resp = self.make_list_request(user=self.container1_admin['name'], status=200)
+        assert_in(
+            '/access-requests/approve/{}'.format(self.container1_request.id),
+            resp.body
+        )
+        assert_in(
+            '/access-requests/approve/{}'.format(self.dataset_request.id),
+            resp.body
+        )
+        # container1_admin can't see the request for container2
+        assert_not_in(
+            '/access-requests/approve/{}'.format(self.container2_request.id),
+            resp.body
+        )
+
 
 class TestDataContainerController(base.FunctionalTestBase):
 

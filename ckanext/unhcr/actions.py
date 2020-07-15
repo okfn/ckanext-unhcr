@@ -1,5 +1,6 @@
 import logging
 import requests
+from sqlalchemy import and_, desc, or_, select
 from ckan import model
 from ckan.authz import has_user_permission_for_group_or_org
 from ckan.plugins import toolkit
@@ -12,6 +13,7 @@ import ckan.logic.action.update as update_core
 import ckan.logic.action.patch as patch_core
 import ckan.lib.activity_streams as activity_streams
 from ckanext.unhcr import helpers, mailer
+from ckanext.unhcr.models import AccessRequest
 from ckanext.scheming.helpers import scheming_get_dataset_schema
 
 log = logging.getLogger(__name__)
@@ -227,7 +229,7 @@ def organization_member_delete(context, data_dict):
 
 # Pending requests
 
-def pending_requests_list(context, data_dict):
+def container_request_list(context, data_dict):
     all_fields = data_dict.get('all_fields', False)
 
     # Check permissions
@@ -488,3 +490,152 @@ def datasets_validation_report(context, data_dict):
             })
 
     return out
+
+
+# Access Requests
+
+def extract_keys_by_prefix(dct, prefix):
+    return {
+        k.replace(prefix, '', 1): v for k, v in dct.items() if k.startswith(prefix)
+    }
+
+def dictize_access_request(req):
+    package = extract_keys_by_prefix(req, 'package_')
+    group = extract_keys_by_prefix(req, 'group_')
+    user = extract_keys_by_prefix(req, 'user_')
+    access_request = extract_keys_by_prefix(req, 'access_requests_')
+    access_request['user'] = user
+    access_request['object'] = group if group['id'] else package
+    return access_request
+
+
+@toolkit.side_effect_free
+def access_request_list_for_user(context, data_dict):
+    """
+    Return a list of all access requests the user can see
+
+    :param status: ``'requested'``, ``'approved'`` or ``'rejected'``
+      (default: ``'requested'``)
+    :type status: string
+
+    :returns: A list of AccessRequest objects
+    :rtype: list of dictionaries
+    """
+    user_id = toolkit.get_or_bust(context, "user")
+    status = data_dict.get("status", "requested")
+    if status not in ['requested', 'approved', 'rejected']:
+        raise toolkit.ValidationError('Invalid status {}'.format(status))
+
+    user = model.User.get(user_id)
+    if not user:
+        raise toolkit.ObjectNotFound("User not found")
+
+    toolkit.check_access('access_request_list_for_user', context, data_dict)
+
+    access_requests_table = model.meta.metadata.tables["access_requests"]
+    group_table = model.meta.metadata.tables["group"]
+    package_table = model.meta.metadata.tables["package"]
+    user_table = model.meta.metadata.tables["user"]
+    sql = select(
+        [AccessRequest, model.Package, model.Group, model.User],
+        use_labels=True,
+    ).select_from(
+        access_requests_table.join(
+            package_table,
+            and_(
+                access_requests_table.c.object_type == "package",
+                access_requests_table.c.object_id == package_table.c.id,
+            ), isouter=True,
+        ).join(
+            group_table,
+            and_(
+                access_requests_table.c.object_type == "organization",
+                access_requests_table.c.object_id == group_table.c.id,
+            ), isouter=True,
+        ).join(
+            user_table,
+            access_requests_table.c.user_id == user_table.c.id
+        )
+    ).order_by(
+        desc(AccessRequest.timestamp)
+    ).where(
+        access_requests_table.c.status == status
+    )
+
+    if user.sysadmin:
+        return [dictize_access_request(req) for req in model.Session.execute(sql).fetchall()]
+
+    organizations = toolkit.get_action("organization_list_for_user")(
+        context, {"id": user_id, "permission": "admin"}
+    )
+    containers = [o["id"] for o in organizations]
+    if not containers:
+        return []
+
+    sql = sql.where(
+        or_(
+            and_(
+                AccessRequest.object_type == "package",
+                model.Package.owner_org.in_(containers),
+            ),
+            and_(
+                AccessRequest.object_type == "organization",
+                AccessRequest.object_id.in_(containers),
+            ),
+        )
+    )
+
+    return [dictize_access_request(req) for req in model.Session.execute(sql).fetchall()]
+
+
+def access_request_update(context, data_dict):
+    """
+    Approve or reject a request for access to a container or dataset
+
+    :param id: access request id
+    :type id: string
+    :param status: new status value (approved, rejected)
+    :type status: string
+    """
+    request_id = toolkit.get_or_bust(data_dict, "id")
+    status = toolkit.get_or_bust(data_dict, "status")
+    allowed_status = ['approved', 'rejected']
+    if status not in allowed_status:
+        raise toolkit.ValidationError("'status' must be one of {}".format(str(allowed_status)))
+    request = model.Session.query(AccessRequest).get(request_id)
+    if not request:
+        raise toolkit.ObjectNotFound("Access Request not found")
+
+    toolkit.check_access('access_request_update', context, data_dict)
+
+    if request.object_type == 'package':
+        data_dict = {
+            'id': request.object_id,
+            'user_id': request.user_id,
+            'capacity': request.role,
+        }
+        if status == 'approved':
+            toolkit.get_action('dataset_collaborator_create')(
+                context, data_dict
+            )
+    elif request.object_type == 'organization':
+        data_dict = {
+            'id': request.object_id,
+            'username': request.user_id,
+            'role': request.role,
+        }
+        if status == 'approved':
+            toolkit.get_action('organization_member_create')(
+                context, data_dict
+            )
+    else:
+        raise toolkit.Invalid("Unknown Object Type")
+
+    request.status = status
+    model.Session.commit()
+    model.Session.refresh(request)
+
+    return {
+        col.name: getattr(request, col.name)
+        for col in request.__table__.columns
+    }

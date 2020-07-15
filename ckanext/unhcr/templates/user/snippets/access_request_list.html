@@ -1,0 +1,43 @@
+<ul class="dataset-list unstyled pending-requests-list">
+  {% for req in requests %}
+    <li class="dataset-item">
+      <div class="dataset-content">
+        <h3>
+          {{ h.link_to(req.user.fullname or req.user.name, h.url_for('user.read', id=req.user.id, qualified=True)) }}
+          {% if req.object_type == 'package' %}
+            requested {{ req.role }} access to dataset
+            {{ h.link_to(req.object.title or req.object.name, h.url_for('dataset_read', id=req.object.name, qualified=True)) }}
+          {% elif req.object_type == 'organization' %}
+            requested {{ req.role }} access to container
+            {{ h.link_to(req.object.title or req.object.name, h.url_for('data-container_read', id=req.object.name, qualified=True)) }}
+          {% else %}
+            &nbsp;
+          {% endif %}
+          <small>({{ h.render_datetime(req.timestamp, '%Y-%m-%d') }})</small>
+        </h3>
+        <p>{{ h.nl_to_br(req.message) }}</p>
+      </div>
+      <p>
+        <form
+          method="POST"
+          action="{{ h.url_for('unhcr_access_requests.access_requests_approve', request_id=req.id, qualified=True) }}"
+        >
+          <button type="submit" class="btn btn-primary" title="Approve">
+            Approve
+          </button>
+
+          <a
+            href="#access-requests-reject-{{ req.id }}"
+            role="button"
+            class="btn btn-danger"
+            data-toggle="modal"
+            title="Reject"
+            data-target="#access-requests-reject-{{ req.id }}"
+          >
+            Reject
+          </a>
+        </form>
+      </p>
+    </li>
+  {% endfor %}
+</ul>

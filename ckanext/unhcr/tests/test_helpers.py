@@ -9,6 +9,7 @@ from ckan.tests import factories as core_factories
 from nose.tools import assert_raises, assert_equals
 from ckan.tests.helpers import call_action, FunctionalTestBase
 from ckanext.unhcr.helpers import get_linked_datasets_for_form, get_linked_datasets_for_display
+from ckanext.unhcr.models import AccessRequest
 from ckanext.unhcr.tests import factories
 from ckanext.unhcr import helpers
 
@@ -136,47 +137,62 @@ class TestHelpers(FunctionalTestBase):
 
     # Pending Requests
 
-    def test_get_pending_requests(self):
+    def test_get_pending_requests_total(self):
         sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
-        container1 = factories.DataContainer(
+        pending_container1 = factories.DataContainer(
             name='container1',
             id='container1',
             state='approval_needed',
         )
-        container2 = factories.DataContainer(
+        pending_container2 = factories.DataContainer(
             name='container2',
             id='container2',
             state='approval_needed',
         )
-        context = {'model': model, 'user': 'sysadmin'}
-        requests = helpers.get_pending_requests(context=context)
-        assert_equals(requests['count'], 2)
-        assert_equals(requests['containers'], [container1['id'], container2['id']])
-
-    def test_get_pending_requests_all_fields(self):
-        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
-        container1 = factories.DataContainer(
-            name='container1',
-            id='container1',
-            state='approval_needed',
+        container3 = factories.DataContainer()
+        dataset1 = factories.Dataset(
+            owner_org=container3["id"], visibility="private"
         )
-        context = {'model': model, 'user': 'sysadmin'}
-        requests = helpers.get_pending_requests(all_fields=True, context=context)
-        assert_equals(requests['count'], 1)
-        assert_equals(requests['containers'][0]['name'], 'container1')
+        requesting_user = core_factories.User()
+        model.Session.add(
+            AccessRequest(
+                user_id=requesting_user["id"],
+                object_id=container3["id"],
+                object_type="organization",
+                message="",
+                role="member",
+            )
+        )
+        model.Session.add(
+            AccessRequest(
+                user_id=requesting_user["id"],
+                object_id=dataset1["id"],
+                object_type="package",
+                message="",
+                role="member",
+            )
+        )
+        model.Session.commit()
 
-    def test_get_pending_requests_empty(self):
-        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        # sysadmin can see/approve all 4 requests:
+        # 2 x new container
+        # 1 x container access
+        # 1 x new dataset
         context = {'model': model, 'user': 'sysadmin'}
-        requests = helpers.get_pending_requests(all_fields=True, context=context)
-        assert_equals(requests['count'], 0)
-        assert_equals(requests['containers'], [])
+        count = helpers.get_pending_requests_total(context=context)
+        assert_equals(count, 4)
 
-    def test_get_pending_requests_not_authorized(self):
+        # but user can't see/approve any of them
         user = core_factories.User(name='user', id='user')
         context = {'model': model, 'user': 'user'}
-        with assert_raises(toolkit.NotAuthorized):
-            requests = helpers.get_pending_requests(all_fields=True)
+        count = helpers.get_pending_requests_total(context=context)
+        assert_equals(count, 0)
+
+    def test_get_pending_requests_total_empty(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        context = {'model': model, 'user': 'sysadmin'}
+        count = helpers.get_pending_requests_total(context=context)
+        assert_equals(count, 0)
 
     # Deposited Datasets
 

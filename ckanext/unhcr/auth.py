@@ -1,11 +1,13 @@
 import logging
 from ckan import model
+from ckan.authz import has_user_permission_for_group_or_org
 from ckan.plugins import toolkit
 import ckan.logic.auth.create as auth_create_core
 import ckan.logic.auth.update as auth_update_core
 import ckanext.datastore.logic.auth as auth_datastore_core
 from ckan.logic.auth import get as core_get, get_resource_object
 from ckanext.unhcr import helpers
+from ckanext.unhcr.models import AccessRequest
 log = logging.getLogger(__name__)
 
 
@@ -263,3 +265,40 @@ def dataset_collaborator_create(next_auth, context, data_dict):
     if dataset['type'] == 'deposited-dataset':
         return {'success': False, 'msg': "Can't add collaborators to a Data Deposit"}
     return next_auth(context, data_dict)
+
+
+# Access Requests
+
+def access_request_list_for_user(context, data_dict):
+    user = context.get('user')
+    orgs = toolkit.get_action("organization_list_for_user")(
+        {"user": user},
+        {"id": user, "permission": "admin"}
+    )
+    if len(orgs) > 0:
+        return {'success': True}
+
+    return {'success': False}
+
+def access_request_update(context, data_dict):
+    user = context.get('user')
+    request_id = toolkit.get_or_bust(data_dict, "id")
+    request = model.Session.query(AccessRequest).get(request_id)
+    if not request:
+        raise toolkit.ObjectNotFound("Access Request not found")
+
+    if request.object_type == 'package':
+        package = toolkit.get_action('package_show')(
+            context, {'id': request.object_id}
+        )
+        org_id = package['owner_org']
+    elif request.object_type == 'organization':
+        org_id = request.object_id
+    else:
+        raise toolkit.Invalid("Unknown Object Type")
+
+    return {
+        'success': has_user_permission_for_group_or_org(
+            org_id, user, 'admin'
+        )
+    }

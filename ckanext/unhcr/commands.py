@@ -5,7 +5,7 @@ import sys
 from ckan.plugins import toolkit
 import ckan.model as model
 
-from ckanext.unhcr.models import create_columns, create_tables, TimeSeriesMetric
+from ckanext.unhcr.models import create_tables, TimeSeriesMetric
 from ckanext.unhcr.mailer import (
     compose_summary_email_body,
     get_summary_email_recipients,
@@ -55,7 +55,6 @@ class Unhcr(toolkit.CkanCommand):
 
     def init_db(self):
         create_tables()
-        create_columns()
         print(u'UNHCR tables initialized')
 
     def snapshot_metrics(self):

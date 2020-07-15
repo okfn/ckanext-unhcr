@@ -5,6 +5,7 @@ from ckan.controllers.package import PackageController
 from ckanext.scheming.helpers import scheming_get_dataset_schema
 from ckanext.unhcr import mailer
 from ckanext.unhcr.activity import log_download_activity
+from ckanext.unhcr.models import AccessRequest
 log = logging.getLogger(__name__)
 
 
@@ -203,6 +204,16 @@ class ExtendedPackageController(PackageController):
                 )
             )
             return toolkit.redirect_to('dataset_read', id=dataset['id'])
+
+        rec = AccessRequest(
+            user_id=toolkit.c.userobj.id,
+            object_id=dataset['id'],
+            object_type='package',
+            message=message,
+            role='member',
+        )
+        model.Session.add(rec)
+        model.Session.commit()
 
         org_admins = mailer.get_request_access_email_recipients(dataset)
         for recipient in org_admins:
