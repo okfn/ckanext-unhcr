@@ -1,6 +1,7 @@
 import logging
 import requests
 from ckan import model
+from ckan.authz import has_user_permission_for_group_or_org
 from ckan.plugins import toolkit
 from ckan.lib.mailer import MailerException
 import ckan.lib.plugins as lib_plugins
@@ -254,25 +255,61 @@ def pending_requests_list(context, data_dict):
 
 # Activity
 
+
+def _package_admin_activity_list(full_list):
+    return [
+        a for a in full_list
+        if 'curation_activity' in a.get('data', {})
+        or a["activity_type"] == "download resource"
+    ]
+
+def _package_curation_activity_list(full_list):
+    return [
+        a for a in full_list
+        if 'curation_activity' in a.get('data', {})
+    ]
+
+def _package_normal_activity_list(context, full_list):
+    activities = [
+        a for a in full_list
+        if 'curation_activity' not in a.get('data', {})
+        and a["activity_type"] != "download resource"
+    ]
+    # Filter out the activities that are related to `curation_state`
+    activities = list(
+        filter(
+            lambda activity: get_core.activity_detail_list(
+                context, {'id': activity['id']}).pop()
+                .get('data', {})
+                .get('package_extra', {})
+                .get('key') not in ('curation_state', 'curator_id'),
+            activities
+        )
+    )
+    return activities
+
+
 @toolkit.side_effect_free
-def package_activity_list(context, data_dict):
-    get_curation_activities = toolkit.asbool(
-        data_dict.get('get_curation_activities'))
-    full_list = get_core.package_activity_list(context, data_dict)
-    full_list = [a for a in full_list if a["activity_type"] != "download resource"]
-    curation_activities = [
-        a for a in full_list if 'curation_activity' in a.get('data', {})]
-    normal_activities = [
-        a for a in full_list if 'curation_activity' not in a.get('data', {})]
-    # Filter out the activities that are related `curation_state`
-    normal_activities = list(filter(
-        lambda activity: get_core.activity_detail_list(
-            context, {'id': activity['id']}).pop()
-            .get('data', {})
-            .get('package_extra', {})
-            .get('key') not in ('curation_state', 'curator_id'), normal_activities))
-    return (curation_activities
-        if get_curation_activities else normal_activities)
+@toolkit.chained_action
+def package_activity_list(up_func, context, data_dict):
+    toolkit.check_access('package_activity_list', context, data_dict)
+    get_internal_activities = toolkit.asbool(
+        data_dict.get('get_internal_activities'))
+    package_id = toolkit.get_or_bust(data_dict, 'id')
+
+    package = model.Package.get(package_id)
+    user_is_container_admin = has_user_permission_for_group_or_org(
+        package.owner_org,
+        context['user'],
+        'admin',
+    ) if package else False
+
+    full_list = up_func(context, data_dict)
+    if get_internal_activities and user_is_container_admin:
+        return _package_admin_activity_list(full_list)
+    if get_internal_activities and not user_is_container_admin:
+        return _package_curation_activity_list(full_list)
+    return _package_normal_activity_list(context, full_list)
 
 
 @toolkit.side_effect_free
@@ -320,7 +357,7 @@ def recently_changed_packages_activity_list(context, data_dict):
 
 # Without this action our `*_activity_list` is not overriden (ckan bug?)
 def package_activity_list_html(context, data_dict):
-    activity_stream = package_activity_list(context, data_dict)
+    activity_stream = toolkit.get_action('package_activity_list')(context, data_dict)
     offset = int(data_dict.get('offset', 0))
     extra_vars = {
         'controller': 'package',

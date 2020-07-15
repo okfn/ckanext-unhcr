@@ -10,7 +10,10 @@ from ckan.lib.plugins import DefaultTranslation
 from ckan.lib.plugins import DefaultPermissionLabels
 
 # 🙈
-from ckan.lib.activity_streams import activity_stream_string_functions
+from ckan.lib.activity_streams import (
+    activity_stream_string_functions,
+    activity_stream_string_icons,
+)
 
 from ckanext.unhcr import actions, auth, blueprint, helpers, jobs, validators
 
@@ -44,6 +47,8 @@ class UnhcrPlugin(
         toolkit.add_resource('fanstatic', 'unhcr')
 
         activity_stream_string_functions['changed package'] = helpers.custom_activity_renderer
+        activity_stream_string_functions['download resource'] = helpers.download_resource_renderer
+        activity_stream_string_icons['download resource'] = 'download'
 
     def update_config_schema(self, schema):
         schema.update({
@@ -80,8 +85,6 @@ class UnhcrPlugin(
         _map.connect('/deposited-dataset/{dataset_id}/reject', controller=controller, action='reject')
         _map.connect('/deposited-dataset/{dataset_id}/submit', controller=controller, action='submit')
         _map.connect('/deposited-dataset/{dataset_id}/withdraw', controller=controller, action='withdraw')
-        _map.connect('deposited-dataset_curation_activity', '/deposited-dataset/curation_activity/{dataset_id}', controller=controller, action='activity')
-        _map.connect('dataset_curation_activity','/dataset/curation_activity/{dataset_id}', controller=controller, action='activity')
 
         # package
 
@@ -114,6 +117,8 @@ class UnhcrPlugin(
         _map.connect('/dataset/{id}/resource_copy/{resource_id}', controller=controller, action='resource_copy')
         _map.connect('/dataset/{id}/publish_microdata', controller=controller, action='publish_microdata')
         _map.connect('/dataset/{id}/request_access', controller=controller, action='request_access', conditions={'method': ['POST']})
+        _map.connect('dataset_internal_activity', '/dataset/internal_activity/{dataset_id}', controller=controller, action='activity')
+        _map.connect('deposited-dataset_internal_activity', '/deposited-dataset/internal_activity/{dataset_id}', controller=controller, action='activity')
         if 'cloudstorage' not in config['ckan.plugins']:
             _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
             _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
@@ -371,6 +376,7 @@ class UnhcrPlugin(
         functions['unhcr_datastore_search_sql'] = auth.unhcr_datastore_search_sql
         functions['datasets_validation_report'] = auth.datasets_validation_report
         functions['organization_create'] = auth.organization_create
+        functions['package_activity_list'] = auth.package_activity_list
         functions['package_create'] = auth.package_create
         functions['package_update'] = auth.package_update
         functions['dataset_collaborator_create'] = auth.dataset_collaborator_create
