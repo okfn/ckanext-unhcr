@@ -1,5 +1,15 @@
 # RIDL Changelog
 
+## v1.7.0 - 2020-07-15
+
+Features:
+* Allow admins to approve/reject dataset access requests from dashboard
+* Expose "download resource" activities to container admins
+* Silence notifications when uploading a resource
+* Explain draft datasets in the sidebar
+* Link to the user guide on the landing page
+* Show max upload size hint when adding resource
+
 ## v1.6.0 - 2020-07-08
 
 Features:
