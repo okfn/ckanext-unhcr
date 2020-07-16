@@ -178,15 +178,15 @@ Create users using command line interface:
 
 ```
 # Sysadmin
-docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan sysadmin add ckan_sysadmin email=sysadmin@example.com password=testpass -c /srv/app/production.ini
+docker-compose -f ../../docker-compose.yml exec ckan-dev paster --plugin=ckan sysadmin add ckan_sysadmin email=sysadmin@example.com password=testpass -c /srv/app/production.ini
 # Depadmin
-docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_depadmin email=depadmin@example.com password=testpass -c /srv/app/production.ini
+docker-compose -f ../../docker-compose.yml exec ckan-dev paster --plugin=ckan user add ckan_depadmin email=depadmin@example.com password=testpass -c /srv/app/production.ini
 # Curators
-docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_curator1 email=curator1@example.com password=testpass -c /srv/app/production.ini
-docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_curator2 email=curator2@example.com password=testpass -c /srv/app/production.ini
+docker-compose -f ../../docker-compose.yml exec ckan-dev paster --plugin=ckan user add ckan_curator1 email=curator1@example.com password=testpass -c /srv/app/production.ini
+docker-compose -f ../../docker-compose.yml exec ckan-dev paster --plugin=ckan user add ckan_curator2 email=curator2@example.com password=testpass -c /srv/app/production.ini
 # Depositors
-docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_user1 email=user1@example.com password=testpass -c /srv/app/production.ini
-docker-compose -f ../../docker-compose.dev.yml exec ckan-dev paster --plugin=ckan user add ckan_user2 email=user2@example.com password=testpass -c /srv/app/production.ini
+docker-compose -f ../../docker-compose.yml exec ckan-dev paster --plugin=ckan user add ckan_user1 email=user1@example.com password=testpass -c /srv/app/production.ini
+docker-compose -f ../../docker-compose.yml exec ckan-dev paster --plugin=ckan user add ckan_user2 email=user2@example.com password=testpass -c /srv/app/production.ini
 ```
 
 Add admins and and editors to data deposit using web interface:
