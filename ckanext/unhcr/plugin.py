@@ -527,6 +527,10 @@ class UnhcrPlugin(
         # For curating users
         # Adding "deposited-dataset" label for data curators
         if user_obj:
+
+            if user_obj.external:
+                return ['']
+
             context = {u'user': user_obj.id}
             deposit = helpers.get_data_deposit()
             orgs = toolkit.get_action('organization_list_for_user')(context, {})
