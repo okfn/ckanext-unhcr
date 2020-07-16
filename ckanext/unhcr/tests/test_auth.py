@@ -114,6 +114,46 @@ class TestAuthUI(base.FunctionalTestBase):
             response.body
         )
 
+    def test_external_users_endpoints(self):
+        app = self._get_test_app()
+
+        external_user = core_factories.User(email='fred@externaluser.com')
+        dataset = factories.Dataset()
+        container = factories.DataContainer()
+        env = {'REMOTE_USER': external_user['name'].encode('ascii')}
+
+        endpoints_403 = [
+            '/',
+            '/about',
+            '/ckan-admin',
+            '/dashboard',
+            '/metrics',
+            '/tag',
+            '/dataset',
+            '/data-container',
+            '/organization',
+            '/group',
+        ]
+        for endpoint in endpoints_403:
+            resp = app.get(endpoint, extra_environ=env, status=403)
+
+        endpoints_404 = [
+            '/dataset/{}'.format(dataset['name']),
+            '/data-container/data-deposit',
+            '/data-container/{}'.format(container['name']),
+            '/organization/{}'.format(container['name']),
+            '/group/{}'.format(container['name']),
+        ]
+        for endpoint in endpoints_404:
+            # these throw a 404 rather than a 403
+            resp = app.get(endpoint, extra_environ=env, status=404)
+
+        endpoints_200 = [
+            '/feeds/dataset.atom',
+        ]
+        for endpoint in endpoints_200:
+            resp = app.get(endpoint, extra_environ=env, status=200)
+
 
 class TestAuthAPI(base.FunctionalTestBase):
 
