@@ -8,6 +8,7 @@ import ckanext.datastore.logic.auth as auth_datastore_core
 from ckan.logic.auth import get as core_get, get_resource_object
 from ckanext.unhcr import helpers
 from ckanext.unhcr.models import AccessRequest
+from ckanext.unhcr.utils import get_module_functions
 log = logging.getLogger(__name__)
 
 
@@ -24,7 +25,7 @@ def restrict_access_to_get_auth_functions():
     False).
     '''
 
-    core_auth_functions = {}
+    core_auth_functions = get_module_functions('ckan.logic.auth.get')
     skip_actions = [
         'help_show',  # Let's not overreact
         'site_read',  # Because of madness in the API controller
@@ -35,17 +36,7 @@ def restrict_access_to_get_auth_functions():
         'user_delete',  # saml2
         'request_reset',  # saml2
     ]
-    module_path = 'ckan.logic.auth.get'
-    module = __import__(module_path)
 
-    for part in module_path.split('.')[1:]:
-        module = getattr(module, part)
-
-    for key, value in module.__dict__.items():
-        if not key.startswith('_') and (
-            hasattr(value, '__call__')
-                and (value.__module__ == module_path)):
-            core_auth_functions[key] = value
     overriden_auth_functions = {}
     for key, value in core_auth_functions.items():
 
