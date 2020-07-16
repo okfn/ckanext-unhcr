@@ -21,6 +21,23 @@ from ckanext.unhcr.models import AccessRequest
 
 log = logging.getLogger(__name__)
 
+# Core overrides
+
+@core_helpers.core_helper
+def new_activities(*args, **kwargs):
+    try:
+        return core_helpers.new_activities(*args, **kwargs)
+    except toolkit.NotAuthorized:
+        return 0
+
+
+@core_helpers.core_helper
+def dashboard_activity_stream(*args, **kwargs):
+    try:
+        return core_helpers.dashboard_activity_stream(*args, **kwargs)
+    except toolkit.NotAuthorized:
+        return []
+
 
 # General
 
@@ -130,7 +147,7 @@ def user_is_curator():
     group = get_data_deposit()
     try:
         users = toolkit.get_action('member_list')(
-            { 'user': user },
+            { 'ignore_auth': True },
             { 'id': group['id'] }
         )
     except toolkit.ObjectNotFound:

@@ -240,6 +240,9 @@ class UnhcrPlugin(
 
     def get_helpers(self):
         return {
+            # Core overrides
+            'new_activities': helpers.new_activities,
+            'dashboard_activity_stream': helpers.dashboard_activity_stream,
             # General
             'get_data_container': helpers.get_data_container,
             'get_all_data_containers': helpers.get_all_data_containers,
