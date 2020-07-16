@@ -187,6 +187,7 @@ docker-compose -f ../../docker-compose.yml exec ckan-dev paster --plugin=ckan us
 # Depositors
 docker-compose -f ../../docker-compose.yml exec ckan-dev paster --plugin=ckan user add ckan_user1 email=user1@example.com password=testpass -c /srv/app/production.ini
 docker-compose -f ../../docker-compose.yml exec ckan-dev paster --plugin=ckan user add ckan_user2 email=user2@example.com password=testpass -c /srv/app/production.ini
+docker-compose -f ../../docker-compose.yml exec ckan-dev paster --plugin=ckan user add ckan_external email=user@outsider.example.com password=testpass -c /srv/app/production.ini
 ```
 
 Add admins and and editors to data deposit using web interface:
