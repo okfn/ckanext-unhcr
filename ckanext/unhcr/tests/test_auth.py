@@ -4,12 +4,14 @@ from paste.registry import Registry
 from nose.plugins.attrib import attr
 
 from nose.tools import assert_in, assert_not_in, assert_raises, assert_equals
+import ckan.plugins as plugins
 from ckan.plugins import toolkit
 from ckan.tests import helpers
 from ckan.tests import factories as core_factories
 
 from ckanext.unhcr import auth
 from ckanext.unhcr.tests import base, factories
+from ckanext.unhcr.utils import get_module_functions
 
 
 class TestAuthUI(base.FunctionalTestBase):
@@ -278,6 +280,55 @@ class TestAuthUnit(base.FunctionalTestBase):
             {'success': False},
             auth.resource_download({'user': external_user['name']}, resource)
         )
+
+    def test_external_users_core_actions(self):
+        external_user = core_factories.User(email='fred@externaluser.com')
+
+        core_auth_modules = [
+            'ckan.logic.auth.create',
+            'ckan.logic.auth.delete',
+            'ckan.logic.auth.get',
+            'ckan.logic.auth.patch',
+            'ckan.logic.auth.update',
+        ]
+
+        allowed_actions = [
+            'package_search',
+        ]
+
+        for module_path in core_auth_modules:
+            actions = get_module_functions(module_path)
+            for action in actions:
+                context = {'user': external_user['name']}
+                if action not in allowed_actions:
+                    assert_raises(
+                        toolkit.NotAuthorized,
+                        toolkit.check_access,
+                        action,
+                        context=context
+                    )
+                else:
+                    assert_equals(True, toolkit.check_access(action, context))
+
+    def test_external_users_plugin_actions(self):
+        external_user = core_factories.User(email='fred@externaluser.com')
+
+        allowed_actions = [
+            'package_search',
+        ]
+
+        for plugin in plugins.PluginImplementations(plugins.IAuthFunctions):
+            for action in plugin.get_auth_functions().keys():
+                context = {'user': external_user['name']}
+                if action not in allowed_actions:
+                    assert_raises(
+                        toolkit.NotAuthorized,
+                        toolkit.check_access,
+                        action,
+                        context=context
+                    )
+                else:
+                    assert_equals(True, toolkit.check_access(action, context))
 
     # TODO: fix problems with context pupulation
     #  def test_package_update(self):
