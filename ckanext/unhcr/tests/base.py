@@ -1,6 +1,7 @@
 import pylons
 from ckan.lib.search import rebuild
 from paste.registry import Registry
+from ckan.plugins import toolkit
 from ckan.tests import helpers as core_helpers, factories as core_factories
 from ckanext.unhcr.models import create_tables as unhcr_create_tables
 from ckanext.collaborators.model import (
