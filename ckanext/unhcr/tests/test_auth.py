@@ -9,26 +9,10 @@ from ckan.tests import helpers
 from ckan.tests import factories as core_factories
 
 from ckanext.unhcr import auth
-from ckanext.unhcr.tests import factories
+from ckanext.unhcr.tests import base, factories
 
 
-# TODO: extract as a test base for all tests
-class AuthTestBase(helpers.FunctionalTestBase):
-
-    @classmethod
-    def setup_class(cls):
-
-        # Hack because the hierarchy extension uses c in some methods
-        # that are called outside the context of a web request
-        c = pylons.util.AttribSafeContextObj()
-        registry = Registry()
-        registry.prepare()
-        registry.register(pylons.c, c)
-
-        super(AuthTestBase, cls).setup_class()
-
-
-class TestAuthUI(AuthTestBase):
+class TestAuthUI(base.FunctionalTestBase):
 
     def test_non_logged_in_users(self):
         app = self._get_test_app()
@@ -131,7 +115,7 @@ class TestAuthUI(AuthTestBase):
         )
 
 
-class TestAuthAPI(AuthTestBase):
+class TestAuthAPI(base.FunctionalTestBase):
 
     def test_non_logged_in_users(self):
 
@@ -212,7 +196,7 @@ class TestAuthAPI(AuthTestBase):
             'user_show', context=context, id=user['id'])
 
 
-class TestAuthUnit(AuthTestBase):
+class TestAuthUnit(base.FunctionalTestBase):
 
     # Package
 
