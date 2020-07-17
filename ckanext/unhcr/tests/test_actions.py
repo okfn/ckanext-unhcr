@@ -955,3 +955,60 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
             {"model": model, "user": self.standard_user["name"]},
             {'id': self.dataset_request.id, 'status': 'invalid-status'}
         )
+
+class TestUpdateSysadmin(base.FunctionalTestBase):
+
+    def test_sysadmin_not_authorized(self):
+        user1 = core_factories.User()
+        user2 = core_factories.User()
+        action = toolkit.get_action("user_update_sysadmin")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"user": user1["name"]},
+            {'id': user1["name"], 'is_sysadmin': True}
+        )
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"user": user2["name"]},
+            {'id': user1["name"], 'is_sysadmin': True}
+        )
+
+    def test_sysadmin_invalid_user(self):
+        user = core_factories.Sysadmin()
+        action = toolkit.get_action("user_update_sysadmin")
+        assert_raises(
+            toolkit.ObjectNotFound,
+            action,
+            {"user": user["name"]},
+            {'id': "fred", 'is_sysadmin': True}
+        )
+
+    def test_sysadmin_promote_success(self):
+        admin = core_factories.Sysadmin()
+
+        # create a normal user
+        user = core_factories.User()
+
+        # promote them
+        action = toolkit.get_action("user_update_sysadmin")
+        action({'user': admin['name']}, {'id': user['name'], 'is_sysadmin': True})
+
+        # now they are a sysadmin
+        userobj = model.User.get(user['id'])
+        assert_equals(True, userobj.sysadmin)
+
+    def test_sysadmin_revoke_success(self):
+        admin = core_factories.Sysadmin()
+
+        # create another sysadmin
+        user = core_factories.Sysadmin(fullname='Bob')
+
+        # revoke their status
+        action = toolkit.get_action("user_update_sysadmin")
+        action({'user': admin['name']}, {'id': user['name'], 'is_sysadmin': False})
+
+        # now they are not a sysadmin any more
+        userobj = model.User.get(user['id'])
+        assert_equals(False, userobj.sysadmin)
