@@ -302,3 +302,9 @@ def access_request_update(context, data_dict):
             org_id, user, 'admin'
         )
     }
+
+
+# User
+
+def user_update_sysadmin(context, data_dict):
+    return {'success': False}

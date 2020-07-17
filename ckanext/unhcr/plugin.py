@@ -383,6 +383,7 @@ class UnhcrPlugin(
         functions['dataset_collaborator_create'] = auth.dataset_collaborator_create
         functions['access_request_list_for_user'] = auth.access_request_list_for_user
         functions['access_request_update'] = auth.access_request_update
+        functions['user_update_sysadmin'] = auth.user_update_sysadmin
         return functions
 
     # IActions
@@ -411,6 +412,7 @@ class UnhcrPlugin(
             'organization_activity_list_html': actions.organization_activity_list_html,
             'recently_changed_packages_activity_list_html': actions.recently_changed_packages_activity_list_html,
             'datasets_validation_report': actions.datasets_validation_report,
+            'user_update_sysadmin': actions.user_update_sysadmin,
         }
 
     # IValidators
@@ -474,6 +476,8 @@ class UnhcrPlugin(
 
     def get_blueprint(self):
         return [
-            blueprints.unhcr_metrics_blueprint,
             blueprints.unhcr_access_requests_blueprint,
+            blueprints.unhcr_admin_blueprint,
+            blueprints.unhcr_metrics_blueprint,
+            blueprints.unhcr_user_blueprint,
         ]
