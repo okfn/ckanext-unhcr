@@ -15,7 +15,7 @@ from ckan.lib.activity_streams import (
     activity_stream_string_icons,
 )
 
-from ckanext.unhcr import actions, auth, blueprint, helpers, jobs, validators
+from ckanext.unhcr import actions, auth, blueprints, helpers, jobs, validators
 
 from ckanext.scheming.helpers import scheming_get_dataset_schema
 from ckanext.hierarchy.helpers import group_tree_section
@@ -474,6 +474,6 @@ class UnhcrPlugin(
 
     def get_blueprint(self):
         return [
-            blueprint.unhcr_metrics_blueprint,
-            blueprint.unhcr_access_requests_blueprint,
+            blueprints.unhcr_metrics_blueprint,
+            blueprints.unhcr_access_requests_blueprint,
         ]

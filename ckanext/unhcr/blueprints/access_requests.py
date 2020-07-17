@@ -4,59 +4,16 @@ from flask import Blueprint
 from ckan import model
 import ckan.plugins.toolkit as toolkit
 from ckanext.unhcr import mailer
-from ckanext.unhcr.models import AccessRequest
-from .helpers import user_is_curator
-from .metrics import (
-    get_datasets_by_date,
-    get_datasets_by_downloads,
-    get_containers,
-    get_containers_by_date,
-    get_tags,
-    get_keywords,
-    get_users_by_datasets,
-    get_users_by_downloads,
+
+
+unhcr_access_requests_blueprint = Blueprint(
+    'unhcr_access_requests',
+    __name__,
+    url_prefix=u'/access-requests'
 )
 
 
-unhcr_metrics_blueprint = Blueprint('unhcr_metrics', __name__)
-unhcr_access_requests_blueprint = Blueprint('unhcr_access_requests', __name__)
-
-
-# Metrics
-
-def metrics():
-    if (
-        not hasattr(toolkit.c, "user") or
-        not toolkit.c.user or
-        not (toolkit.c.userobj.sysadmin or user_is_curator())
-    ):
-        return toolkit.abort(403, "Forbidden")
-
-    context = { 'user': toolkit.c.user }
-
-    return toolkit.render('metrics/index.html', {
-        'metrics': [
-            get_datasets_by_date(context),
-            get_datasets_by_downloads(context),
-            get_containers_by_date(context),
-            get_containers(context),
-            get_tags(context),
-            get_keywords(context),
-            get_users_by_datasets(context),
-            get_users_by_downloads(context),
-        ]
-    })
-
-unhcr_metrics_blueprint.add_url_rule(
-    rule=u'/metrics',
-    view_func=metrics,
-    methods=['GET',]
-)
-
-
-# Access Requests
-
-def access_requests_approve(request_id):
+def approve(request_id):
     if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
         return toolkit.abort(403, "Forbidden")
 
@@ -73,7 +30,8 @@ def access_requests_approve(request_id):
 
     return toolkit.redirect_to('dashboard.requests')
 
-def access_requests_reject(request_id):
+
+def reject(request_id):
     if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
         return toolkit.abort(403, "Forbidden")
 
@@ -104,13 +62,13 @@ def access_requests_reject(request_id):
 
 
 unhcr_access_requests_blueprint.add_url_rule(
-    rule=u'/access-requests/approve/<request_id>',
-    view_func=access_requests_approve,
+    rule=u'/approve/<request_id>',
+    view_func=approve,
     methods=['POST',]
 )
 
 unhcr_access_requests_blueprint.add_url_rule(
-    rule=u'/access-requests/reject/<request_id>',
-    view_func=access_requests_reject,
+    rule=u'/reject/<request_id>',
+    view_func=reject,
     methods=['POST',]
 )

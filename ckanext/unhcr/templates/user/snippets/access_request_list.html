@@ -20,7 +20,7 @@
       <p>
         <form
           method="POST"
-          action="{{ h.url_for('unhcr_access_requests.access_requests_approve', request_id=req.id, qualified=True) }}"
+          action="{{ h.url_for('unhcr_access_requests.approve', request_id=req.id, qualified=True) }}"
         >
           <button type="submit" class="btn btn-primary" title="Approve">
             Approve
