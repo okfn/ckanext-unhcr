@@ -16,6 +16,7 @@ from ckanext.scheming.helpers import (
 )
 from ckanext.unhcr import utils
 from ckanext.unhcr import __VERSION__
+from ckanext.unhcr.models import AccessRequest
 
 
 log = logging.getLogger(__name__)
@@ -203,7 +204,7 @@ def get_linked_datasets_for_display(value, context=None):
     return datasets
 
 
-# Pending requests
+# Access requests
 
 def get_pending_requests_total(context=None):
     context = context or {'model': model, 'user': toolkit.c.user}
@@ -226,6 +227,14 @@ def get_pending_requests_total(context=None):
         pass
 
     return total
+
+
+def get_existing_access_request(user_id, object_id, status):
+    return model.Session.query(AccessRequest).filter(
+        AccessRequest.user_id==user_id,
+        AccessRequest.object_id==object_id,
+        AccessRequest.status==status
+    ).all()
 
 
 # Deposited datasets

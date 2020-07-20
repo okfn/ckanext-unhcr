@@ -1,33 +1,31 @@
 <div class="collaboration collaboration-modals">
 
-{% if pkg.resources|length > 0 and not h.can_download(pkg) %}
-  <div id="collaboration-dataset-request-access" class="modal fade" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <form action="/dataset/{{ pkg.id }}/request_access" method="POST">
+<div id="collaboration-dataset-request-access" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form action="/dataset/{{ pkg.id }}/request_access" method="POST">
 
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3>Request Access</h3>
-          </div>
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3>Request Access</h3>
+        </div>
 
-          <div class="modal-body">
-            <p>
-              Please explain why you're asking for access to this dataset.
-              Your message will be forwarded to the <strong>Admin</strong> team for review.
-            </p>
-            <textarea name="message" rows="5" placeholder="Add a message" required ></textarea>
-          </div>
+        <div class="modal-body">
+          <p>
+            Please explain why you're asking for access to this dataset.
+            Your message will be forwarded to the <strong>Admin</strong> team for review.
+          </p>
+          <textarea name="message" rows="5" placeholder="Add a message" required ></textarea>
+        </div>
 
-          <div class="modal-footer">
-            <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-            <button class="btn btn-primary">Request</button>
-          </div>
+        <div class="modal-footer">
+          <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+          <button class="btn btn-primary">Request</button>
+        </div>
 
-        </form>
-      </div>
+      </form>
     </div>
   </div>
-{% endif %}
+</div>
 
 </div>

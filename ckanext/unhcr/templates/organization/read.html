@@ -2,6 +2,11 @@
 
 {% set deposit = h.get_data_deposit() %}
 {% set group_users = c.group_dict.users|map(attribute="name")|list %}
+{% set can_request_access = (
+  c.user not in group_users and
+  c.group_dict.id != deposit.id and
+  not h.get_existing_access_request(c.userobj.id, c.group_dict.id, 'requested')
+) %}
 
 {% block page_primary_action %}
   {% if c.group_dict.state == 'approval_needed' %}
@@ -19,7 +24,7 @@
 
 {% block content_action %}
 
-{% if c.user not in group_users and c.group_dict.id != deposit.id %}
+{% if can_request_access %}
   <a
     href="#membership-container-request-access"
     role="button"
@@ -100,7 +105,7 @@
 
 {% block footer %}
   {{ super() }}
-  {% if c.user not in group_users and c.group_dict.id != deposit.id %}
+  {% if can_request_access %}
     {% snippet "organization/snippets/membership_modals.html", group=c.group_dict %}
   {% endif %}
 {% endblock %}

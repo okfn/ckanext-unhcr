@@ -45,6 +45,17 @@ def request_access(container_id):
         )
         return toolkit.redirect_to('data-container_read', id=container_id)
 
+    existing_request = model.Session.query(AccessRequest).filter(
+        AccessRequest.user_id==toolkit.c.userobj.id,
+        AccessRequest.object_id==container['id'],
+        AccessRequest.status=='requested'
+    ).all()
+    if existing_request:
+        return toolkit.abort(
+            400,
+            "You've already submitted a request to access this container."
+        )
+
     rec = AccessRequest(
         user_id=toolkit.c.userobj.id,
         object_id=container['id'],

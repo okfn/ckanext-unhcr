@@ -199,12 +199,13 @@ class UnhcrPlugin(
             'page_authorized': helpers.page_authorized,
             'get_came_from_param': helpers.get_came_from_param,
             'user_is_curator': helpers.user_is_curator,
+            'user_is_container_admin': helpers.user_is_container_admin,
             # Linked datasets
             'get_linked_datasets_for_form': helpers.get_linked_datasets_for_form,
             'get_linked_datasets_for_display': helpers.get_linked_datasets_for_display,
-            # Pending requests
+            # Access requests
             'get_pending_requests_total': helpers.get_pending_requests_total,
-            'user_is_container_admin': helpers.user_is_container_admin,
+            'get_existing_access_request': helpers.get_existing_access_request,
             # Deposited datasets
             'get_data_deposit': helpers.get_data_deposit,
             'get_data_curation_users': helpers.get_data_curation_users,

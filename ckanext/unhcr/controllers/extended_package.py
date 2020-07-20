@@ -205,6 +205,17 @@ class ExtendedPackageController(PackageController):
             )
             return toolkit.redirect_to('dataset_read', id=dataset['id'])
 
+        existing_request = model.Session.query(AccessRequest).filter(
+            AccessRequest.user_id==toolkit.c.userobj.id,
+            AccessRequest.object_id==dataset['id'],
+            AccessRequest.status=='requested'
+        ).all()
+        if existing_request:
+            return toolkit.abort(
+                400,
+                "You've already submitted a request to access this dataset."
+            )
+
         rec = AccessRequest(
             user_id=toolkit.c.userobj.id,
             object_id=dataset['id'],

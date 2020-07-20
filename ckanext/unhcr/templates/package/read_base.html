@@ -1,6 +1,11 @@
 {% ckan_extends %}
 
 {% set pkg = c.pkg_dict %}
+{% set can_request_access = (
+  pkg.resources|length > 0 and
+  not h.can_download(pkg) and
+  not h.get_existing_access_request(c.userobj.id, pkg.id, 'requested')
+) %}
 
 {% if pkg.type == 'deposited-dataset' %}
   {% set curation = h.get_deposited_dataset_user_curation_status(pkg, c.userobj.id) %}
@@ -20,7 +25,7 @@
 {% endblock %}
 
 {% block content_action %}
-  {% if pkg.resources|length > 0 and not h.can_download(pkg) %}
+  {% if can_request_access %}
     <a
       href="#collaboration-dataset-request-access"
       role="button"
@@ -51,7 +56,9 @@
 
 {% block footer %}
   {{ super() }}
-  {% snippet "package/snippets/collaboration_modals.html", pkg=pkg %}
+  {% if can_request_access %}
+    {% snippet "package/snippets/collaboration_modals.html", pkg=pkg %}
+  {% endif %}
   {% if pkg.type == 'deposited-dataset' %}
     {% snippet "package/snippets/curation_modals.html", pkg=pkg, curation=curation %}
   {% endif %}

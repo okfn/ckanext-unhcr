@@ -1234,6 +1234,21 @@ class TestExtendedPackageController(base.FunctionalTestBase):
             status=400
         )
 
+    def test_request_access_duplicate(self):
+        rec = AccessRequest(
+            user_id=self.user3['id'],
+            object_id=self.dataset1['id'],
+            object_type='package',
+            message='I can haz access?',
+            role='member',
+        )
+        model.Session.add(rec)
+        model.Session.commit()
+        resp = self.make_request_access_request(
+            dataset_id='dataset1', user='user3', message='me again',
+            status=400
+        )
+
     def test_request_access_invalid_dataset(self):
         self.make_request_access_request(
             dataset_id='bad', user='user3', message='I can haz access?',
@@ -1347,6 +1362,21 @@ class TestDataContainer(base.FunctionalTestBase):
     def test_request_access_missing_message(self):
         self.make_request_access_request(
             container_id='container1', user='user1', message='',
+            status=400
+        )
+
+    def test_request_access_duplicate(self):
+        rec = AccessRequest(
+            user_id=self.user['id'],
+            object_id=self.container['id'],
+            object_type='organization',
+            message='I can haz access?',
+            role='member',
+        )
+        model.Session.add(rec)
+        model.Session.commit()
+        resp = self.make_request_access_request(
+            container_id='container1', user='user1', message='me again',
             status=400
         )
 
