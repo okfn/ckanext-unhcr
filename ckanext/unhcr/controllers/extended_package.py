@@ -5,7 +5,6 @@ from ckan.controllers.package import PackageController
 from ckanext.scheming.helpers import scheming_get_dataset_schema
 from ckanext.unhcr import mailer
 from ckanext.unhcr.activity import log_download_activity
-from ckanext.unhcr.models import AccessRequest
 log = logging.getLogger(__name__)
 
 
@@ -186,8 +185,6 @@ class ExtendedPackageController(PackageController):
 
     def request_access(self, id):
         message = toolkit.request.params.get('message')
-        if not message:
-            return toolkit.abort(400, "'message' is required")
 
         action_context = {'model': model, 'user': toolkit.c.user}
         try:
@@ -205,26 +202,26 @@ class ExtendedPackageController(PackageController):
             )
             return toolkit.redirect_to('dataset_read', id=dataset['id'])
 
-        existing_request = model.Session.query(AccessRequest).filter(
-            AccessRequest.user_id==toolkit.c.userobj.id,
-            AccessRequest.object_id==dataset['id'],
-            AccessRequest.status=='requested'
-        ).all()
-        if existing_request:
-            return toolkit.abort(
-                400,
-                "You've already submitted a request to access this dataset."
+        try:
+            toolkit.get_action('access_request_create')(
+                action_context, {
+                    'object_id': dataset['id'],
+                    'object_type': 'package',
+                    'message': message,
+                    'role': 'member',
+                }
             )
-
-        rec = AccessRequest(
-            user_id=toolkit.c.userobj.id,
-            object_id=dataset['id'],
-            object_type='package',
-            message=message,
-            role='member',
-        )
-        model.Session.add(rec)
-        model.Session.commit()
+        except toolkit.ObjectNotFound as e:
+            return toolkit.abort(404, str(e))
+        except toolkit.NotAuthorized:
+            return toolkit.abort(403, 'Not Authorized')
+        except toolkit.ValidationError as e:
+            if e.error_dict and 'message' in e.error_dict:
+                return toolkit.abort(
+                    400,
+                    e.error_dict['message'].replace('package', 'dataset')
+                )
+            return toolkit.abort(400, 'Bad Request')
 
         org_admins = mailer.get_dataset_request_access_email_recipients(dataset)
         for recipient in org_admins:

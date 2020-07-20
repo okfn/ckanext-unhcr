@@ -387,6 +387,7 @@ class UnhcrPlugin(
         functions['package_update'] = auth.package_update
         functions['dataset_collaborator_create'] = auth.dataset_collaborator_create
         functions['access_request_list_for_user'] = auth.access_request_list_for_user
+        functions['access_request_create'] = auth.access_request_create
         functions['access_request_update'] = auth.access_request_update
         functions['user_update_sysadmin'] = auth.user_update_sysadmin
         functions['search_index_rebuild'] = auth.search_index_rebuild
@@ -398,6 +399,7 @@ class UnhcrPlugin(
         return {
             'access_request_list_for_user': actions.access_request_list_for_user,
             'access_request_update': actions.access_request_update,
+            'access_request_create': actions.access_request_create,
             'package_update': actions.package_update,
             'package_publish_microdata': actions.package_publish_microdata,
             'package_get_microdata_collections': actions.package_get_microdata_collections,

@@ -304,6 +304,10 @@ def access_request_update(context, data_dict):
     }
 
 
+def access_request_create(context, data_dict):
+    return {'success': bool(context.get('user'))}
+
+
 # Admin
 
 def user_update_sysadmin(context, data_dict):

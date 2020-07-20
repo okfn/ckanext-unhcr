@@ -5,7 +5,6 @@ from ckan import model
 import ckan.plugins.toolkit as toolkit
 from ckanext.unhcr import helpers
 from ckanext.unhcr import mailer
-from ckanext.unhcr.models import AccessRequest
 
 
 unhcr_data_container_blueprint = Blueprint(
@@ -20,8 +19,6 @@ def request_access(container_id):
         return toolkit.abort(403, "Forbidden")
 
     message = toolkit.request.form.get('message')
-    if not message:
-        return toolkit.abort(400, "'message' is required")
 
     deposit = helpers.get_data_deposit()
     if container_id == deposit['id']:
@@ -45,26 +42,26 @@ def request_access(container_id):
         )
         return toolkit.redirect_to('data-container_read', id=container_id)
 
-    existing_request = model.Session.query(AccessRequest).filter(
-        AccessRequest.user_id==toolkit.c.userobj.id,
-        AccessRequest.object_id==container['id'],
-        AccessRequest.status=='requested'
-    ).all()
-    if existing_request:
-        return toolkit.abort(
-            400,
-            "You've already submitted a request to access this container."
+    try:
+        toolkit.get_action('access_request_create')(
+            action_context, {
+                'object_id': container['id'],
+                'object_type': 'organization',
+                'message': message,
+                'role': 'member',
+            }
         )
-
-    rec = AccessRequest(
-        user_id=toolkit.c.userobj.id,
-        object_id=container['id'],
-        object_type='organization',
-        message=message,
-        role='member',
-    )
-    model.Session.add(rec)
-    model.Session.commit()
+    except toolkit.ObjectNotFound as e:
+        return toolkit.abort(404, str(e))
+    except toolkit.NotAuthorized:
+        return toolkit.abort(403, 'Not Authorized')
+    except toolkit.ValidationError as e:
+        if e.error_dict and 'message' in e.error_dict:
+            return toolkit.abort(
+                400,
+                e.error_dict['message'].replace('organization', 'container')
+            )
+        return toolkit.abort(400, 'Bad Request')
 
     org_admins = mailer.get_container_request_access_email_recipients(container)
     for recipient in org_admins:
