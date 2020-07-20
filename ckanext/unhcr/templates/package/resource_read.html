@@ -47,7 +47,9 @@
   {% if h.can_download(pkg) %}
     {{ super() }}
   {% else %}
-    {% snippet "snippets/not_authorized_to_download.html", pkg=pkg %}
+    {% if not h.get_existing_access_request(c.userobj.id, pkg.id, 'requested') %}
+      {% snippet "snippets/not_authorized_to_download.html", pkg=pkg %}
+      {% endif %}
   {% endif %}
 {% endblock %}
 

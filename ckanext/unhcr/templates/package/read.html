@@ -80,7 +80,7 @@
     {% endif %}
   {% endblock %}
 
-  {% if pkg.resources|length > 0 and not h.can_download(pkg) %}
+  {% if can_request_access %}
     {% snippet "snippets/not_authorized_to_download.html", pkg=pkg %}
   {% endif %}
 
