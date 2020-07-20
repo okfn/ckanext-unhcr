@@ -484,6 +484,7 @@ class UnhcrPlugin(
         return [
             blueprints.unhcr_access_requests_blueprint,
             blueprints.unhcr_admin_blueprint,
+            blueprints.unhcr_data_container_blueprint,
             blueprints.unhcr_metrics_blueprint,
             blueprints.unhcr_search_index_blueprint,
             blueprints.unhcr_user_blueprint,

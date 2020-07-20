@@ -217,17 +217,17 @@ class TestSummaryMailer(base.FunctionalTestBase):
         assert user1['name'] not in recipient_ids
 
 
-class TestCollaborationMailer(base.FunctionalTestBase):
+class TestAccessRequestMailer(base.FunctionalTestBase):
 
     # General
 
     def setup(self):
-        super(TestCollaborationMailer, self).setup()
+        super(TestAccessRequestMailer, self).setup()
 
         # Users
         self.sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
 
-    def test_email_body(self):
+    def test_dataset_request_access_body(self):
         user1 = core_factories.User(name='user1', id='user1')
         dataset1 = factories.Dataset(
             name='new-dataset',
@@ -235,7 +235,9 @@ class TestCollaborationMailer(base.FunctionalTestBase):
         )
 
         user_message = 'I can haz access?\nkthxbye'
-        email_body = mailer.compose_request_access_email_body(self.sysadmin, dataset1, user1, user_message)
+        email_body = mailer.compose_request_access_email_body(
+            'dataset', self.sysadmin, dataset1, user1, user_message
+        )
         regularised_body = regularise_html(email_body)
         expected = regularise_html(
             'User <a href="{user_link}">Mr. Test User</a> has requested access to download <a href="{dataset_link}">New Dataset</a>'.format(
@@ -247,7 +249,29 @@ class TestCollaborationMailer(base.FunctionalTestBase):
         assert expected in regularised_body
         assert '<p>I can haz access?<br> kthxbye</p>' in regularised_body
 
-    def test_email_recipients_with_org_admins(self):
+    def test_container_request_access_body(self):
+        user1 = core_factories.User(name='user1', id='user1')
+        container1 = factories.DataContainer(
+            name='new-container',
+            title='New Container',
+        )
+
+        user_message = 'I can haz access?\nkthxbye'
+        email_body = mailer.compose_request_access_email_body(
+            'container', self.sysadmin, container1, user1, user_message
+        )
+        regularised_body = regularise_html(email_body)
+        expected = regularise_html(
+            'User <a href="{user_link}">Mr. Test User</a> has requested access to <a href="{container_link}">New Container</a>'.format(
+                user_link=toolkit.url_for('user.read', id=user1['id'], qualified=True),
+                container_link=toolkit.url_for('data-container_read', id=container1['name'], qualified=True),
+            )
+        )
+
+        assert expected in regularised_body
+        assert '<p>I can haz access?<br> kthxbye</p>' in regularised_body
+
+    def test_recipients_with_org_admins(self):
         editor = core_factories.User()
         admin = core_factories.User()
         external = core_factories.User()
@@ -264,12 +288,14 @@ class TestCollaborationMailer(base.FunctionalTestBase):
             title='New Dataset',
             owner_org=container['id'],
         )
-        recipients = mailer.get_request_access_email_recipients(dataset1)
+        dataset_recipients = mailer.get_dataset_request_access_email_recipients(dataset1)
+        container_recipients = mailer.get_container_request_access_email_recipients(container)
 
-        assert len(recipients) == 1
-        assert admin['name'] == recipients[0]['name']
+        assert dataset_recipients == container_recipients
+        assert len(container_recipients) == 1
+        assert admin['name'] == container_recipients[0]['name']
 
-    def test_email_recipients_no_org_admins(self):
+    def test_recipients_no_org_admins(self):
         editor = core_factories.User()
         external = core_factories.User()
         container = factories.DataContainer(
@@ -284,14 +310,14 @@ class TestCollaborationMailer(base.FunctionalTestBase):
             title='New Dataset',
             owner_org=container['id'],
         )
-        recipients = mailer.get_request_access_email_recipients(dataset1)
+        dataset_recipients = mailer.get_dataset_request_access_email_recipients(dataset1)
+        container_recipients = mailer.get_container_request_access_email_recipients(container)
 
-        assert len(recipients) == 1
-        assert self.sysadmin['name'] == recipients[0]['name']
+        assert dataset_recipients == container_recipients
+        assert len(container_recipients) == 1
+        assert self.sysadmin['name'] == container_recipients[0]['name']
 
-class TestRejectAccessRequestMailer(base.FunctionalTestBase):
-
-    def test_email_body_dataset(self):
+    def test_request_rejected_email_body_dataset(self):
         user1 = core_factories.User(name='user1', id='user1')
         dataset1 = factories.Dataset(title='Test Dataset 1')
 
@@ -302,7 +328,7 @@ class TestRejectAccessRequestMailer(base.FunctionalTestBase):
         assert 'Your request to access <strong>Test Dataset 1</strong> has been rejected.' in regularised_body
         assert '<p>Nope<br> Not today thank you</p>' in regularised_body
 
-    def test_email_body_container(self):
+    def test_request_rejected_email_body_container(self):
         user1 = core_factories.User(name='user1', id='user1')
         container1 = factories.DataContainer(title='Test Organization 1')
 

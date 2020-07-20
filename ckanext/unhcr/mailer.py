@@ -234,14 +234,14 @@ def get_summary_email_recipients():
     return recipients
 
 
-# Collaboration
+# Access Requests
 
-def get_request_access_email_recipients(package_dict):
+def get_container_request_access_email_recipients(container_dict):
     context = {"ignore_auth": True}
     default_user = toolkit.get_action("get_site_user")(context)
 
     try:
-        data_dict = {"id": package_dict["owner_org"], "include_users": True}
+        data_dict = {"id": container_dict["id"], "include_users": True}
         org = toolkit.get_action("organization_show")(context, data_dict)
         recipients = [
             user for user in org["users"]
@@ -260,26 +260,34 @@ def get_request_access_email_recipients(package_dict):
 
     return recipients
 
+def get_dataset_request_access_email_recipients(package_dict):
+    return get_container_request_access_email_recipients({"id": package_dict["owner_org"]})
 
 
-def compose_request_access_email_subj(package_dict):
+def compose_dataset_request_access_email_subj(package_dict):
     return '[UNHCR RIDL] - Request for access to dataset: "{}"'.format(
         package_dict['name']
     )
 
+def compose_container_request_access_email_subj(container_dict):
+    return '[UNHCR RIDL] - Request for access to container: "{}"'.format(
+        container_dict['display_name']
+    )
 
-def compose_request_access_email_body(recipient, package_dict, requesting_user_dict, message):
+
+def compose_request_access_email_body(object_type, recipient, obj, requesting_user, message):
     context = {}
+    context['object_type'] = object_type
     context['recipient'] = recipient
-    context['dataset'] = package_dict
-    context['requesting_user'] = requesting_user_dict
+    context['object'] = obj
+    context['requesting_user'] = requesting_user
     context['message'] = message
     context['collaborators_url'] = toolkit.url_for(
         'dashboard.requests',
         qualified=True,
     )
     context['h'] = toolkit.h
-    return render_jinja2('emails/access_requests/dataset_access_request.html', context)
+    return render_jinja2('emails/access_requests/access_request.html', context)
 
 
 def compose_request_rejected_email_subj(obj):

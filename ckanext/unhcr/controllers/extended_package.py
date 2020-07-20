@@ -215,10 +215,11 @@ class ExtendedPackageController(PackageController):
         model.Session.add(rec)
         model.Session.commit()
 
-        org_admins = mailer.get_request_access_email_recipients(dataset)
+        org_admins = mailer.get_dataset_request_access_email_recipients(dataset)
         for recipient in org_admins:
-            subj = mailer.compose_request_access_email_subj(dataset)
+            subj = mailer.compose_dataset_request_access_email_subj(dataset)
             body = mailer.compose_request_access_email_body(
+                'dataset',
                 recipient,
                 dataset,
                 toolkit.c.userobj,
