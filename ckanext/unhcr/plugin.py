@@ -48,7 +48,7 @@ class UnhcrPlugin(
 
         # TODO: in CKAN 2.9 we can add `icon='hdd-o'` here
         # but not yet :(
-        toolkit.add_ckan_admin_tab(config_, 'unhcr_search_index.index', 'Cache')
+        toolkit.add_ckan_admin_tab(config_, 'unhcr_search_index.index', 'Search Index')
 
         activity_stream_string_functions['changed package'] = helpers.custom_activity_renderer
         activity_stream_string_functions['download resource'] = helpers.download_resource_renderer
