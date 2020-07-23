@@ -683,7 +683,6 @@ def search_index_rebuild(context, data_dict):
         .all()
     ]
     package_index = index_for(model.Package)
-    package_index.clear()
     errors = []
     context = {'model': model, 'ignore_auth': True, 'validate': False, 'use_cache': False}
     for pkg_id in package_ids:
