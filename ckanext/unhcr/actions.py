@@ -6,6 +6,8 @@ from ckan.authz import has_user_permission_for_group_or_org
 from ckan.plugins import toolkit
 from ckan.lib.mailer import MailerException
 import ckan.lib.plugins as lib_plugins
+from ckan.lib.search import index_for, commit
+import ckan.logic as core_logic
 import ckan.logic.action.get as get_core
 import ckan.logic.action.create as create_core
 import ckan.logic.action.delete as delete_core
@@ -642,7 +644,7 @@ def access_request_update(context, data_dict):
     }
 
 
-# User
+# Admin
 
 def user_update_sysadmin(context, data_dict):
     """
@@ -669,3 +671,31 @@ def user_update_sysadmin(context, data_dict):
     m.Session.refresh(user_obj)
 
     return model_dictize.user_dictize(user_obj, context)
+
+
+def search_index_rebuild(context, data_dict):
+    toolkit.check_access('search_index_rebuild', context, data_dict)
+
+    package_ids = [
+        r[0]
+        for r in model.Session.query(model.Package.id)
+        .filter(model.Package.state != "deleted")
+        .all()
+    ]
+    package_index = index_for(model.Package)
+    errors = []
+    context = {'model': model, 'ignore_auth': True, 'validate': False, 'use_cache': False}
+    for pkg_id in package_ids:
+        try:
+            package_index.update_dict(
+                core_logic.get_action('package_show')(context, {'id': pkg_id}),
+                defer_commit=True
+            )
+        except Exception as e:
+            errors.append('Encountered {error} processing {pkg}'.format(
+                error=repr(e),
+                pkg=pkg_id
+            ))
+
+    commit()
+    return errors
