@@ -883,6 +883,84 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         assert_in('as Curator', resp.body)
 
 
+class TestUserController(base.FunctionalTestBase):
+
+    def test_sysadmin_not_authorized(self):
+        user = core_factories.User()
+        env = {'REMOTE_USER': user['name'].encode('ascii')}
+        self.app.post('/user/sysadmin', {}, extra_environ=env, status=403)
+
+    def test_sysadmin_invalid_user(self):
+        user = core_factories.Sysadmin()
+        env = {'REMOTE_USER': user['name'].encode('ascii')}
+        self.app.post(
+            '/user/sysadmin',
+            {'id': 'fred', 'status': '1' },
+            extra_environ=env,
+            status=404
+        )
+
+    def test_sysadmin_promote_success(self):
+        admin = core_factories.Sysadmin()
+        env = {'REMOTE_USER': admin['name'].encode('ascii')}
+
+        # create a normal user
+        user = core_factories.User(fullname='Alice')
+
+        # promote them
+        resp = self.app.post(
+            '/user/sysadmin',
+            {'id': user['id'], 'status': '1' },
+            extra_environ=env,
+            status=302
+        )
+        resp2 = resp.follow(extra_environ=env, status=200)
+        assert_in(
+            'Promoted Alice to sysadmin',
+            resp2.body
+        )
+
+        # now they are a sysadmin
+        userobj = model.User.get(user['id'])
+        assert_equals(True, userobj.sysadmin)
+
+    def test_sysadmin_revoke_success(self):
+        admin = core_factories.Sysadmin()
+        env = {'REMOTE_USER': admin['name'].encode('ascii')}
+
+        # create another sysadmin
+        user = core_factories.Sysadmin(fullname='Bob')
+
+        # revoke their status
+        resp = self.app.post(
+            '/user/sysadmin',
+            {'id': user['id'], 'status': '0' },
+            extra_environ=env,
+            status=302
+        )
+        resp2 = resp.follow(extra_environ=env, status=200)
+        assert_in(
+            'Revoked sysadmin permission from Bob',
+            resp2.body
+        )
+
+        # now they are not a sysadmin any more
+        userobj = model.User.get(user['id'])
+        assert_equals(False, userobj.sysadmin)
+
+
+class TestAdminController(base.FunctionalTestBase):
+    def test_index_sysadmin(self):
+        user = core_factories.Sysadmin()
+        env = {'REMOTE_USER': user['name'].encode('ascii')}
+        self.app.get('/ckan-admin', extra_environ=env, status=200)
+
+    def test_index_not_authorized(self):
+        user = core_factories.User()
+        env = {'REMOTE_USER': user['name'].encode('ascii')}
+        self.app.get('/ckan-admin', extra_environ=env, status=403)
+
+
 class TestExtendedPackageController(base.FunctionalTestBase):
 
     # Config

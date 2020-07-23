@@ -12,6 +12,7 @@ import ckan.logic.action.delete as delete_core
 import ckan.logic.action.update as update_core
 import ckan.logic.action.patch as patch_core
 import ckan.lib.activity_streams as activity_streams
+import ckan.lib.dictization.model_dictize as model_dictize
 from ckanext.unhcr import helpers, mailer
 from ckanext.unhcr.models import AccessRequest
 from ckanext.scheming.helpers import scheming_get_dataset_schema
@@ -639,3 +640,32 @@ def access_request_update(context, data_dict):
         col.name: getattr(request, col.name)
         for col in request.__table__.columns
     }
+
+
+# User
+
+def user_update_sysadmin(context, data_dict):
+    """
+    Add or remove a sysadmin user
+    An authenticated sysadmin can promote an existing user to sysadmin
+    or remove sysadmins priveledges from a user who already has them
+
+    :param id: The id or name of the user
+    :type id: string
+    :param is_sysadmin: The new value of User.sysadmin
+    :type is_sysadmin: bool
+    """
+    m = context.get('model', model)
+    user_id, is_sysadmin = toolkit.get_or_bust(data_dict, ['id', 'is_sysadmin'])
+    is_sysadmin = toolkit.asbool(is_sysadmin)
+
+    toolkit.check_access('user_update_sysadmin', context, data_dict)
+
+    user_obj = m.User.get(user_id)
+    if not user_obj:
+        raise toolkit.ObjectNotFound("User not found")
+    user_obj.sysadmin = is_sysadmin
+    m.Session.commit()
+    m.Session.refresh(user_obj)
+
+    return model_dictize.user_dictize(user_obj, context)
