@@ -304,7 +304,11 @@ def access_request_update(context, data_dict):
     }
 
 
-# User
+# Admin
 
 def user_update_sysadmin(context, data_dict):
+    return {'success': False}
+
+
+def search_index_rebuild(context, data_dict):
     return {'success': False}

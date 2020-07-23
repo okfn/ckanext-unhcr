@@ -388,6 +388,7 @@ class UnhcrPlugin(
         functions['access_request_list_for_user'] = auth.access_request_list_for_user
         functions['access_request_update'] = auth.access_request_update
         functions['user_update_sysadmin'] = auth.user_update_sysadmin
+        functions['search_index_rebuild'] = auth.search_index_rebuild
         return functions
 
     # IActions
@@ -417,6 +418,7 @@ class UnhcrPlugin(
             'recently_changed_packages_activity_list_html': actions.recently_changed_packages_activity_list_html,
             'datasets_validation_report': actions.datasets_validation_report,
             'user_update_sysadmin': actions.user_update_sysadmin,
+            'search_index_rebuild': actions.search_index_rebuild,
         }
 
     # IValidators
