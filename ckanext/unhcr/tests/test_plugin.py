@@ -121,4 +121,5 @@ def _create_org_dict(user, groups=[]):
         'type': 'data-container',
         'tag_string': u'',
         'population': u'',
+        'visible_external': True
     }
