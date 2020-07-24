@@ -6,6 +6,7 @@ class DataContainer(factories.Organization):
     type = 'data-container'
     country = ['SVN']
     geographic_area = 'southern_africa'
+    visible_external = True
 
 
 class Dataset(factories.Dataset):
