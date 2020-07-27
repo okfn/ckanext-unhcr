@@ -2125,6 +2125,10 @@ i {
   list-style-position: inside;
 }
 
+.curation-sidebar .label {
+  padding-bottom: 0.2em;
+}
+
 .curation-actions .curation-buttons {
   padding-top: 0;
 }
