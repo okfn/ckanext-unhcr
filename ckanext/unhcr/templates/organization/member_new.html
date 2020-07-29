@@ -48,10 +48,18 @@
 </form>
 {% endblock %}
 
-{% block secondary_content %}
-  {% if c.group_dict.id == deposit.id %}
-    {% snippet "organization/snippets/curation_sidebar.html", deposit=deposit, show_roles=True, editing=True %}
-  {% else %}
-    {{ super() }}
-  {% endif %}
+{% block secondary %}
+<aside class="secondary col-sm-3">
+  {% block secondary_content %}
+    {% if c.group_dict.id == deposit.id %}
+      {% snippet "organization/snippets/curation_sidebar.html", deposit=deposit, show_roles=True, editing=True %}
+    {% else %}
+      {{ super() }}
+    {% endif %}
+  {% endblock %}
+
+  {% block user_guide %}
+    {% snippet "snippets/user_guide.html", is_deposit=c.group_dict.id == deposit.id %}
+  {% endblock %}
+</aside>
 {% endblock %}

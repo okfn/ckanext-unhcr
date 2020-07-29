@@ -34,7 +34,15 @@
 
             <div class="row wrapper{% block wrapper_class %}{% endblock %}{% if self.secondary()|trim == '' or c.action=='resource_read' %} no-nav{% endif %}">
               {% block pre_primary %}{{ super() }}{% endblock %}
-              {% block secondary %}{{ super() }}{% endblock %}
+              {% block secondary %}
+                <aside class="secondary col-sm-3">
+                  {% block secondary_content %}{% endblock %}
+
+                  {% block user_guide %}
+                    {% snippet "snippets/user_guide.html", is_deposit=False %}
+                  {% endblock %}
+                </aside>
+              {% endblock %}
 
               {% block primary %}
                 <div class="primary col-sm-9 col-xs-12">

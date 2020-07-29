@@ -6,14 +6,22 @@
   {% set curation = h.get_deposited_dataset_user_curation_status(pkg, c.userobj.id) %}
 {% endif %}
 
-{% block secondary_content %}
-  {% if pkg.type == 'deposited-dataset' %}
-    {% snippet "package/snippets/curation_sidebar.html", pkg=pkg, curation=curation, editing=True %}
-  {% elif h.check_access('sysadmin') %}
-    {% snippet "package/snippets/publish_sidebar.html", pkg=pkg, editing=True %}
-  {% else %}
-    {{ super() }}
-  {% endif %}
+{% block secondary %}
+<aside class="secondary col-sm-3">
+  {% block secondary_content %}
+    {% if pkg.type == 'deposited-dataset' %}
+      {% snippet "package/snippets/curation_sidebar.html", pkg=pkg, curation=curation, editing=True %}
+    {% elif h.check_access('sysadmin') %}
+      {% snippet "package/snippets/publish_sidebar.html", pkg=pkg, editing=True %}
+    {% else %}
+      {{ super() }}
+    {% endif %}
+  {% endblock %}
+
+  {% block user_guide %}
+    {% snippet "snippets/user_guide.html", is_deposit=pkg.type == 'deposited-dataset' %}
+  {% endblock %}
+</aside>
 {% endblock %}
 
 {% block footer %}

@@ -38,12 +38,20 @@
   {{ super() }}
 {% endblock %}
 
-{% block secondary_content %}
-  {% if pkg.type == 'deposited-dataset' %}
-    {% snippet "package/snippets/curation_sidebar.html", pkg=pkg, curation=curation %}
-  {% else %}
-    {{ super() }}
-  {% endif %}
+{% block secondary %}
+<aside class="secondary col-sm-3">
+  {% block secondary_content %}
+    {% if pkg.type == 'deposited-dataset' %}
+      {% snippet "package/snippets/curation_sidebar.html", pkg=pkg, curation=curation %}
+    {% else %}
+      {{ super() }}
+    {% endif %}
+  {% endblock %}
+
+  {% block user_guide %}
+    {% snippet "snippets/user_guide.html", is_deposit=pkg.type == 'deposited-dataset' %}
+  {% endblock %}
+</aside>
 {% endblock %}
 
 {% block package_social %}
