@@ -6,7 +6,7 @@
     "dataset_fields": [
         {
             "field_name": "title",
-            "form_placeholder": "eg. A descriptive title",
+            "form_placeholder": "Make sure to include: 'Survey name/title', 'Location', 'Country', 'Year(s)' in the order indicated.",
             "label": "Title",
             "preset": "title",
             "required": true

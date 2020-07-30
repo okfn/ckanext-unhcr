@@ -5,7 +5,7 @@
     "about_url": "http://github.com/okfn/ckanext-unhcr",
     "dataset_fields": [
         {
-            "form_placeholder": "eg. A descriptive title",
+            "form_placeholder": "Make sure to include: 'Survey name/title', 'Location', 'Country', 'Year(s)' in the order indicated.",
             "required": true,
             "preset": "title",
             "field_name": "title",
