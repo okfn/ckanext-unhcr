@@ -1225,13 +1225,27 @@ class TestExtendedPackageController(base.FunctionalTestBase):
         resp = self.app.get(
             '/dataset/dataset1/request_access',
             extra_environ={'REMOTE_USER': 'user3'},
-            # for some reason, pylons throws this as a 404 instead of a 405
             status=404
         )
 
     def test_request_access_missing_message(self):
         self.make_request_access_request(
             dataset_id='dataset1', user='user3', message='',
+            status=400
+        )
+
+    def test_request_access_duplicate(self):
+        rec = AccessRequest(
+            user_id=self.user3['id'],
+            object_id=self.dataset1['id'],
+            object_type='package',
+            message='I can haz access?',
+            role='member',
+        )
+        model.Session.add(rec)
+        model.Session.commit()
+        resp = self.make_request_access_request(
+            dataset_id='dataset1', user='user3', message='me again',
             status=400
         )
 
@@ -1254,30 +1268,31 @@ class TestExtendedPackageController(base.FunctionalTestBase):
                 dataset_id='dataset1', user='user3', message='I can haz access?',
                 status=302
             )
-            mock_mailer.assert_called_once()
-            assert_equals('user1', mock_mailer.call_args[0][0])
-            assert_equals(
-                '[UNHCR RIDL] - Request for access to dataset: "dataset1"',
-                mock_mailer.call_args[0][1]
-            )
-            # call_args[0][2] is the HTML message body
-            # but we're not going to make any assertions about it here
-            # see the mailer tests for this
 
-            assert_equals(
-                1,
-                len(model.Session.query(AccessRequest).filter(
-                    AccessRequest.object_id == self.dataset1['id'],
-                    AccessRequest.user_id == self.user3['id'],
-                    AccessRequest.status == 'requested'
-                ).all())
-            )
+        mock_mailer.assert_called_once()
+        assert_equals('user1', mock_mailer.call_args[0][0])
+        assert_equals(
+            '[UNHCR RIDL] - Request for access to dataset: "dataset1"',
+            mock_mailer.call_args[0][1]
+        )
+        # call_args[0][2] is the HTML message body
+        # but we're not going to make any assertions about it here
+        # see the mailer tests for this
 
-            resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user3'}, status=200)
-            assert_in(
-                'Requested access to download resources from Test Dataset 1',
-                resp2.body
-            )
+        assert_equals(
+            1,
+            len(model.Session.query(AccessRequest).filter(
+                AccessRequest.object_id == self.dataset1['id'],
+                AccessRequest.user_id == self.user3['id'],
+                AccessRequest.status == 'requested'
+            ).all())
+        )
+
+        resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user3'}, status=200)
+        assert_in(
+            'Requested access to download resources from Test Dataset 1',
+            resp2.body
+        )
 
     def test_request_access_user_already_has_access(self):
         mock_mailer = mock.Mock()
@@ -1286,22 +1301,162 @@ class TestExtendedPackageController(base.FunctionalTestBase):
                 dataset_id='dataset1', user='user1', message='I can haz access?',
                 status=302
             )
-            mock_mailer.assert_not_called()
 
-            assert_equals(
-                0,
-                len(model.Session.query(AccessRequest).filter(
-                    AccessRequest.object_id == self.dataset1['id'],
-                    AccessRequest.user_id == self.user1['id'],
-                    AccessRequest.status == 'requested'
-                ).all())
+        mock_mailer.assert_not_called()
+
+        assert_equals(
+            0,
+            len(model.Session.query(AccessRequest).filter(
+                AccessRequest.object_id == self.dataset1['id'],
+                AccessRequest.user_id == self.user1['id'],
+                AccessRequest.status == 'requested'
+            ).all())
+        )
+
+        resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user1'}, status=200)
+        assert_in(
+            'You already have access to download resources from Test Dataset 1',
+            resp2.body
+        )
+
+
+class TestDataContainer(base.FunctionalTestBase):
+
+    def setup(self):
+        super(TestDataContainer, self).setup()
+
+        self.deposit = factories.DataContainer(
+            name='data-deposit',
+            id='data-deposit',
+        )
+        self.user = core_factories.User(name='user1')
+        self.admin = core_factories.User(name='admin')
+        self.container = factories.DataContainer(
+            name='container1',
+            title='Test Container',
+            users=[
+                {'name': self.admin['name'], 'capacity': 'admin'},
+            ]
+        )
+
+    def make_request_access_request(self, container_id, user, message, **kwargs):
+        url = '/data-container/{}/request_access'.format(container_id)
+        env = {'REMOTE_USER': user.encode('ascii')} if user else {}
+        resp = self.app.post(
+            url,
+            {'message': message},
+            extra_environ=env,
+            **kwargs
+        )
+        return resp
+
+    # Request Access
+
+    def test_request_access_invalid_method(self):
+        resp = self.app.get(
+            '/data-container/container1/request_access',
+            extra_environ={'REMOTE_USER': 'user1'},
+            status=404
+        )
+
+    def test_request_access_missing_message(self):
+        self.make_request_access_request(
+            container_id='container1', user='user1', message='',
+            status=400
+        )
+
+    def test_request_access_duplicate(self):
+        rec = AccessRequest(
+            user_id=self.user['id'],
+            object_id=self.container['id'],
+            object_type='organization',
+            message='I can haz access?',
+            role='member',
+        )
+        model.Session.add(rec)
+        model.Session.commit()
+        resp = self.make_request_access_request(
+            container_id='container1', user='user1', message='me again',
+            status=400
+        )
+
+    def test_request_access_invalid_containers(self):
+        # this container doesn't exist
+        self.make_request_access_request(
+            container_id='bad', user='user1', message='I can haz access?',
+            status=404
+        )
+
+        # we can't request access to the data-deposit
+        # because it is _special and different_
+        self.make_request_access_request(
+            container_id='data-deposit', user='user3', message='I can haz access?',
+            status=403
+        )
+
+    def test_request_access_not_authorized(self):
+        self.make_request_access_request(
+            container_id='container1', user=None, message='I can haz access?',
+            status=403
+        )
+
+    def test_request_access_valid(self):
+        mock_mailer = mock.Mock()
+        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+            resp = self.make_request_access_request(
+                container_id='container1', user='user1', message='I can haz access?',
+                status=302
             )
 
-            resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user1'}, status=200)
-            assert_in(
-                'You already have access to download resources from Test Dataset 1',
-                resp2.body
+        mock_mailer.assert_called_once()
+        assert_equals('admin', mock_mailer.call_args[0][0])
+        assert_equals(
+            '[UNHCR RIDL] - Request for access to container: "Test Container"',
+            mock_mailer.call_args[0][1]
+        )
+        # call_args[0][2] is the HTML message body
+        # but we're not going to make any assertions about it here
+        # see the mailer tests for this
+
+        assert_equals(
+            1,
+            len(model.Session.query(AccessRequest).filter(
+                AccessRequest.object_id == self.container['id'],
+                AccessRequest.user_id == self.user['id'],
+                AccessRequest.status == 'requested'
+            ).all())
+        )
+
+        resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user1'}, status=200)
+        assert_in(
+            'Requested access to container Test Container',
+            resp2.body
+        )
+
+    def test_request_access_user_already_has_access(self):
+        mock_mailer = mock.Mock()
+        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+            resp = self.make_request_access_request(
+                container_id='container1', user='admin', message='I can haz access?',
+                status=302
             )
+
+        mock_mailer.assert_not_called()
+
+        assert_equals(
+            0,
+            len(model.Session.query(AccessRequest).filter(
+                AccessRequest.object_id == self.container['id'],
+                AccessRequest.user_id == self.admin['id'],
+                AccessRequest.status == 'requested'
+            ).all())
+        )
+
+        resp2 = resp.follow(extra_environ={'REMOTE_USER': 'admin'}, status=200)
+        assert_in(
+            'You are already a member of Test Container',
+            resp2.body
+        )
 
 
 class TestAccessRequests(base.FunctionalTestBase):

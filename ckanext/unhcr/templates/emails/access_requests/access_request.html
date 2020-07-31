@@ -10,8 +10,17 @@
   {% call email.paragraph() %}
     User
     {{ h.link_to(requesting_user.fullname or requesting_user.name, h.url_for('user.read', id=requesting_user.id, qualified=True)) }}
-    has requested access to download
-    {{ h.link_to(dataset.title or dataset.name, h.url_for('dataset_read', id=dataset.name, qualified=True)) }}.
+
+    {% if object_type == 'dataset' %}
+      has requested access to download
+      {{ h.link_to(object.title or object.name, h.url_for('dataset_read', id=object.name, qualified=True)) }}.
+    {% elif object_type == 'container' %}
+      has requested access to
+      {{ h.link_to(object.display_name, h.url_for('data-container_read', id=object.name, qualified=True)) }}.
+    {% else %}
+      has requested access to <strong>{{ object.name }}</strong>
+    {% endif %}
+
   {% endcall %}
 
   {% call email.paragraph() %}

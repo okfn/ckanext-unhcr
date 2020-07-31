@@ -591,20 +591,34 @@ def access_request_list_for_user(context, data_dict):
     return [dictize_access_request(req) for req in model.Session.execute(sql).fetchall()]
 
 
+def _validate_status(status):
+    valid = ['approved', 'rejected']
+    if status not in valid:
+        raise toolkit.ValidationError("'status' must be one of {}".format(str(valid)))
+
+def _validate_role(role):
+    valid = ['member', 'editor', 'admin']
+    if role not in valid:
+        raise toolkit.ValidationError("'role' must be one of {}".format(str(valid)))
+
+def _validate_object_type(object_type):
+    valid = ['organization', 'package']
+    if object_type not in valid:
+        raise toolkit.ValidationError("'object_type' must be one of {}".format(str(valid)))
+
+
 def access_request_update(context, data_dict):
     """
     Approve or reject a request for access to a container or dataset
 
     :param id: access request id
     :type id: string
-    :param status: new status value (approved, rejected)
+    :param status: new status value ('approved', 'rejected')
     :type status: string
     """
     request_id = toolkit.get_or_bust(data_dict, "id")
     status = toolkit.get_or_bust(data_dict, "status")
-    allowed_status = ['approved', 'rejected']
-    if status not in allowed_status:
-        raise toolkit.ValidationError("'status' must be one of {}".format(str(allowed_status)))
+    _validate_status(status)
     request = model.Session.query(AccessRequest).get(request_id)
     if not request:
         raise toolkit.ObjectNotFound("Access Request not found")
@@ -635,6 +649,64 @@ def access_request_update(context, data_dict):
         raise toolkit.Invalid("Unknown Object Type")
 
     request.status = status
+    model.Session.commit()
+    model.Session.refresh(request)
+
+    return {
+        col.name: getattr(request, col.name)
+        for col in request.__table__.columns
+    }
+
+
+def access_request_create(context, data_dict):
+    """
+    Request access to a container or dataset
+
+    :param object_id: uuid of the container or dataset we are requesting access to
+    :type object_id: string
+    :param object_type: type of object we are requesting access to ('organization', 'package')
+    :type object_type: string
+    :param message: user's message to the admin who will review the request
+    :type message: string
+    :param role: requested level of access ('member', 'editor', 'admin')
+    :type role: string
+    """
+    m = context.get('model', model)
+    user_id = toolkit.get_or_bust(context, "user")
+    user = m.User.get(user_id)
+    if not user:
+        raise toolkit.ObjectNotFound("User not found")
+
+    object_id, object_type, message, role = toolkit.get_or_bust(
+        data_dict,
+        ['object_id', 'object_type', 'message', 'role'],
+    )
+
+    if not message:
+        raise toolkit.ValidationError("'message' is required")
+    _validate_role(role)
+    _validate_object_type(object_type)
+
+    toolkit.check_access('access_request_create', context, data_dict)
+
+    existing_request = model.Session.query(AccessRequest).filter(
+        AccessRequest.user_id==user.id,
+        AccessRequest.object_id==object_id,
+        AccessRequest.status=='requested'
+    ).all()
+    if existing_request:
+        raise toolkit.ValidationError(
+            "You've already submitted a request to access this {}.".format(object_type)
+        )
+
+    request = AccessRequest(
+        user_id=user.id,
+        object_id=object_id,
+        object_type=object_type,
+        message=message,
+        role=role,
+    )
+    model.Session.add(request)
     model.Session.commit()
     model.Session.refresh(request)
 

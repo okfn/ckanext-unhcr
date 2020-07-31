@@ -199,12 +199,13 @@ class UnhcrPlugin(
             'page_authorized': helpers.page_authorized,
             'get_came_from_param': helpers.get_came_from_param,
             'user_is_curator': helpers.user_is_curator,
+            'user_is_container_admin': helpers.user_is_container_admin,
             # Linked datasets
             'get_linked_datasets_for_form': helpers.get_linked_datasets_for_form,
             'get_linked_datasets_for_display': helpers.get_linked_datasets_for_display,
-            # Pending requests
+            # Access requests
             'get_pending_requests_total': helpers.get_pending_requests_total,
-            'user_is_container_admin': helpers.user_is_container_admin,
+            'get_existing_access_request': helpers.get_existing_access_request,
             # Deposited datasets
             'get_data_deposit': helpers.get_data_deposit,
             'get_data_curation_users': helpers.get_data_curation_users,
@@ -386,6 +387,7 @@ class UnhcrPlugin(
         functions['package_update'] = auth.package_update
         functions['dataset_collaborator_create'] = auth.dataset_collaborator_create
         functions['access_request_list_for_user'] = auth.access_request_list_for_user
+        functions['access_request_create'] = auth.access_request_create
         functions['access_request_update'] = auth.access_request_update
         functions['user_update_sysadmin'] = auth.user_update_sysadmin
         functions['search_index_rebuild'] = auth.search_index_rebuild
@@ -397,6 +399,7 @@ class UnhcrPlugin(
         return {
             'access_request_list_for_user': actions.access_request_list_for_user,
             'access_request_update': actions.access_request_update,
+            'access_request_create': actions.access_request_create,
             'package_update': actions.package_update,
             'package_publish_microdata': actions.package_publish_microdata,
             'package_get_microdata_collections': actions.package_get_microdata_collections,
@@ -484,6 +487,7 @@ class UnhcrPlugin(
         return [
             blueprints.unhcr_access_requests_blueprint,
             blueprints.unhcr_admin_blueprint,
+            blueprints.unhcr_data_container_blueprint,
             blueprints.unhcr_metrics_blueprint,
             blueprints.unhcr_search_index_blueprint,
             blueprints.unhcr_user_blueprint,

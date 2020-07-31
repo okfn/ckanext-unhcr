@@ -1,6 +1,12 @@
 {% ckan_extends %}
 
 {% set deposit = h.get_data_deposit() %}
+{% set group_users = c.group_dict.users|map(attribute="name")|list %}
+{% set can_request_access = (
+  c.user not in group_users and
+  c.group_dict.id != deposit.id and
+  not h.get_existing_access_request(c.userobj.id, c.group_dict.id, 'requested')
+) %}
 
 {% block page_primary_action %}
   {% if c.group_dict.state == 'approval_needed' %}
@@ -14,6 +20,22 @@
       {% endif %}
     {% endif %}
   {% endif %}
+{% endblock %}
+
+{% block content_action %}
+
+{% if can_request_access %}
+  <a
+    href="#membership-container-request-access"
+    role="button"
+    class="btn"
+    data-toggle="modal"
+    title="Request access to {{ c.group_dict.display_name }}"
+    data-target="#membership-container-request-access"
+  >
+    <i class="fa fa-key"></i>Request Access
+  </a>
+{% endif %}
 {% endblock %}
 
 {% block groups_search_form %}
@@ -79,4 +101,11 @@
     </div>
     <a class="close no-text hide-filters"><i class="fa fa-times-circle"></i><span class="text">close</span></a>
   </div>
+{% endblock %}
+
+{% block footer %}
+  {{ super() }}
+  {% if can_request_access %}
+    {% snippet "organization/snippets/membership_modals.html", group=c.group_dict %}
+  {% endif %}
 {% endblock %}
