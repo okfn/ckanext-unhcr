@@ -81,7 +81,7 @@
   {% endblock %}
 
   {% if can_request_access %}
-    {% snippet "snippets/not_authorized_to_download.html", pkg=pkg %}
+    {% snippet "snippets/request_access.html", pkg=pkg %}
   {% endif %}
 
 
