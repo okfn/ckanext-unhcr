@@ -1,5 +1,18 @@
 # RIDL Changelog
 
+## v1.8.0 - 2020-07-31
+
+Features:
+* Allow management of sysadmins from the web UI
+* Improve helper text for dataset title
+* Always link to user guide in the sidebar
+* Allow users to request access to a data container
+* Allow search index to be rebuilt from the web UI
+
+Fixes:
+* Allow sort by Created on organization page
+* Fix unnecessary scroll bar in MS Edge
+
 ## v1.7.0 - 2020-07-15
 
 Features:
