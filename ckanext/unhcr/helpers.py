@@ -745,7 +745,7 @@ def current_path(action=None):
     path = toolkit.request.path
     if action == '/dataset/new':
         path = '/dataset/new'
-    if path.startswith('/dataset/copy'):
+    if path.startswith('/dataset/copy') or path.startswith('/deposited-dataset/copy'):
         path = '/dataset/new'
     return path
 
