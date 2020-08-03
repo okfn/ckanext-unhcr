@@ -5,7 +5,12 @@
     <div class="modal-dialog" role="document">
     <div class="modal-content">
 
-    <form action="/dataset/{{ pkg.id }}/publish_microdata">
+    <form
+      action="{% url_for
+        controller='ckanext.unhcr.controllers.extended_package:ExtendedPackageController',
+        action='publish_microdata',
+        id=pkg.id %}"
+    >
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
         <h3>Push to Microdata</h3>
