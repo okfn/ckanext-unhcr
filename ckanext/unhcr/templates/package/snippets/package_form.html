@@ -45,7 +45,14 @@ then itself be extended to add/remove blocks of functionality. #}
 
       {% if data.state == 'draft' and data.resources %}
         <button class="btn" type="submit" name="save">{{ _('Add More Data') }}</button>
-        <a href="/dataset/publish/{{ data.id }}" class="btn btn-primary">{{ _('Publish Dataset') }}</a>
+        <a
+          href="{% url_for
+            controller='ckanext.unhcr.controllers.extended_package:ExtendedPackageController',
+            action='publish',
+            id=data.id %}"
+          class="btn btn-primary">
+            {{ _('Publish Dataset') }}
+        </a>
       {% else %}
         {% block save_button %}
           <button class="btn btn-primary" type="submit" name="save">{% block save_button_text %}{{ _('Next: Add Data') }}{% endblock %}</button>
