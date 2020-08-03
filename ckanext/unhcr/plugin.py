@@ -4,6 +4,7 @@ import json
 import logging
 
 from ckan.common import config
+import ckan.lib.helpers as core_helpers
 from ckan.model import User
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
@@ -74,6 +75,16 @@ def restrict_external(func):
     return wrapper
 
 
+_url_for = core_helpers.url_for
+
+def url_for(*args, **kw):
+    url = _url_for(*args, **kw)
+
+    if getattr(toolkit.c.userobj, 'external', None) and '/dataset/' in url:
+        url = url.replace('/dataset/', '/deposited-dataset/')
+    return url
+
+
 class UnhcrPlugin(
         plugins.SingletonPlugin, DefaultTranslation, DefaultPermissionLabels):
     plugins.implements(plugins.IConfigurer)
@@ -105,6 +116,7 @@ class UnhcrPlugin(
 
         User.external = property(user_is_external)
         authz.is_authorized = restrict_external(authz.is_authorized)
+        core_helpers.url_for = url_for
 
     def update_config_schema(self, schema):
         schema.update({
