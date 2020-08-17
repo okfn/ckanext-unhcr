@@ -956,6 +956,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
             {'id': self.dataset_request.id, 'status': 'invalid-status'}
         )
 
+
 class TestUpdateSysadmin(base.FunctionalTestBase):
 
     def test_sysadmin_not_authorized(self):
@@ -1012,3 +1013,18 @@ class TestUpdateSysadmin(base.FunctionalTestBase):
         # now they are not a sysadmin any more
         userobj = model.User.get(user['id'])
         assert_equals(False, userobj.sysadmin)
+
+
+class TestPackageSearch(base.FunctionalTestBase):
+
+    def test_package_search_permissions(self):
+        internal_user = core_factories.User()
+        external_user = core_factories.User(email='fred@externaluser.com')
+        dataset = factories.Dataset(private=True)
+        action = toolkit.get_action("package_search")
+
+        internal_user_search_result = action({'user': internal_user["name"]}, {})
+        external_user_search_result = action({'user': external_user["name"]}, {})
+
+        assert_equals(1, internal_user_search_result['count'])  # internal_user can see this
+        assert_equals(0, external_user_search_result['count'])  # external_user can't

@@ -7,12 +7,12 @@ from nose.plugins.attrib import attr
 import ckan.lib.navl.dictization_functions as df
 from ckan.tests import factories as core_factories
 from nose.tools import assert_raises, assert_equals
-from ckan.tests.helpers import call_action, FunctionalTestBase
-from ckanext.unhcr.tests import factories
+from ckan.tests.helpers import call_action
+from ckanext.unhcr.tests import base, factories
 from ckanext.unhcr import validators
 
 
-class TestValidators(FunctionalTestBase):
+class TestValidators(base.FunctionalTestBase):
 
     # Config
 

@@ -7,28 +7,14 @@ from paste.registry import Registry
 from nose.plugins.attrib import attr
 from ckan.tests import factories as core_factories
 from nose.tools import assert_raises, assert_equals
-from ckan.tests.helpers import call_action, FunctionalTestBase
+from ckan.tests.helpers import call_action
 from ckanext.unhcr.helpers import get_linked_datasets_for_form, get_linked_datasets_for_display
 from ckanext.unhcr.models import AccessRequest
-from ckanext.unhcr.tests import factories
+from ckanext.unhcr.tests import base, factories
 from ckanext.unhcr import helpers
 
 
-class TestHelpers(FunctionalTestBase):
-
-    # Setup
-
-    @classmethod
-    def setup_class(cls):
-
-        # Hack because the hierarchy extension uses c in some methods
-        # that are called outside the context of a web request
-        c = pylons.util.AttribSafeContextObj()
-        registry = Registry()
-        registry.prepare()
-        registry.register(pylons.c, c)
-
-        super(TestHelpers, cls).setup_class()
+class TestHelpers(base.FunctionalTestBase):
 
     # General
 

@@ -4,12 +4,14 @@ import json
 import logging
 
 from ckan.common import config
+from ckan.model import User
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan.lib.plugins import DefaultTranslation
 from ckan.lib.plugins import DefaultPermissionLabels
 
 # 🙈
+import ckan.authz as authz
 from ckan.lib.activity_streams import (
     activity_stream_string_functions,
     activity_stream_string_icons,
@@ -23,6 +25,53 @@ from ckanext.hierarchy.helpers import group_tree_section
 log = logging.getLogger(__name__)
 
 _ = toolkit._
+
+
+INTERNAL_DOMAINS = ['unhcr.org']
+
+
+def user_is_external(user):
+    '''
+    Returns True if user email is not in the managed internal domains.
+    '''
+    try:
+        domain = user.email.split('@')[1]
+    except AttributeError:
+         # Internal sysadmin user does not have email
+        if user.sysadmin:
+            return False
+        else:
+            return True
+
+    internal_domains = toolkit.aslist(
+        toolkit.config.get('ckanext.unhcr.internal_domains', INTERNAL_DOMAINS),
+        sep = ','
+    )
+
+    return domain not in internal_domains
+
+
+def restrict_external(func):
+    '''
+    Decorator function to restrict external users to a small number of allowed_actions
+    '''
+
+    allowed_actions = [
+        'package_search',
+    ]
+
+    def wrapper(action, context, data_dict=None):
+        user = User.by_name(context.get('user'))
+        if not user:
+            return func(action, context, data_dict)
+        if user.sysadmin:
+            return func(action, context, data_dict)
+        if context.get('ignore_auth'):
+            return func(action, context, data_dict)
+        if user.external and action not in allowed_actions:
+            return {'success': False, 'msg': 'Not allowed to perform this action'}
+        return func(action, context, data_dict)
+    return wrapper
 
 
 class UnhcrPlugin(
@@ -53,6 +102,9 @@ class UnhcrPlugin(
         activity_stream_string_functions['changed package'] = helpers.custom_activity_renderer
         activity_stream_string_functions['download resource'] = helpers.download_resource_renderer
         activity_stream_string_icons['download resource'] = 'download'
+
+        User.external = property(user_is_external)
+        authz.is_authorized = restrict_external(authz.is_authorized)
 
     def update_config_schema(self, schema):
         schema.update({
@@ -188,6 +240,9 @@ class UnhcrPlugin(
 
     def get_helpers(self):
         return {
+            # Core overrides
+            'new_activities': helpers.new_activities,
+            'dashboard_activity_stream': helpers.dashboard_activity_stream,
             # General
             'get_data_container': helpers.get_data_container,
             'get_all_data_containers': helpers.get_all_data_containers,
@@ -472,6 +527,10 @@ class UnhcrPlugin(
         # For curating users
         # Adding "deposited-dataset" label for data curators
         if user_obj:
+
+            if user_obj.external:
+                return ['']
+
             context = {u'user': user_obj.id}
             deposit = helpers.get_data_deposit()
             orgs = toolkit.get_action('organization_list_for_user')(context, {})
