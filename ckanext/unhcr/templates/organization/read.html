@@ -48,7 +48,9 @@
         <p>{% trans %}You have datasets which are not deposited yet:{% endtrans %}</p>
         <ul>
           {% for draft in drafts %}
-          <li><a href="/dataset/{{ draft.name }}">{{ draft.title }}</a></li>
+          <li><a href="{{ h.url_for('dataset_read', id=draft.name) }}">
+            {{ draft.title }}
+          </a></li>
           {% endfor %}
         </ul>
       </div>

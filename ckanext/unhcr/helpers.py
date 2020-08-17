@@ -39,6 +39,11 @@ def dashboard_activity_stream(*args, **kwargs):
         return []
 
 
+@core_helpers.core_helper
+def url_for(*args, **kw):
+    return core_helpers.url_for(*args, **kw)
+
+
 # General
 
 def get_data_container(id, context=None):
@@ -740,7 +745,7 @@ def current_path(action=None):
     path = toolkit.request.path
     if action == '/dataset/new':
         path = '/dataset/new'
-    if path.startswith('/dataset/copy'):
+    if path.startswith('/dataset/copy') or path.startswith('/deposited-dataset/copy'):
         path = '/dataset/new'
     return path
 

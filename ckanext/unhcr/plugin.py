@@ -4,6 +4,7 @@ import json
 import logging
 
 from ckan.common import config
+import ckan.lib.helpers as core_helpers
 from ckan.model import User
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
@@ -74,6 +75,16 @@ def restrict_external(func):
     return wrapper
 
 
+_url_for = core_helpers.url_for
+
+def url_for(*args, **kw):
+    url = _url_for(*args, **kw)
+
+    if getattr(toolkit.c.userobj, 'external', None) and '/dataset/' in url:
+        url = url.replace('/dataset/', '/deposited-dataset/')
+    return url
+
+
 class UnhcrPlugin(
         plugins.SingletonPlugin, DefaultTranslation, DefaultPermissionLabels):
     plugins.implements(plugins.IConfigurer)
@@ -105,6 +116,7 @@ class UnhcrPlugin(
 
         User.external = property(user_is_external)
         authz.is_authorized = restrict_external(authz.is_authorized)
+        core_helpers.url_for = url_for
 
     def update_config_schema(self, schema):
         schema.update({
@@ -175,13 +187,35 @@ class UnhcrPlugin(
         _map.connect('/dataset/{id}/request_access', controller=controller, action='request_access', conditions={'method': ['POST']})
         _map.connect('dataset_internal_activity', '/dataset/internal_activity/{dataset_id}', controller=controller, action='activity')
         _map.connect('deposited-dataset_internal_activity', '/deposited-dataset/internal_activity/{dataset_id}', controller=controller, action='activity')
+
+        # additional aliases to map /deposited-dataset/stuff routes
+        # these are needed because register_package_plugins() only maps a
+        # subset of /dataset routes for custom package types
+        _map.connect('/deposited-dataset/resources/{id}', controller=controller, action='resources')
+        _map.connect('/deposited-dataset/{id}/resource_copy/{resource_id}', controller=controller, action='resource_copy')
+        _map.connect('/deposited-dataset/{id}/resource_delete/{resource_id}', controller=controller, action='resource_delete')
+        _map.connect('/deposited-dataset/{id}/resource_edit/{resource_id}', controller=controller, action='resource_edit')
+        _map.connect('/deposited-dataset/{id}/resource/{resource_id}', controller=controller, action='resource_read')
+        _map.connect('/deposited-dataset/{id}/resource/{resource_id}/view/{view_id}', controller=controller, action='resource_view')
+        _map.connect('/deposited-dataset/activity/{dataset_id}', controller=controller, action='activity')
+        _map.connect('/deposited-dataset/activity/{dataset_id}/{offset}', controller=controller, action='activity')
+        _map.connect('/deposited-dataset/copy/{id}', controller=controller, action='copy')
+        _map.connect('/deposited-dataset/{id}/resource_data/{resource_id}', controller='ckanext.datapusher.plugin:ResourceDataController', action='resource_data')
+
+        # resource download routes
+        download_routes = [
+            '/dataset/{id}/resource/{resource_id}/download',
+            '/dataset/{id}/resource/{resource_id}/download/{filename}',
+            '/deposited-dataset/{id}/resource/{resource_id}/download',
+            '/deposited-dataset/{id}/resource/{resource_id}/download/{filename}',
+        ]
         if 'cloudstorage' not in config['ckan.plugins']:
-            _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
-            _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
+            for route in download_routes:
+                _map.connect(route, controller=controller, action='resource_download')
         else:
             controller='ckanext.unhcr.controllers.extended_storage:ExtendedStorageController'
-            _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
-            _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
+            for route in download_routes:
+                _map.connect(route, controller=controller, action='resource_download')
 
 
         # organization
