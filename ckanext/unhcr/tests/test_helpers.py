@@ -42,6 +42,12 @@ class TestHelpers(base.FunctionalTestBase):
         assert_equals(len(result), 1)
         assert_equals(result[0]['title'], 'container1')
 
+    def test_get_all_data_containers_external_user(self):
+        container1 = factories.DataContainer(title='container1', visible_external=True)
+        container2 = factories.DataContainer(title='container2', visible_external=False)
+        assert_equals(len(helpers.get_all_data_containers(external_user=True)), 1)
+        assert_equals(len(helpers.get_all_data_containers(external_user=False)), 2)
+
     # Linked Datasets
 
     def test_get_linked_datasets_for_form_none(self):
