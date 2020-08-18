@@ -65,6 +65,25 @@ class TestValidators(base.FunctionalTestBase):
         assert_raises(toolkit.Invalid,
             validators.deposited_dataset_owner_org_dest, 'not-existent', {})
 
+    def test_deposited_dataset_owner_org_dest_not_visible_external(self):
+        deposit = factories.DataContainer(id='data-deposit')
+        target = factories.DataContainer(id='data-target', visible_external=False)
+        internal_user = core_factories.User()
+        external_user = core_factories.User(email='fred@externaluser.com')
+        assert_raises(
+            toolkit.Invalid,
+            validators.deposited_dataset_owner_org_dest,
+            'data-target',
+            {'user': external_user['name']},
+        )
+        assert_equals(
+            validators.deposited_dataset_owner_org_dest(
+                'data-target',
+                {'user': internal_user['name']},
+            ),
+            'data-target',
+        )
+
     def test_deposited_dataset_curation_state(self):
         assert_equals(validators.deposited_dataset_curation_state('draft', {}), 'draft')
         assert_equals(validators.deposited_dataset_curation_state('submitted', {}), 'submitted')

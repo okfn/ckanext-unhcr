@@ -101,10 +101,21 @@ def deposited_dataset_owner_org(value, context):
 
 
 def deposited_dataset_owner_org_dest(value, context):
+    user = context.get('user')
+
+    userobj = model.User.get(user)
+    if not userobj:
+        external = True
+    else:
+        external = userobj.external
 
     # Pass validation if data container exists and NOT for depositing
     deposit = helpers.get_data_deposit()
-    orgs = helpers.get_all_data_containers(exclude_ids=[deposit['id']], include_unknown=True)
+    orgs = helpers.get_all_data_containers(
+        exclude_ids=[deposit['id']],
+        include_unknown=True,
+        external_user=external
+    )
     for org in orgs:
         if value == org['id']:
             return value

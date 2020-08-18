@@ -51,14 +51,19 @@ def get_data_container(id):
     return toolkit.get_action('organization_show')(context, {'id': id})
 
 
-def get_all_data_containers(exclude_ids=[], include_unknown=False):
+def get_all_data_containers(exclude_ids=[], include_unknown=False, external_user=True):
     data_containers = []
     context = {'model': model, 'ignore_auth': True}
     orgs = toolkit.get_action('organization_list')(context,
-        {'type': 'data-container', 'all_fields': True})
+        {'type': 'data-container', 'all_fields': True, 'include_extras': True})
     for org in orgs:
-        if org['id'] not in exclude_ids:
-            data_containers.append(org)
+        if org['id'] in exclude_ids:
+            continue
+        if external_user and not org['visible_external']:
+            continue
+        if org['approval_status'] != u'approved':
+            continue
+        data_containers.append(org)
     if include_unknown:
         data_containers.insert(0, {
             'id': 'unknown',
