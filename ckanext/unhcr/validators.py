@@ -132,7 +132,7 @@ def deposited_dataset_curator_id(value, context):
     if value:
         curation_role = helpers.get_deposited_dataset_user_curation_role(value)
         if curation_role not in ['admin', 'curator']:
-            raise Invalid('Ivalid Curator id')
+            raise Invalid('Invalid Curator id')
 
     return value
 
