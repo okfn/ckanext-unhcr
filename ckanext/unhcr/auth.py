@@ -77,6 +77,20 @@ def organization_list_for_user(context, data_dict):
         return core_get.organization_list_for_user(context, data_dict)
 
 
+@toolkit.chained_auth_function
+def organization_show(next_auth, context, data_dict):
+    user = context.get('auth_user_obj')
+    if not user:
+        return next_auth(context, data_dict)
+    if user.external:
+        deposit = helpers.get_data_deposit()
+        if data_dict.get('id') in [deposit['name'], deposit['id']]:
+            return {'success': True}
+        else:
+            return {'success': False}
+    return next_auth(context, data_dict)
+
+
 def organization_create(context, data_dict):
     user_orgs = toolkit.get_action('organization_list_for_user')(context, {})
 
