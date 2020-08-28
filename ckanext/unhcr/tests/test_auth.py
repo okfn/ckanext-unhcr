@@ -10,6 +10,7 @@ from ckan.tests import helpers
 from ckan.tests import factories as core_factories
 
 from ckanext.unhcr import auth
+from ckanext.unhcr.plugin import ALLOWED_ACTIONS
 from ckanext.unhcr.tests import base, factories
 from ckanext.unhcr.utils import get_module_functions
 
@@ -122,6 +123,10 @@ class TestAuthUI(base.FunctionalTestBase):
         external_user = core_factories.User(email='fred@externaluser.com')
         dataset = factories.Dataset()
         container = factories.DataContainer()
+        deposit = factories.DataContainer(
+            id='data-deposit',
+            name='data-deposit'
+        )
         env = {'REMOTE_USER': external_user['name'].encode('ascii')}
 
         endpoints_403 = [
@@ -141,7 +146,6 @@ class TestAuthUI(base.FunctionalTestBase):
 
         endpoints_404 = [
             '/dataset/{}'.format(dataset['name']),
-            '/data-container/data-deposit',
             '/data-container/{}'.format(container['name']),
             '/organization/{}'.format(container['name']),
             '/group/{}'.format(container['name']),
@@ -152,6 +156,7 @@ class TestAuthUI(base.FunctionalTestBase):
 
         endpoints_200 = [
             '/feeds/dataset.atom',
+            '/data-container/data-deposit',
         ]
         for endpoint in endpoints_200:
             resp = app.get(endpoint, extra_environ=env, status=200)
@@ -292,43 +297,31 @@ class TestAuthUnit(base.FunctionalTestBase):
             'ckan.logic.auth.update',
         ]
 
-        allowed_actions = [
-            'package_search',
-        ]
-
         for module_path in core_auth_modules:
             actions = get_module_functions(module_path)
             for action in actions:
                 context = {'user': external_user['name']}
-                if action not in allowed_actions:
+                if action not in ALLOWED_ACTIONS:
                     assert_raises(
                         toolkit.NotAuthorized,
                         toolkit.check_access,
                         action,
                         context=context
                     )
-                else:
-                    assert_equals(True, toolkit.check_access(action, context))
 
     def test_external_users_plugin_actions(self):
         external_user = core_factories.User(email='fred@externaluser.com')
 
-        allowed_actions = [
-            'package_search',
-        ]
-
         for plugin in plugins.PluginImplementations(plugins.IAuthFunctions):
             for action in plugin.get_auth_functions().keys():
                 context = {'user': external_user['name']}
-                if action not in allowed_actions:
+                if action not in ALLOWED_ACTIONS:
                     assert_raises(
                         toolkit.NotAuthorized,
                         toolkit.check_access,
                         action,
                         context=context
                     )
-                else:
-                    assert_equals(True, toolkit.check_access(action, context))
 
     # TODO: fix problems with context pupulation
     #  def test_package_update(self):
