@@ -203,7 +203,7 @@ class TestHelpers(base.FunctionalTestBase):
                 {'name': 'curator2', 'capacity': 'editor'},
             ],
         )
-        curators = helpers.get_data_curation_users(context={'user': 'depadmin'})
+        curators = helpers.get_data_curation_users()
         curator_names = sorted([curator['name']
             for curator in curators
             # Added to org by ckan

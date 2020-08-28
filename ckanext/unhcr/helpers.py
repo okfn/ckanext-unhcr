@@ -287,8 +287,8 @@ def get_data_deposit():
     return deposit
 
 
-def get_data_curation_users(context=None):
-    context = context or {'model': model, 'user': toolkit.c.user}
+def get_data_curation_users():
+    context = {'model': model, 'ignore_auth': True}
     deposit = get_data_deposit()
 
     # Get depadmins
