@@ -320,10 +320,11 @@ def get_data_curation_users():
 
 def get_deposited_dataset_user_curation_status(dataset, user_id):
     deposit = get_data_deposit()
+    context = {'user': user_id, 'model': model, 'session': model.Session}
 
     # General
     status = {}
-    status['error'] = get_dataset_validation_error_or_none(dataset)
+    status['error'] = get_dataset_validation_error_or_none(dataset, context)
     status['role'] = get_deposited_dataset_user_curation_role(user_id)
     status['state'] = dataset['curation_state']
     status['final_review'] = dataset.get('curation_final_review')
@@ -421,9 +422,7 @@ def get_deposited_dataset_user_contact(user_id=None):
     }
 
 
-def get_dataset_validation_error_or_none(pkg_dict, context=None):
-    context = context or {'model': model, 'session': model.Session, 'user': toolkit.c.user}
-
+def get_dataset_validation_error_or_none(pkg_dict, context):
     # Convert dataset
     if pkg_dict.get('type') == 'deposited-dataset':
         pkg_dict = convert_deposited_dataset_to_regular_dataset(pkg_dict)

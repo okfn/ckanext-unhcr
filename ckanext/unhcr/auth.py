@@ -166,7 +166,7 @@ def package_update(next_auth, context, data_dict):
     # Deposited dataset
     if dataset['type'] == 'deposited-dataset':
         curation = helpers.get_deposited_dataset_user_curation_status(
-            dataset, toolkit.c.userobj.id)
+            dataset, getattr(context.get('auth_user_obj'), 'id', None))
         if 'edit' in curation['actions']:
             return {'success': True}
         return {'success': False, 'msg': 'Not authorized to edit deposited dataset'}

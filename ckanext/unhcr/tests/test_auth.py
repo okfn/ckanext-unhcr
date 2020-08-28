@@ -323,40 +323,65 @@ class TestAuthUnit(base.FunctionalTestBase):
                         context=context
                     )
 
-    # TODO: fix problems with context pupulation
-    #  def test_package_update(self):
+    def test_package_update(self):
 
-        #  # Create users
-        #  depadmin = core_factories.User(name='depadmin')
-        #  curator = core_factories.User(name='curator')
-        #  depositor = core_factories.User(name='depositor')
-        #  creator = core_factories.User(name='creator')
+        # Create users
+        depadmin = core_factories.User(name='depadmin')
+        curator = core_factories.User(name='curator')
+        depositor = core_factories.User(name='depositor')
+        creator = core_factories.User(name='creator')
 
-        #  # Create containers
-        #  deposit = factories.DataContainer(
-            #  id='data-deposit',
-            #  name='data-deposit',
-            #  users=[
-                #  {'name': 'depadmin', 'capacity': 'admin'},
-                #  {'name': 'curator', 'capacity': 'editor'},
-            #  ],
-        #  )
-        #  target = factories.DataContainer(
-            #  id='data-target',
-            #  name='data-target',
-        #  )
+        # Create containers
+        deposit = factories.DataContainer(
+            id='data-deposit',
+            name='data-deposit',
+            users=[
+                {'name': 'depadmin', 'capacity': 'admin'},
+                {'name': 'curator', 'capacity': 'editor'},
+            ],
+        )
+        target = factories.DataContainer(
+            id='data-target',
+            name='data-target',
+        )
 
-        #  # Create dataset
-        #  dataset = factories.DepositedDataset(
-            #  name='dataset',
-            #  owner_org='data-deposit',
-            #  owner_org_dest='data-target',
-            #  user=creator)
+        # Create dataset
+        dataset = factories.DepositedDataset(
+            name='dataset',
+            owner_org='data-deposit',
+            owner_org_dest='data-target',
+            user=creator
+        )
 
-        #  # Forbidden depadmin/curator/depositor
-        #  assert_equals(auth.package_update({'user': 'depadmin'}, dataset), False)
-        #  assert_equals(auth.package_update({'user': 'curator'}, dataset), False)
-        #  assert_equals(auth.package_update({'user': 'depositor'}, dataset), False)
+        # Forbidden depadmin/curator/depositor
+        assert_raises(
+            toolkit.NotAuthorized,
+            toolkit.check_access,
+            'package_update',
+            context={'user': 'depadmin'},
+            data_dict={'id': dataset['id']},
+        )
+        assert_raises(
+            toolkit.NotAuthorized,
+            toolkit.check_access,
+            'package_update',
+            context={'user': 'curator'},
+            data_dict={'id': dataset['id']},
+        )
+        assert_raises(
+            toolkit.NotAuthorized,
+            toolkit.check_access,
+            'package_update',
+            context={'user': 'depositor'},
+            data_dict={'id': dataset['id']},
+        )
 
-        #  # Granted creator
-        #  assert_equals(auth.package_update({'user': 'creator'}, dataset), True)
+        # Granted creator
+        assert_equals(
+            True,
+            toolkit.check_access(
+                'package_update',
+                {'user': 'creator'},
+                {'id': dataset['id']}
+            )
+        )
