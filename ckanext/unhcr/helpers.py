@@ -46,8 +46,8 @@ def url_for(*args, **kw):
 
 # General
 
-def get_data_container(id, context=None):
-    context = context or {'model': model}
+def get_data_container(id):
+    context = {'model': model, 'ignore_auth': True}
     return toolkit.get_action('organization_show')(context, {'id': id})
 
 

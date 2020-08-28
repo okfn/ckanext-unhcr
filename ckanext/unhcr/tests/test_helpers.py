@@ -19,17 +19,13 @@ class TestHelpers(base.FunctionalTestBase):
     # General
 
     def test_get_data_container(self):
-        user = core_factories.User()
-        context = {'model': model, 'user': user['name']}
         container = factories.DataContainer(title='container1')
-        result = helpers.get_data_container(container['id'], context=context)
+        result = helpers.get_data_container(container['id'])
         assert_equals(result['title'], container['title'])
 
     def test_get_data_container_not_found(self):
-        user = core_factories.User()
-        context = {'model': model, 'user': user['name']}
         assert_raises(toolkit.ObjectNotFound,
-            helpers.get_data_container, 'bad-id', context=context)
+            helpers.get_data_container, 'bad-id')
 
     def test_get_all_data_containers(self):
         container1 = factories.DataContainer(title='container1')
