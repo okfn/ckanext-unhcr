@@ -29,6 +29,27 @@ _ = toolkit._
 
 
 INTERNAL_DOMAINS = ['unhcr.org']
+ALLOWED_ACTIONS = [
+    'group_list_authz',
+    'group_list',
+    'group_show',
+    'organization_list_for_user',
+    'organization_show',
+    'package_create',
+    'package_delete',
+    'package_patch',
+    'package_resource_reorder',
+    'package_search',
+    'package_show',
+    'package_update',
+    'resource_create',
+    'resource_delete',
+    'resource_download',
+    'resource_patch',
+    'resource_show',
+    'resource_update',
+    'resource_view_list',
+]
 
 
 def user_is_external(user):
@@ -56,11 +77,6 @@ def restrict_external(func):
     '''
     Decorator function to restrict external users to a small number of allowed_actions
     '''
-
-    allowed_actions = [
-        'package_search',
-    ]
-
     def wrapper(action, context, data_dict=None):
         user = User.by_name(context.get('user'))
         if not user:
@@ -69,7 +85,7 @@ def restrict_external(func):
             return func(action, context, data_dict)
         if context.get('ignore_auth'):
             return func(action, context, data_dict)
-        if user.external and action not in allowed_actions:
+        if user.external and action not in ALLOWED_ACTIONS:
             return {'success': False, 'msg': 'Not allowed to perform this action'}
         return func(action, context, data_dict)
     return wrapper
