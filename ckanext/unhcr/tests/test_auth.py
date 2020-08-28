@@ -10,6 +10,7 @@ from ckan.tests import helpers
 from ckan.tests import factories as core_factories
 
 from ckanext.unhcr import auth
+from ckanext.unhcr.helpers import convert_deposited_dataset_to_regular_dataset
 from ckanext.unhcr.plugin import ALLOWED_ACTIONS
 from ckanext.unhcr.tests import base, factories
 from ckanext.unhcr.utils import get_module_functions
@@ -247,12 +248,6 @@ class TestAuthUnit(base.FunctionalTestBase):
 
     # Package
 
-    def test_package_create(self):
-        creator = core_factories.User(name='creator')
-        deposit = factories.DataContainer(name='data-deposit')
-        result = auth.package_create({'user': 'creator'}, {'owner_org': deposit['id']})
-        assert_equals(result['success'], True)
-
     def test_resource_download(self):
         container_member = core_factories.User()
         dataset_member = core_factories.User()
@@ -323,6 +318,126 @@ class TestAuthUnit(base.FunctionalTestBase):
                         context=context
                     )
 
+    def test_external_users_always_allowed_actions(self):
+        external_user = core_factories.User(email='fred@externaluser.com')
+
+        # these actions should always return True,
+        # regardless of the content of data_dict
+        actions = [
+            'package_search',
+            'group_list_authz',
+            'group_list',
+            'organization_list_for_user',
+        ]
+        context = {'user': external_user['name']}
+
+        for action in actions:
+            assert_equals(True, toolkit.check_access(action, context))
+
+    def test_organization_show(self):
+        external_user = core_factories.User(email='fred@externaluser.com')
+        internal_user = core_factories.User()
+        container = factories.DataContainer()
+        deposit = factories.DataContainer(
+            id='data-deposit',
+            name='data-deposit'
+        )
+
+        # Everyone can see the data deposit
+        assert_equals(
+            True,
+            toolkit.check_access(
+                'organization_show',
+                {'user': internal_user['name']},
+                {'id': deposit['id']}
+            )
+        )
+        assert_equals(
+            True,
+            toolkit.check_access(
+                'organization_show',
+                {'user': external_user['name']},
+                {'id': deposit['id']}
+            )
+        )
+
+        # Only internal users can see other containers
+        assert_equals(
+            True,
+            toolkit.check_access(
+                'organization_show',
+                {'user': internal_user['name']},
+                {'id': container['id']}
+            )
+        )
+        assert_raises(
+            toolkit.NotAuthorized,
+            toolkit.check_access,
+            'organization_show',
+            context={'user': external_user['name']},
+            data_dict={'id': container['id']}
+        )
+
+    def test_external_user_approved_deposit(self):
+        external_user = core_factories.User(email='fred@externaluser.com')
+
+        target = factories.DataContainer(
+            id='data-target',
+            name='data-target',
+        )
+        deposit = factories.DataContainer(
+            id='data-deposit',
+            name='data-deposit'
+        )
+
+        deposited_dataset = factories.DepositedDataset(
+            name='dataset1',
+            owner_org='data-deposit',
+            owner_org_dest='data-target',
+            user=external_user
+        )
+        tmp = deposited_dataset.copy()
+        tmp.update({
+            'unit_of_measurement': 'individual',
+            'keywords': ['3', '4'],
+            'archived': 'False',
+            'data_collector': ['acf'],
+            'data_collection_technique': 'f2f',
+            'external_access_level': 'open_access',
+        })
+        deposited_dataset = helpers.call_action(
+            'package_update',
+            **tmp
+        )
+
+        # While the dataset is in deposited state, external_user can view it
+        assert_equals(
+            True,
+            toolkit.check_access(
+                'package_show',
+                {'user': external_user['name']},
+                {'id': deposited_dataset['id']},
+            )
+        )
+
+        # Approve the dataset
+        approved_dataset = convert_deposited_dataset_to_regular_dataset(deposited_dataset)
+        approved_dataset = helpers.call_action(
+            'package_update',
+            context={'user': 'sysadmin', 'type': approved_dataset['type']},
+            **approved_dataset
+        )
+
+        # Now that the dataset has moved out of the data-deposit,
+        # external_user can not view it anymore
+        assert_raises(
+            toolkit.NotAuthorized,
+            toolkit.check_access,
+            'package_show',
+            context={'user': external_user['name']},
+            data_dict={'id': approved_dataset['id']},
+        )
+
     def test_package_update(self):
 
         # Create users
@@ -385,3 +500,260 @@ class TestAuthUnit(base.FunctionalTestBase):
                 {'id': dataset['id']}
             )
         )
+
+
+class TestPackageCreateAuth(base.FunctionalTestBase):
+
+    def setup(self):
+        super(TestPackageCreateAuth, self).setup()
+        factories.DataContainer(
+            id='data-deposit',
+            name='data-deposit',
+        )
+        factories.DataContainer(
+            id='data-target',
+            name='data-target',
+        )
+
+    def test_unit_data_deposit(self):
+        creator = core_factories.User(name='creator')
+        result = auth.package_create(
+            {'user': 'creator'}, {'owner_org': 'data-deposit'}
+        )
+        assert_equals(result['success'], True)
+
+    def test_unit_user_is_container_admin(self):
+        creator = core_factories.User(name='creator')
+        container = factories.DataContainer(
+            users=[
+                {'name': 'creator', 'capacity': 'admin'},
+            ],
+        )
+        result = auth.package_create(
+            {'user': 'creator'}, {'owner_org': container['name']}
+        )
+        assert_equals(result['success'], True)
+
+    def test_unit_user_is_not_container_admin(self):
+        creator = core_factories.User(name='creator')
+        container1 = factories.DataContainer(
+            users=[
+                {'name': 'creator', 'capacity': 'member'},
+            ],
+        )
+        result = auth.package_create(
+            {'user': 'creator'}, {'owner_org': container1['name']}
+        )
+        assert_equals(result['success'], False)
+
+        container2 = factories.DataContainer()
+        result = auth.package_create(
+            {'user': 'creator'}, {'owner_org': container2['name']}
+        )
+        assert_equals(result['success'], False)
+
+    def test_unit_no_data_dict(self):
+        creator = core_factories.User(name='creator')
+        result = auth.package_create({'user': 'creator'}, None)
+        assert_equals(result['success'], False)
+
+    @helpers.change_config('ckan.auth.create_unowned_dataset', False)
+    def test_integration_new_deposit(self):
+        # everyone can create datasets in the data-deposit
+        external_user = core_factories.User(email='fred@externaluser.com')
+        resp = self.app.get(
+            url='/deposited-dataset/new',
+            extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
+            status=200,
+        )
+
+        internal_user = core_factories.User()
+        resp = self.app.get(
+            url='/deposited-dataset/new',
+            extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
+            status=200,
+        )
+
+    @helpers.change_config('ckan.auth.create_unowned_dataset', False)
+    def test_integration_new_dataset(self):
+        external_user = core_factories.User(email='fred@externaluser.com')
+        # external_user can't create a new dataset
+        resp = self.app.get(
+            url='/dataset/new',
+            extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
+            status=403,
+        )
+
+        internal_user = core_factories.User()
+        # internal_user can't create a dataset
+        # because they aren't an admin of any containers
+        resp = self.app.get(
+            url='/dataset/new',
+            extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
+            status=403,
+        )
+
+        factories.DataContainer(
+            users=[{'name': internal_user['name'], 'capacity': 'admin'}]
+        )
+        # now that internal_user is a container admin
+        # they can create a dataset
+        resp = self.app.get(
+            url='/dataset/new',
+            extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
+            status=200,
+        )
+
+    @helpers.change_config('ckan.auth.create_unowned_dataset', False)
+    def test_integration_edit_deposit(self):
+        # everyone can edit their own draft deposited datasets
+        external_user = core_factories.User(email='fred@externaluser.com')
+        external_deposit = factories.DepositedDataset(
+            name='dataset1',
+            owner_org='data-deposit',
+            owner_org_dest='data-target',
+            user=external_user,
+            state='draft',
+        )
+        resp = self.app.get(
+            url='/deposited-dataset/edit/{}'.format(external_deposit['id']),
+            extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
+            status=200,
+        )
+
+        internal_user = core_factories.User()
+        internal_deposit = factories.DepositedDataset(
+            name='dataset2',
+            owner_org='data-deposit',
+            owner_org_dest='data-target',
+            user=internal_user,
+            state='draft',
+        )
+        resp = self.app.get(
+            url='/deposited-dataset/edit/{}'.format(internal_deposit['id']),
+            extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
+            status=200,
+        )
+
+
+class TestExternalUserPackageAuths(base.FunctionalTestBase):
+
+    def setup(self):
+        self.external_user = core_factories.User(email='fred@externaluser.com')
+        user = core_factories.User()
+
+        target = factories.DataContainer(
+            id='data-target',
+            name='data-target',
+        )
+        deposit = factories.DataContainer(
+            id='data-deposit',
+            name='data-deposit'
+        )
+
+        self.external_user_dataset = factories.DepositedDataset(
+            description='deposited dataset created by external user',
+            owner_org='data-deposit',
+            owner_org_dest='data-target',
+            user=self.external_user
+        )
+        self.internal_user_dataset = factories.DepositedDataset(
+            description='deposited dataset created by internal user',
+            owner_org='data-deposit',
+            owner_org_dest='data-target',
+            user=user
+        )
+        self.dataset = factories.Dataset(
+            owner_org=target['id'],
+            visibility='private'
+        )
+
+        self.external_dataset_resources = [
+            factories.Resource(
+                description='resource created by external_user attached to deposited dataset created by external_user',
+                package_id=self.external_user_dataset['id'],
+                url_type='upload',
+                user=self.external_user,
+            ),
+            factories.Resource(
+                description='resource created by someone else attached to deposited dataset created by external_user',
+                package_id=self.external_user_dataset['id'],
+                url_type='upload',
+                user=user
+            ),
+        ]
+        self.internal_dataset_resources = [
+            factories.Resource(
+                package_id=self.internal_user_dataset['id'],
+                url_type='upload',
+                user=user
+            ),
+        ]
+        self.arbitrary_resource = factories.Resource(
+            package_id=self.dataset['id'],
+            url_type='upload',
+        )
+
+    def assert_auth_pass(self, action, data_dict):
+        assert_equals(
+            True,
+            toolkit.check_access(
+                action,
+                {'user': self.external_user['name']},
+                data_dict,
+            )
+        )
+
+    def assert_auth_fail(self, action, data_dict):
+        assert_raises(
+            toolkit.NotAuthorized,
+            toolkit.check_access,
+            action,
+            context={'user': self.external_user['name']},
+            data_dict=data_dict,
+        )
+
+    def test_package_actions(self):
+        package_actions = [
+            'package_delete',
+            'package_patch',
+            'package_show',
+            'package_update',
+        ]
+        for action in package_actions:
+            self.assert_auth_pass(action, {'id': self.external_user_dataset['id']})
+            self.assert_auth_fail(action, {'id': self.internal_user_dataset['id']})
+            self.assert_auth_fail(action, {'id': self.dataset['id']})
+
+    def test_resource_create(self):
+        self.assert_auth_pass('resource_create', {'package_id': self.external_user_dataset['id']})
+        self.assert_auth_fail('resource_create', {'package_id': self.internal_user_dataset['id']})
+        self.assert_auth_fail('resource_create', {'package_id': self.dataset['id']})
+
+    def test_resource_actions(self):
+        resource_actions = [
+            'resource_delete',
+            'resource_download',
+            'resource_patch',
+            'resource_show',
+            'resource_update',
+            'resource_view_list',
+        ]
+        for action in resource_actions:
+
+            for resource in self.external_dataset_resources:
+                self.assert_auth_pass(action, {
+                    'package_id': self.external_user_dataset['id'],
+                    'id': resource['id'],
+                })
+
+            for resource in self.internal_dataset_resources:
+                self.assert_auth_fail(action, {
+                    'package_id': self.internal_user_dataset['id'],
+                    'id': resource['id'],
+                })
+
+            self.assert_auth_fail(action, {
+                'package_id': self.dataset['id'],
+                'id': self.arbitrary_resource['id'],
+            })
