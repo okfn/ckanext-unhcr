@@ -582,7 +582,7 @@ class UnhcrPlugin(
         if user_obj:
 
             if user_obj.external:
-                return ['']
+                return ['creator-%s' % user_obj.id]
 
             context = {u'user': user_obj.id}
             deposit = helpers.get_data_deposit()
