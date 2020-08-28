@@ -197,6 +197,8 @@ class UnhcrPlugin(
         _map.connect('/deposited-dataset/{id}/resource_edit/{resource_id}', controller=controller, action='resource_edit')
         _map.connect('/deposited-dataset/{id}/resource/{resource_id}', controller=controller, action='resource_read')
         _map.connect('/deposited-dataset/{id}/resource/{resource_id}/view/{view_id}', controller=controller, action='resource_view')
+        _map.connect('/deposited-dataset/new_resource/{id}', controller=controller, action='new_resource')
+        _map.connect('/deposited-dataset/publish/{id}', controller=controller, action='publish')
         _map.connect('/deposited-dataset/activity/{dataset_id}', controller=controller, action='activity')
         _map.connect('/deposited-dataset/activity/{dataset_id}/{offset}', controller=controller, action='activity')
         _map.connect('/deposited-dataset/copy/{id}', controller=controller, action='copy')
