@@ -128,18 +128,27 @@ def organization_create(context, data_dict):
 # Package
 
 def package_create(context, data_dict):
-
     # Data deposit
     if not data_dict:
-        # All users can deposit datasets
-        if toolkit.request.path == '/deposited-dataset/new':
-            return {'success': True}
+        try:
+            # All users can deposit datasets
+            if (
+                toolkit.request.path == '/deposited-dataset/new' or
+                toolkit.request.path.startswith('/deposited-dataset/edit/')
+            ):
+                return {'success': True}
+        except TypeError:
+            return {
+                'success': False,
+                'msg': 'package_create requires either a web request or a data_dict'
+            }
     else:
         deposit = helpers.get_data_deposit()
         if deposit['id'] == data_dict.get('owner_org'):
             return {'success': True}
 
     # Data container
+    context['model'] = context.get('model') or model
     return auth_create_core.package_create(context, data_dict)
 
 
