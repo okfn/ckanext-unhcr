@@ -231,7 +231,8 @@ class TestHelpers(base.FunctionalTestBase):
 
     def test_get_dataset_validation_error_or_none_valid(self):
         dataset = factories.Dataset(name='name', title='title')
-        error = helpers.get_dataset_validation_error_or_none(dataset)
+        context = {'model': model, 'session': model.Session, 'ignore_auth': True ,'user': None}
+        error = helpers.get_dataset_validation_error_or_none(dataset, context)
         assert_equals(error, None)
 
     def test_convert_deposited_dataset_to_regular_dataset(self):
