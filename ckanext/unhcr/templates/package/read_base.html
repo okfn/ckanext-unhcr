@@ -14,11 +14,16 @@
 {% block content_primary_nav %}
   {% if pkg.type == 'deposited-dataset' %}
     {{ h.build_nav_icon('dataset_read', _('Dataset'), id=pkg.name) }}
-  	{{ h.build_nav_icon('%s_internal_activity' % dataset_type, _('Internal Activity'), dataset_id=pkg.name, icon='gavel') }}
+    {% if h.check_access('package_activity_list', {'user': c.user, 'id': pkg.id}) %}
+      {{ h.build_nav_icon('%s_internal_activity' % dataset_type, _('Internal Activity'), dataset_id=pkg.name, icon='gavel') }}
+    {% endif %}
   {% else %}
     {{ h.build_nav_icon('dataset_read', _('Dataset'), id=pkg.name) }}
     {{ h.build_nav_icon('dataset_activity', _('Activity Stream'), id=pkg.name) }}
-    {% if h.check_access('package_update', {'user': c.user, 'id': c.pkg_dict.id}) %}
+    {% if (
+      h.check_access('package_update', {'user': c.user, 'id': pkg.id}) and
+      h.check_access('package_activity_list', {'user': c.user, 'id': pkg.id})
+    ) %}
       {{ h.build_nav_icon('%s_internal_activity' % dataset_type, _('Internal Activity'), dataset_id=pkg.name, icon='gavel') }}
     {% endif %}
   {% endif %}
