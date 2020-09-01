@@ -965,6 +965,9 @@ msgstr "Data Container has been deleted."
 msgid "Group has been deleted."
 msgstr "Group has been deleted."
 
+msgid "Data-container"
+msgstr "Data Container"
+
 #: ckan/controllers/group.py:624
 #, python-format
 msgid "%s has been deleted."
