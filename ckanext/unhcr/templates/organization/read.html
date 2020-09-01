@@ -5,6 +5,7 @@
 {% set can_request_access = (
   c.user not in group_users and
   c.group_dict.id != deposit.id and
+  not h.check_access('sysadmin') and
   not h.get_existing_access_request(c.userobj.id, c.group_dict.id, 'requested')
 ) %}
 
@@ -16,7 +17,7 @@
   {% else %}
     {% if c.group_dict.id != deposit.id %}
       {% if h.check_access('package_create', {'owner_org': c.group_dict.id}) %}
-        {% snippet 'snippets/add_dataset_buttons.html', group=c.group_dict.id%}
+        {% snippet 'snippets/add_dataset_buttons.html', group=c.group_dict.id %}
       {% endif %}
     {% endif %}
   {% endif %}
