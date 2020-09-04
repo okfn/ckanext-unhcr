@@ -1,5 +1,12 @@
 # RIDL Changelog
 
+## v1.8.1 - 2020-09-04
+
+Fixes:
+* Style 'Data-container' as 'Data Container'
+* Always hide 'request access' button from sysadmins
+* Fix 'withdraw' popup in curation interface
+
 ## v1.8.0 - 2020-07-31
 
 Features:
