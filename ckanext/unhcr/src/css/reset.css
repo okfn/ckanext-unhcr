@@ -91,18 +91,26 @@ a {
   @mixin btn-colour var(--white), var(--black-80), var(--black-20);
 }
 
+.label {
+  display: inline-block;
+}
+.label-primary,
 .btn-primary {
   @mixin btn-colour var(--primary-colour);
 }
+.label-success,
 .btn-success {
   @mixin btn-colour var(--success-colour), var(--black);
 }
+.label-info,
 .btn-info {
   @mixin btn-colour var(--info-colour);
 }
+.label-warning,
 .btn-warning {
   @mixin btn-colour var(--warning-colour), var(--black);
 }
+.label-danger,
 .btn-danger {
   @mixin btn-colour var(--danger-colour);
 }

@@ -259,7 +259,7 @@
         color: var(--white);
       }
 
-      & .label,
+      & .label-sidebar,
       & .badge {
         background-color: var(--primary-60);
       }
