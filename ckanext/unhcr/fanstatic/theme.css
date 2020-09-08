@@ -200,13 +200,24 @@ a:hover {
   border-color: rgb(204, 204, 204);
 }
 
+.label {
+  display: inline-block;
+}
+
+.label-primary,
 .btn-primary {
   background-color: #0072BC;
   color: #fff;
   border-color: #0072BC;
 }
 
-.btn-primary:hover,
+.label-primary:hover,
+  .label-primary:focus,
+  .label-primary:active,
+  .label-primary.active,
+  .label-primary.disabled,
+  .label-primary[disabled],
+  .btn-primary:hover,
   .btn-primary:focus,
   .btn-primary:active,
   .btn-primary.active,
@@ -217,13 +228,20 @@ a:hover {
   border-color: #0072BC;
 }
 
+.label-success,
 .btn-success {
   background-color: #FAEB00;
   color: #000;
   border-color: #FAEB00;
 }
 
-.btn-success:hover,
+.label-success:hover,
+  .label-success:focus,
+  .label-success:active,
+  .label-success.active,
+  .label-success.disabled,
+  .label-success[disabled],
+  .btn-success:hover,
   .btn-success:focus,
   .btn-success:active,
   .btn-success.active,
@@ -234,13 +252,20 @@ a:hover {
   border-color: #FAEB00;
 }
 
+.label-info,
 .btn-info {
   background-color: #0072BC;
   color: #fff;
   border-color: #0072BC;
 }
 
-.btn-info:hover,
+.label-info:hover,
+  .label-info:focus,
+  .label-info:active,
+  .label-info.active,
+  .label-info.disabled,
+  .label-info[disabled],
+  .btn-info:hover,
   .btn-info:focus,
   .btn-info:active,
   .btn-info.active,
@@ -251,13 +276,20 @@ a:hover {
   border-color: #0072BC;
 }
 
+.label-warning,
 .btn-warning {
   background-color: #FAEB00;
   color: #000;
   border-color: #FAEB00;
 }
 
-.btn-warning:hover,
+.label-warning:hover,
+  .label-warning:focus,
+  .label-warning:active,
+  .label-warning.active,
+  .label-warning.disabled,
+  .label-warning[disabled],
+  .btn-warning:hover,
   .btn-warning:focus,
   .btn-warning:active,
   .btn-warning.active,
@@ -268,13 +300,20 @@ a:hover {
   border-color: #FAEB00;
 }
 
+.label-danger,
 .btn-danger {
   background-color: rgb(51, 51, 51);
   color: #fff;
   border-color: rgb(51, 51, 51);
 }
 
-.btn-danger:hover,
+.label-danger:hover,
+  .label-danger:focus,
+  .label-danger:active,
+  .label-danger.active,
+  .label-danger.disabled,
+  .label-danger[disabled],
+  .btn-danger:hover,
   .btn-danger:focus,
   .btn-danger:active,
   .btn-danger.active,
@@ -1144,7 +1183,7 @@ body {
     color: #FFF;
   }
 
-  [role=main] .secondary .label,
+  [role=main] .secondary .label-sidebar,
       [role=main] .secondary .badge {
     background-color: rgb(102, 170, 215);
   }
