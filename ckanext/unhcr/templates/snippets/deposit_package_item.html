@@ -77,7 +77,18 @@
               {% if depositor %}
                 <dl>
                   <dt>Depositor</dt>
-                  <dd><a href="/user/{{ depositor.name }}">{{ depositor.title }}</a> <a class="email" href="mailto:{{ depositor.email }}">(email)</a></dd>
+                  <dd>
+                    <a href="/user/{{ depositor.name }}">{{ depositor.title }}</a>
+                    <a class="email" href="mailto:{{ depositor.email }}">(email)</a>
+                    {% if depositor.external and curation.role != 'depositor' %}
+                      <span
+                        class="label label-warning"
+                        title="This dataset was submitted by a user outside of UNHCR"
+                      >
+                        external
+                      </span>
+                    {% endif %}
+                  </dd>
                 </dl>
               {% endif %}
             </td>
