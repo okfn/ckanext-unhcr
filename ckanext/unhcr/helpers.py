@@ -406,19 +406,18 @@ def get_deposited_dataset_user_contact(user_id=None):
         return None
 
     # Return none (no user)
-    try:
-        user = toolkit.get_action('user_show')(
-            {'ignore_auth': True, 'keep_email': True}, {'id': user_id})
-    except toolkit.ObjectNotFound:
+    userobj = model.User.get(user_id)
+    if not userobj:
         return None
 
     # Return contact
     return {
-        'id': user.get('id'),
-        'title': user.get('display_name'),
-        'display_name': user.get('display_name'),
-        'name': user.get('name'),
-        'email': user.get('email'),
+        'id': getattr(userobj, 'id'),
+        'title': getattr(userobj, 'display_name'),
+        'display_name': getattr(userobj, 'display_name'),
+        'name': getattr(userobj, 'name'),
+        'email': getattr(userobj, 'email'),
+        'external': getattr(userobj, 'external'),
     }
 
 
