@@ -51,6 +51,14 @@
           {% endif %}
 
       {% endif %}
+      {% set depositor = curation.contacts.depositor %}
+      {% if depositor.external and curation.role != 'depositor' %}
+        <p>
+          This dataset was submitted by
+          <strong><a href="/user/{{ depositor.name }}">{{ depositor.title }}</a></strong>
+          who is not a member of the UNHCR organization.
+        </p>
+      {% endif %}
 
     </div>
   {% endif %}
