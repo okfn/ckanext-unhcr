@@ -2,11 +2,13 @@
 
 import logging
 from flask import Blueprint
+from ckan import model
 import ckan.lib.captcha as captcha
 import ckan.lib.navl.dictization_functions as dictization_functions
 import ckan.logic as logic
 import ckan.plugins.toolkit as toolkit
 from ckan.views.user import RegisterView as BaseRegisterView
+from ckanext.unhcr.helpers import get_data_deposit
 from ckanext.unhcr.utils import get_internal_domains
 
 log = logging.getLogger(__name__)
@@ -40,6 +42,22 @@ def sysadmin():
 
 
 class RegisterView(BaseRegisterView):
+
+    def _get_container_list(self):
+        context = {'model': model, 'ignore_auth': True}
+        orgs = toolkit.get_action('organization_list')(
+            context, {'type': 'data-container', 'all_fields': True}
+        )
+        deposit = get_data_deposit()
+        return sorted(
+            [
+                {'value': o['id'], 'text': o['display_name'] }
+                for o in orgs
+                if o['id'] != deposit['id']
+                # TODO: and o['visible_external']
+            ],
+            key=lambda o: o['text']
+        )
 
     def post(self):
         context = self._prepare()
@@ -104,6 +122,34 @@ class RegisterView(BaseRegisterView):
             u'user/account_created.html',
             {'email': data_dict['email']}
         )
+
+    def get(self, data=None, errors=None, error_summary=None):
+        self._prepare()
+
+        user_is_sysadmin = False
+        if toolkit.c.user:
+            try:
+                toolkit.check_access('sysadmin', {'user': toolkit.c.user})
+                user_is_sysadmin = True
+            except toolkit.NotAuthorized:
+                pass
+
+        if toolkit.c.user and not data and not user_is_sysadmin:
+            # #1799 Don't offer the registration form if already logged in
+            return toolkit.render(u'user/logout_first.html', {})
+
+        form_vars = {
+            u'data': data or {},
+            u'errors': errors or {},
+            u'error_summary': error_summary or {},
+            u'containers': self._get_container_list(),
+        }
+
+        extra_vars = {
+            u'is_sysadmin': user_is_sysadmin,
+            u'form': toolkit.render(u'user/new_user_form.html', form_vars)
+        }
+        return toolkit.render(u'user/new.html', extra_vars)
 
 
 unhcr_user_blueprint.add_url_rule(
