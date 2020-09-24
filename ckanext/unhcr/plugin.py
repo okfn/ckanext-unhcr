@@ -492,6 +492,7 @@ class UnhcrPlugin(
         functions['access_request_create'] = auth.access_request_create
         functions['access_request_update'] = auth.access_request_update
         functions['user_update_sysadmin'] = auth.user_update_sysadmin
+        functions['external_user_update_state'] = auth.external_user_update_state
         functions['search_index_rebuild'] = auth.search_index_rebuild
         return functions
 
@@ -523,6 +524,7 @@ class UnhcrPlugin(
             'recently_changed_packages_activity_list_html': actions.recently_changed_packages_activity_list_html,
             'datasets_validation_report': actions.datasets_validation_report,
             'user_update_sysadmin': actions.user_update_sysadmin,
+            'external_user_update_state': actions.external_user_update_state,
             'search_index_rebuild': actions.search_index_rebuild,
         }
 

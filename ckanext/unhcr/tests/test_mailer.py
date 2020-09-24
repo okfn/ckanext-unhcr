@@ -322,7 +322,7 @@ class TestAccessRequestMailer(base.FunctionalTestBase):
         dataset1 = factories.Dataset(title='Test Dataset 1')
 
         message = 'Nope\nNot today thank you'
-        email_body = mailer.compose_request_rejected_email_body(user1, dataset1, message)
+        email_body = mailer.compose_request_rejected_email_body('dataset', user1, dataset1, message)
         regularised_body = regularise_html(email_body)
 
         assert 'Your request to access <strong>Test Dataset 1</strong> has been rejected.' in regularised_body
@@ -333,7 +333,7 @@ class TestAccessRequestMailer(base.FunctionalTestBase):
         container1 = factories.DataContainer(title='Test Organization 1')
 
         message = 'Nope\nNot today thank you'
-        email_body = mailer.compose_request_rejected_email_body(user1, container1, message)
+        email_body = mailer.compose_request_rejected_email_body('container', user1, container1, message)
         regularised_body = regularise_html(email_body)
 
         assert 'Your request to access <strong>Test Organization 1</strong> has been rejected.' in regularised_body

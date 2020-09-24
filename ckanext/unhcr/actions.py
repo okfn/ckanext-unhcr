@@ -627,6 +627,7 @@ def access_request_update(context, data_dict):
     :param status: new status value ('approved', 'rejected')
     :type status: string
     """
+    m = context.get('model', model)
     request_id = toolkit.get_or_bust(data_dict, "id")
     status = toolkit.get_or_bust(data_dict, "status")
     _validate_status(status)
@@ -637,25 +638,37 @@ def access_request_update(context, data_dict):
     toolkit.check_access('access_request_update', context, data_dict)
 
     if request.object_type == 'package':
-        data_dict = {
+        _data_dict = {
             'id': request.object_id,
             'user_id': request.user_id,
             'capacity': request.role,
         }
         if status == 'approved':
             toolkit.get_action('dataset_collaborator_create')(
-                context, data_dict
+                context, _data_dict
             )
     elif request.object_type == 'organization':
-        data_dict = {
+        _data_dict = {
             'id': request.object_id,
             'username': request.user_id,
             'role': request.role,
         }
         if status == 'approved':
             toolkit.get_action('organization_member_create')(
-                context, data_dict
+                context, _data_dict
             )
+    elif request.object_type == 'user':
+        state = {'approved':  m.State.ACTIVE, 'rejected': m.State.DELETED}[status]
+        _data_dict = {'id': request.object_id, 'state': state}
+        user = toolkit.get_action('external_user_update_state')(
+            context, _data_dict
+        )
+
+        if status == 'approved':
+            # Notify the user
+            subj = mailer.compose_account_approved_email_subj()
+            body = mailer.compose_account_approved_email_body(user)
+            mailer.mail_user_by_id(user['id'], subj, body)
     else:
         raise toolkit.Invalid("Unknown Object Type")
 
@@ -735,6 +748,38 @@ def access_request_create(context, data_dict):
         col.name: getattr(request, col.name)
         for col in request.__table__.columns
     }
+
+
+def external_user_update_state(context, data_dict):
+    """
+    Change the status of an external user
+    Any internal user with container admin privileges or higher
+    can change the status of another user when:
+    - The target user is external
+    - The target user's current status is 'pending'
+    Additionally, a sysadmin may change the status of another user at any time.
+
+    :param id: The id or name of the target user
+    :type id: string
+    :param state: The new value of User.state
+    :type state: string
+    """
+    m = context.get('model', model)
+    user_id, state = toolkit.get_or_bust(data_dict, ['id', 'state'])
+
+    toolkit.check_access('external_user_update_state', context, data_dict)
+
+    if state not in m.State.all:
+        raise toolkit.ValidationError('Invalid state {}'.format(state))
+
+    user_obj = m.User.get(user_id)
+    if not user_obj:
+        raise toolkit.ObjectNotFound("User not found")
+    user_obj.state = state
+    m.Session.commit()
+    m.Session.refresh(user_obj)
+
+    return model_dictize.user_dictize(user_obj, context)
 
 
 # Admin

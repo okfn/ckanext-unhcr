@@ -174,10 +174,12 @@ def user_is_curator():
     return user_id in user_ids
 
 
-def user_is_container_admin():
+def user_is_container_admin(user=None):
+    if not user:
+        user = toolkit.c.user
     orgs = toolkit.get_action("organization_list_for_user")(
-        {"user": toolkit.c.user},
-        {"id": toolkit.c.user, "permission": "admin"}
+        {"user": user},
+        {"id": user, "permission": "admin"}
     )
     return len(orgs) > 0
 

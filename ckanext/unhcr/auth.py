@@ -306,20 +306,51 @@ def access_request_update(context, data_dict):
             context, {'id': request.object_id}
         )
         org_id = package['owner_org']
+        return {
+            'success': has_user_permission_for_group_or_org(
+                org_id, user, 'admin'
+            )
+        }
     elif request.object_type == 'organization':
         org_id = request.object_id
-    else:
-        raise toolkit.Invalid("Unknown Object Type")
+        return {
+            'success': has_user_permission_for_group_or_org(
+                org_id, user, 'admin'
+            )
+        }
+    elif request.object_type == 'user':
+        return external_user_update_state(context, {'id': request.object_id})
 
-    return {
-        'success': has_user_permission_for_group_or_org(
-            org_id, user, 'admin'
-        )
-    }
+    raise toolkit.Invalid("Unknown Object Type")
 
 
 def access_request_create(context, data_dict):
     return {'success': bool(context.get('user'))}
+
+
+def external_user_update_state(context, data_dict):
+    m = context.get('model', model)
+    request_userobj = context.get('auth_user_obj')
+    if not request_userobj:
+        return {'success': False}
+
+    target_user_id = toolkit.get_or_bust(data_dict, "id")
+    target_userobj = m.User.get(target_user_id)
+    if not target_userobj:
+        raise toolkit.ObjectNotFound("User not found")
+
+    # request_userobj is the user who is trying to perform the action
+    # target_userobj is the user we're trying to modify
+
+    if not target_userobj.external:
+        return {'success': False, 'msg': "Can only perform this action on an external user"}
+    if target_userobj.state != m.State.PENDING:
+        return {'success': False, 'msg': "Can only change state of a 'pending' user"}
+
+    if not helpers.user_is_container_admin(request_userobj.id):
+        return {'success': False, 'msg': "Must be admin of at least one container"}
+
+    return {'success': True}
 
 
 # Admin
