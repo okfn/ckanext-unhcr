@@ -1097,6 +1097,91 @@ class TestUpdateSysadmin(base.FunctionalTestBase):
         assert_equals(False, userobj.sysadmin)
 
 
+class TestExternalUserUpdateState(base.FunctionalTestBase):
+
+    def setup(self):
+        self.container1_admin = core_factories.User()
+        self.container1 = factories.DataContainer(
+            users=[{"name": self.container1_admin["name"], "capacity": "admin"}]
+        )
+
+    def test_target_user_is_internal(self):
+        target_user = core_factories.User(
+            state=model.State.PENDING,
+        )
+        action = toolkit.get_action("external_user_update_state")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"user": self.container1_admin["name"]},
+            {'id': target_user['id'], 'state': model.State.ACTIVE}
+        )
+
+    def test_target_user_is_not_pending(self):
+        target_user = core_factories.User(
+            email='fred@externaluser.com',
+        )
+        action = toolkit.get_action("external_user_update_state")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"user": self.container1_admin["name"]},
+            {'id': target_user['id'], 'state': model.State.ACTIVE}
+        )
+
+    def test_requesting_user_is_not_container_admin(self):
+        target_user = core_factories.User(
+            state=model.State.PENDING,
+            email='fred@externaluser.com',
+        )
+        requesting_user = core_factories.User()
+        action = toolkit.get_action("external_user_update_state")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"user": requesting_user["name"]},
+            {'id': target_user['id'], 'state': model.State.ACTIVE}
+        )
+
+    def test_invalid_state(self):
+        target_user = core_factories.User(
+            state=model.State.PENDING,
+            email='fred@externaluser.com',
+        )
+        action = toolkit.get_action("external_user_update_state")
+        assert_raises(
+            toolkit.ValidationError,
+            action,
+            {"user": self.container1_admin["name"]},
+            {'id': target_user['id'], 'state': 'foobar'}
+        )
+
+    def test_user_not_found(self):
+        action = toolkit.get_action("external_user_update_state")
+        assert_raises(
+            toolkit.ObjectNotFound,
+            action,
+            {"user": self.container1_admin["name"]},
+            {'id': 'does-not-exist', 'state': model.State.ACTIVE}
+        )
+
+    def test_success(self):
+        target_user = core_factories.User(
+            state=model.State.PENDING,
+            email='fred@externaluser.com',
+        )
+        action = toolkit.get_action("external_user_update_state")
+        action(
+            {"user": self.container1_admin["name"]},
+            {'id': target_user['id'], 'state': model.State.ACTIVE}
+        )
+
+        user = toolkit.get_action("user_show")(
+            {"ignore_auth": True}, {"id": target_user['id']}
+        )
+        assert_equals(model.State.ACTIVE, user['state'])
+
+
 class TestPackageSearch(base.FunctionalTestBase):
 
     def test_package_search_permissions(self):
