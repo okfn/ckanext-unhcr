@@ -312,10 +312,25 @@ def compose_request_rejected_email_subj(obj):
     return '[UNHCR RIDL] - Request for access to: "{}"'.format(obj['name'])
 
 
-def compose_request_rejected_email_body(recipient, obj, message):
+def compose_request_rejected_email_body(object_type, recipient, obj, message):
     context = {}
+    context['object_type'] = object_type
     context['recipient'] = recipient
     context['object'] = obj
     context['message'] = message
     context['h'] = toolkit.h
+
     return render_jinja2('emails/access_requests/rejection.html', context)
+
+
+def compose_account_approved_email_subj():
+    return '[UNHCR RIDL] - User account approved'
+
+
+def compose_account_approved_email_body(recipient):
+    context = {}
+    context['recipient'] = recipient
+    context['login_url'] = toolkit.url_for('/service/login', qualified=True)
+    context['h'] = toolkit.h
+
+    return render_jinja2('emails/user/account_approved.html', context)
