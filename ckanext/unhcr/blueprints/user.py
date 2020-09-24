@@ -49,7 +49,7 @@ class RegisterView(BaseRegisterView):
             context, {'type': 'data-container', 'all_fields': True}
         )
         deposit = get_data_deposit()
-        return sorted(
+        containers = sorted(
             [
                 {'value': o['id'], 'text': o['display_name'] }
                 for o in orgs
@@ -58,6 +58,8 @@ class RegisterView(BaseRegisterView):
             ],
             key=lambda o: o['text']
         )
+        containers.insert(0, {'value': '', 'text': 'Select...'})
+        return containers
 
     def post(self):
         context = self._prepare()
@@ -93,17 +95,44 @@ class RegisterView(BaseRegisterView):
             )
             return self.get(data_dict, {'email': [message]}, {'email': message})
 
+        if not data_dict.get('container'):
+            message = "A region must be specified"
+            return self.get(data_dict, {'container': [message]}, {'container': message})
+
+        context['defer_commit'] = True
+        data_dict['state'] = context['model'].State.PENDING
+
         try:
-            data_dict['state'] = context['model'].State.PENDING
-            toolkit.get_action(u'user_create')(context, data_dict)
+            model.Session.begin_nested()
+            user = toolkit.get_action(u'user_create')(context, data_dict)
+
+            access_request_data_dict = {
+                'object_id': user['id'],
+                'object_type': 'user',
+                'message': data_dict['message'],
+                'role': 'member',
+                'data': {'containers': [data_dict.get('container')]}
+            }
+            toolkit.get_action(u'access_request_create')(
+                {'user': user['id'], 'ignore_auth': True, 'defer_commit': True},
+                access_request_data_dict
+            )
+
+            model.Session.commit()
         except toolkit.NotAuthorized:
+            model.Session.rollback()
             toolkit.abort(403, _(u'Unauthorized to create user %s') % u'')
         except toolkit.ObjectNotFound:
+            model.Session.rollback()
             toolkit.abort(404, _(u'User not found'))
         except toolkit.ValidationError as e:
+            model.Session.rollback()
             errors = e.error_dict
             error_summary = e.error_summary
             return self.get(data_dict, errors, error_summary)
+        except:
+            model.Session.rollback()
+            raise
 
         if toolkit.c.user:
             # #1799 User has managed to register whilst logged in - warn user
