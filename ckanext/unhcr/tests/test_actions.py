@@ -769,7 +769,6 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
     def setup(self):
         super(TestAccessRequestUpdate, self).setup()
 
-        self.sysadmin = core_factories.Sysadmin()
         self.requesting_user = core_factories.User()
         self.standard_user = core_factories.User()
         self.pending_user = core_factories.User(
@@ -821,7 +820,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
 
         orgs = toolkit.get_action("organization_list_for_user")(
-            {"user": self.sysadmin["name"]},
+            {"ignore_auth": True},
             {"id": self.requesting_user["name"], "permission": "read"}
         )
         assert_equals(0, len(orgs))
@@ -837,7 +836,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
             )
 
             orgs = toolkit.get_action("organization_list_for_user")(
-                {"user": self.sysadmin["name"]},
+                {"ignore_auth": True},
                 {"id": self.requesting_user["name"], "permission": "read"}
             )
             assert_equals(self.container1['id'], orgs[0]['id'])
@@ -864,7 +863,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
 
         orgs = toolkit.get_action("organization_list_for_user")(
-            {"user": self.sysadmin["name"]},
+            {"ignore_auth": True},
             {"id": self.requesting_user["name"], "permission": "read"}
         )
         assert_equals(0, len(orgs))
@@ -878,7 +877,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
 
         orgs = toolkit.get_action("organization_list_for_user")(
-            {"user": self.sysadmin["name"]},
+            {"ignore_auth": True},
             {"id": self.requesting_user["name"], "permission": "read"}
         )
         assert_equals(0, len(orgs))
@@ -894,7 +893,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
 
         collaborators = toolkit.get_action("dataset_collaborator_list")(
-            {"user": self.sysadmin["name"]}, {"id": self.dataset1["id"]}
+            {"ignore_auth": True}, {"id": self.dataset1["id"]}
         )
         assert_equals(0, len(collaborators))
         assert_equals('requested', self.dataset_request.status)
@@ -909,7 +908,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
             )
 
             collaborators = toolkit.get_action("dataset_collaborator_list")(
-                {"user": self.sysadmin["name"]}, {"id": self.dataset1["id"]}
+                {"ignore_auth": True}, {"id": self.dataset1["id"]}
             )
             assert_equals(self.requesting_user["id"], collaborators[0]["user_id"])
             assert_equals('approved', self.dataset_request.status)
@@ -930,7 +929,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
 
         collaborators = toolkit.get_action("dataset_collaborator_list")(
-            {"user": self.sysadmin["name"]}, {"id": self.dataset1["id"]}
+            {"ignore_auth": True}, {"id": self.dataset1["id"]}
         )
         assert_equals(0, len(collaborators))
         assert_equals('requested', self.dataset_request.status)
@@ -943,7 +942,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
 
         collaborators = toolkit.get_action("dataset_collaborator_list")(
-            {"user": self.sysadmin["name"]}, {"id": self.dataset1["id"]}
+            {"ignore_auth": True}, {"id": self.dataset1["id"]}
         )
         assert_equals(0, len(collaborators))
         assert_equals('rejected', self.dataset_request.status)
@@ -958,7 +957,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
 
         user = toolkit.get_action("user_show")(
-            {"user": self.sysadmin["name"]}, {"id": self.pending_user["id"]}
+            {"ignore_auth": True}, {"id": self.pending_user["id"]}
         )
         assert_equals(model.State.PENDING, user['state'])
 
@@ -972,7 +971,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
             )
 
             user = toolkit.get_action("user_show")(
-                {"user": self.sysadmin["name"]}, {"id": self.pending_user["id"]}
+                {"ignore_auth": True}, {"id": self.pending_user["id"]}
             )
             assert_equals(model.State.ACTIVE, user['state'])
             assert_equals('approved', self.user_request.status)
@@ -1001,7 +1000,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
 
         user = toolkit.get_action("user_show")(
-            {"user": self.sysadmin["name"]}, {"id": self.pending_user["id"]}
+            {"ignore_auth": True}, {"id": self.pending_user["id"]}
         )
         assert_equals(model.State.PENDING, user['state'])
 
@@ -1013,7 +1012,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
 
         user = toolkit.get_action("user_show")(
-            {"user": self.sysadmin["name"]}, {"id": self.pending_user["id"]}
+            {"ignore_auth": True}, {"id": self.pending_user["id"]}
         )
         assert_equals(model.State.DELETED, user['state'])
         assert_equals('rejected', self.user_request.status)
