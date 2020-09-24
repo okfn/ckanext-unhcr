@@ -1,0 +1,37 @@
+{% extends "page.html" %}
+
+{% block subtitle %}{{ _('Register') }}{% endblock %}
+
+{% block breadcrumb_content %}
+  <li class="active">{{ h.nav_link(_('Registration'), named_route='user.register') }}</li>
+{% endblock %}
+
+{% block primary_content %}
+  <article class="module">
+    <div class="module-content">
+      {% block primary_content_inner %}
+      <h1 class="page-heading">
+        {% block page_heading %}{{ _('Request an External Account') }}{% endblock %}
+      </h1>
+      {{ form | safe }}
+      {% endblock %}
+    </div>
+  </article>
+{% endblock %}
+
+{% block secondary %}
+<aside class="secondary col-sm-3">
+  <div class="module module-narrow module-shallow">
+    <h2 class="module-heading">
+      <i class="fa fa-book"></i>
+      User Guide
+    </h2>
+    <div class="module-content">
+      <p>
+        <a href="https://im.unhcr.org/ridl/#externaldeposit" target="_blank">
+          More guidance on using RIDL</a>.
+      </p>
+    </div>
+  </div>
+</aside>
+{% endblock %}

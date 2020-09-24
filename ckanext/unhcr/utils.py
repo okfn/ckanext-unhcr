@@ -1,6 +1,15 @@
+import ckan.plugins.toolkit as toolkit
 # TODO: move here helpers not used in templates?
 
-# Misc
+
+INTERNAL_DOMAINS = ['unhcr.org']
+
+def get_internal_domains():
+    return toolkit.aslist(
+        toolkit.config.get('ckanext.unhcr.internal_domains', INTERNAL_DOMAINS),
+        sep = ','
+    )
+
 
 def normalize_list(value):
     if isinstance(value, list):
