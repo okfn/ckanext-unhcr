@@ -1,3 +1,4 @@
+import json
 import logging
 import requests
 from sqlalchemy import and_, desc, or_, select
@@ -602,10 +603,15 @@ def _validate_role(role):
         raise toolkit.ValidationError("'role' must be one of {}".format(str(valid)))
 
 def _validate_object_type(object_type):
-    valid = ['organization', 'package']
+    valid = ['organization', 'package', 'user']
     if object_type not in valid:
         raise toolkit.ValidationError("'object_type' must be one of {}".format(str(valid)))
 
+def _validate_data(data):
+    try:
+        json.dumps(data)
+    except TypeError:
+        raise toolkit.ValidationError("'data' must be JSON-serializable")
 
 def access_request_update(context, data_dict):
     """
@@ -664,12 +670,16 @@ def access_request_create(context, data_dict):
 
     :param object_id: uuid of the container or dataset we are requesting access to
     :type object_id: string
-    :param object_type: type of object we are requesting access to ('organization', 'package')
+    :param object_type: type of object we are requesting access to
+        ('organization', 'package', 'user')
     :type object_type: string
     :param message: user's message to the admin who will review the request
     :type message: string
     :param role: requested level of access ('member', 'editor', 'admin')
     :type role: string
+    :param data: Optional dict containing any extra info to store about the request
+        The dict must be JSON-serializable
+    :type data: dict
     """
     m = context.get('model', model)
     user_id = toolkit.get_or_bust(context, "user")
@@ -681,11 +691,13 @@ def access_request_create(context, data_dict):
         data_dict,
         ['object_id', 'object_type', 'message', 'role'],
     )
+    data = data_dict.get('data', {})
 
     if not message:
-        raise toolkit.ValidationError("'message' is required")
+        raise toolkit.ValidationError({'message': ["'message' is required"]})
     _validate_role(role)
     _validate_object_type(object_type)
+    _validate_data(data)
 
     toolkit.check_access('access_request_create', context, data_dict)
 
@@ -705,10 +717,14 @@ def access_request_create(context, data_dict):
         object_type=object_type,
         message=message,
         role=role,
+        data=data,
     )
     model.Session.add(request)
-    model.Session.commit()
-    model.Session.refresh(request)
+    if not context.get('defer_commit'):
+        model.Session.commit()
+        model.Session.refresh(request)
+    else:
+        model.Session.flush()
 
     return {
         col.name: getattr(request, col.name)

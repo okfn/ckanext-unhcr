@@ -59,7 +59,7 @@ def request_access(container_id):
         if e.error_dict and 'message' in e.error_dict:
             return toolkit.abort(
                 400,
-                e.error_dict['message'].replace('organization', 'container')
+                e.error_dict['message'][0].replace('organization', 'container')
             )
         return toolkit.abort(400, 'Bad Request')
 

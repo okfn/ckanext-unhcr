@@ -219,7 +219,7 @@ class ExtendedPackageController(PackageController):
             if e.error_dict and 'message' in e.error_dict:
                 return toolkit.abort(
                     400,
-                    e.error_dict['message'].replace('package', 'dataset')
+                    e.error_dict['message'][0].replace('package', 'dataset')
                 )
             return toolkit.abort(400, 'Bad Request')
 
