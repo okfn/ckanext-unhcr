@@ -1798,6 +1798,118 @@ class TestDataContainerController(base.FunctionalTestBase):
         resp = self.get_request(url, user='user3', status=403)
 
 
+class TestUserRegister(base.FunctionalTestBase):
+
+    def setup(self):
+        super(TestUserRegister, self).setup()
+        self.sysadmin = core_factories.Sysadmin()
+        self.container = factories.DataContainer()
+        self.payload = {
+            'name': 'externaluser',
+            'fullname': 'New External User',
+            'email': 'fred@externaluser.com',
+            'password1': 'TestPassword1',
+            'password2': 'TestPassword1',
+            'message': 'I can haz access?',
+            'container': self.container['id'],
+        }
+
+    def test_custom_fields(self):
+        resp = self.app.get(url_for('user.register'))
+        assert_equals(resp.status_int, 200)
+        assert_in(
+            'Please describe the dataset(s) you would like to submit',
+            resp.body
+        )
+        assert_in(
+            '<textarea id="field-message"',
+            resp.body
+        )
+        assert_in(
+            'Please select the region where the data was collected',
+            resp.body
+        )
+        assert_in(
+            '<select id="field-container"',
+            resp.body
+        )
+
+    def test_register_success(self):
+        mock_mailer = mock.Mock()
+        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+            resp = self.app.post(url_for('user.register'), self.payload)
+
+
+        # we should have created a user object with pending state
+        user = toolkit.get_action('user_show')(
+            {'ignore_auth': True},
+            {'id': 'externaluser'}
+        )
+        assert_equals(model.State.PENDING, user['state'])
+
+        # we should have created an access request for an admin to approve/reject
+        assert_equals(
+            1,
+            len(model.Session.query(AccessRequest).filter(
+                AccessRequest.object_id == user['id'],
+                AccessRequest.user_id == user['id'],
+                AccessRequest.status == 'requested'
+            ).all())
+        )
+
+        # we should have sent an email to someone to approve/reject the account
+        mock_mailer.assert_called_once()
+        assert_equals(self.sysadmin['name'], mock_mailer.call_args[0][0])
+        assert_equals(
+            '[UNHCR RIDL] - Request for new user account',
+            mock_mailer.call_args[0][1]
+        )
+
+        # 'success' page content
+        assert_equals(resp.status_int, 200)
+        assert_in('External Account Requested', resp.body)
+        assert_in("We'll send an email with further instructions", resp.body)
+
+    def test_register_empty_message(self):
+        self.payload['message'] = ''
+        resp = self.app.post(url_for('user.register'), self.payload)
+        assert_in("&#39;message&#39; is required", resp.body)
+        action = toolkit.get_action("user_show")
+        assert_raises(
+            toolkit.ObjectNotFound,
+            action,
+            {'ignore_auth': True},
+            {'id': 'externaluser'}
+        )
+
+    def test_no_containers(self):
+        self.payload['container'] = ''
+        resp = self.app.post(url_for('user.register'), self.payload)
+        assert_in("A region must be specified", resp.body)
+        action = toolkit.get_action("user_show")
+        assert_raises(
+            toolkit.ObjectNotFound,
+            action,
+            {'ignore_auth': True},
+            {'id': 'externaluser'}
+        )
+
+    def test_internal_user(self):
+        self.payload['email'] = 'fred@unhcr.org'
+        resp = self.app.post(url_for('user.register'), self.payload)
+        assert_in(
+            "Users with an @unhcr.org email may not register for an external account.",
+            resp.body
+        )
+        action = toolkit.get_action("user_show")
+        assert_raises(
+            toolkit.ObjectNotFound,
+            action,
+            {'ignore_auth': True},
+            {'id': 'externaluser'}
+        )
+
+
 class TestMetricsController(base.FunctionalTestBase):
 
     # Helpers
