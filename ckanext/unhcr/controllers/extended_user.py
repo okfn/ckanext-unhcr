@@ -37,12 +37,16 @@ class ExtendedUserController(UserController):
         dataset_access_requests = [
             req for req in access_requests if req['object_type'] == 'package'
         ]
+        user_account_requests = [
+            req for req in access_requests if req['object_type'] == 'user'
+        ]
 
         return toolkit.render('user/dashboard_requests.html', {
             'user_dict': context['user'],
             'new_container_requests': new_container_requests,
             'container_access_requests': container_access_requests,
             'dataset_access_requests': dataset_access_requests,
+            'user_account_requests': user_account_requests,
         })
 
     # Private

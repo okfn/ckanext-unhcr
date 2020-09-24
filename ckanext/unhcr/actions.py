@@ -2,6 +2,7 @@ import json
 import logging
 import requests
 from sqlalchemy import and_, desc, or_, select
+from sqlalchemy.dialects.postgresql import array
 from ckan import model
 from ckan.authz import has_user_permission_for_group_or_org
 from ckan.plugins import toolkit
@@ -586,6 +587,10 @@ def access_request_list_for_user(context, data_dict):
                 AccessRequest.object_type == "organization",
                 AccessRequest.object_id.in_(containers),
             ),
+            and_(
+                AccessRequest.object_type == "user",
+                AccessRequest.data["containers"].has_any(array(containers)),
+            )
         )
     )
 
