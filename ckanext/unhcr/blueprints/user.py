@@ -102,6 +102,8 @@ class RegisterView(BaseRegisterView):
 
         context['defer_commit'] = True
         data_dict['state'] = context['model'].State.PENDING
+        deposit = get_data_deposit()
+        containers = [data_dict.get('container'), deposit['id']]
 
         try:
             model.Session.begin_nested()
@@ -112,7 +114,7 @@ class RegisterView(BaseRegisterView):
                 'object_type': 'user',
                 'message': data_dict['message'],
                 'role': 'member',
-                'data': {'containers': [data_dict.get('container')]}
+                'data': {'containers': containers}
             }
             toolkit.get_action(u'access_request_create')(
                 {'user': user['id'], 'ignore_auth': True, 'defer_commit': True},
@@ -136,7 +138,7 @@ class RegisterView(BaseRegisterView):
             raise
 
         recipients = mailer.get_user_account_request_access_email_recipients(
-            [data_dict.get('container')]
+            containers
         )
         for recipient in recipients:
             subj = mailer.compose_user_request_access_email_subj()
