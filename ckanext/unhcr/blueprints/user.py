@@ -10,6 +10,7 @@ import ckan.plugins.toolkit as toolkit
 from ckan.views.user import RegisterView as BaseRegisterView
 from ckanext.unhcr.helpers import get_data_deposit
 from ckanext.unhcr.utils import get_internal_domains
+from ckanext.unhcr import mailer
 
 log = logging.getLogger(__name__)
 _ = toolkit._
@@ -133,6 +134,20 @@ class RegisterView(BaseRegisterView):
         except:
             model.Session.rollback()
             raise
+
+        recipients = mailer.get_user_account_request_access_email_recipients(
+            [data_dict.get('container')]
+        )
+        for recipient in recipients:
+            subj = mailer.compose_user_request_access_email_subj()
+            body = mailer.compose_request_access_email_body(
+                'user',
+                recipient,
+                user,
+                user,
+                data_dict['message']
+            )
+            mailer.mail_user_by_id(recipient['name'], subj, body)
 
         if toolkit.c.user:
             # #1799 User has managed to register whilst logged in - warn user

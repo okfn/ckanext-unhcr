@@ -236,6 +236,16 @@ def get_summary_email_recipients():
 
 # Access Requests
 
+def _get_sysadmins():
+    context = {"ignore_auth": True}
+    default_user = toolkit.get_action("get_site_user")(context)
+
+    sysadmins = helpers.get_sysadmins()
+    return [
+        model_dictize.user_dictize(user, context) for user in sysadmins
+        if user.sysadmin and user.name != default_user["name"]
+    ]
+
 def get_container_request_access_email_recipients(container_dict):
     context = {"ignore_auth": True}
     default_user = toolkit.get_action("get_site_user")(context)
@@ -252,16 +262,20 @@ def get_container_request_access_email_recipients(container_dict):
 
     # if we couldn't find any org admins, fall back to sysadmins
     if not recipients:
-        all_users = helpers.get_sysadmins()
-        recipients = [
-            model_dictize.user_dictize(user, context) for user in all_users
-            if user.sysadmin and user.name != default_user["name"]
-        ]
+        recipients = _get_sysadmins()
 
     return recipients
 
 def get_dataset_request_access_email_recipients(package_dict):
     return get_container_request_access_email_recipients({"id": package_dict["owner_org"]})
+
+def get_user_account_request_access_email_recipients(containers):
+    # This email is sent to admins of all containers in `containers` arg plus sysadmins
+    recipients = _get_sysadmins()
+    for c in containers:
+        recipients = recipients + get_container_request_access_email_recipients({"id": c})
+    recipients = [dict(tup) for tup in {tuple(r.items()) for r in recipients}]  # de-dupe
+    return recipients
 
 
 def compose_dataset_request_access_email_subj(package_dict):
@@ -274,6 +288,9 @@ def compose_container_request_access_email_subj(container_dict):
         container_dict['display_name']
     )
 
+def compose_user_request_access_email_subj():
+    return '[UNHCR RIDL] - Request for new user account'
+
 
 def compose_request_access_email_body(object_type, recipient, obj, requesting_user, message):
     context = {}
@@ -282,11 +299,12 @@ def compose_request_access_email_body(object_type, recipient, obj, requesting_us
     context['object'] = obj
     context['requesting_user'] = requesting_user
     context['message'] = message
-    context['collaborators_url'] = toolkit.url_for(
+    context['dashboard_url'] = toolkit.url_for(
         'dashboard.requests',
         qualified=True,
     )
     context['h'] = toolkit.h
+
     return render_jinja2('emails/access_requests/access_request.html', context)
 
 

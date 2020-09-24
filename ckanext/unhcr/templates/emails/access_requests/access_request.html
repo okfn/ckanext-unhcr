@@ -8,7 +8,7 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    User
+    {% if object_type == 'user' %}External user{% else %}User{% endif %}
     {{ h.link_to(requesting_user.fullname or requesting_user.name, h.url_for('user.read', id=requesting_user.id, qualified=True)) }}
 
     {% if object_type == 'dataset' %}
@@ -17,6 +17,8 @@
     {% elif object_type == 'container' %}
       has requested access to
       {{ h.link_to(object.display_name, h.url_for('data-container_read', id=object.name, qualified=True)) }}.
+    {% elif object_type == 'user' %}
+      has requested access to deposit datasets.
     {% else %}
       has requested access to <strong>{{ object.name }}</strong>
     {% endif %}
@@ -32,11 +34,11 @@
   {% endcall %}
 
   {% call email.paragraph() %}
-    To add the user as a collaborator, visit the following page (logged in with your administrator account):
+    To approve or reject the request, visit the following page (logged in with your administrator account):
   {% endcall %}
 
-  {% call email.action(collaborators_url) %}
-    Add Collaborator
+  {% call email.action(dashboard_url) %}
+    Dashboard
   {% endcall %}
 
 {% endblock %}
