@@ -4,7 +4,9 @@ import datetime
 import logging
 
 from sqlalchemy import Column, DateTime, Integer
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.types import Enum, UnicodeText
 
 from ckan.model.meta import metadata
@@ -43,10 +45,11 @@ class AccessRequest(Base):
         nullable=False,
     )
     object_type = Column(
-        Enum('package', 'organization', name='access_request_object_type_enum'),
+        Enum('package', 'organization', 'user', name='access_request_object_type_enum'),
         nullable=False,
     )
     object_id = Column(UnicodeText, nullable=False)
+    data = Column(MutableDict.as_mutable(JSONB), nullable=True)
 
 
 def create_metric_columns():
@@ -62,6 +65,33 @@ def create_metric_columns():
     model.Session.commit()
 
 
+def extend_access_request_object_type_enum():
+    # We can't modify the enum in-place inside a transaction on Postgres < 12
+    # it will throw 'ALTER TYPE ... ADD cannot run inside a transaction block'
+    # so we're going to..
+
+    # swtich to isolation_level = AUTOCOMMIT
+    model.Session.connection().connection.set_isolation_level(0)
+
+    # modify the enum in-place
+    model.Session.execute(
+        u"ALTER TYPE access_request_object_type_enum ADD VALUE IF NOT EXISTS 'user';"
+    )
+
+    # switch back to isolation_level = READ_COMMITTED
+    model.Session.connection().connection.set_isolation_level(1)
+
+
+def add_access_request_data_column():
+    table = AccessRequest.__tablename__
+    model.Session.execute(
+        u"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS data JSONB;".format(
+            table=table
+        )
+    )
+    model.Session.commit()
+
+
 def create_tables():
     if not TimeSeriesMetric.__table__.exists():
         TimeSeriesMetric.__table__.create()
@@ -69,6 +99,10 @@ def create_tables():
 
     create_metric_columns()
 
+
     if not AccessRequest.__table__.exists():
         AccessRequest.__table__.create()
         log.info(u'AccessRequest database table created')
+
+    add_access_request_data_column()
+    extend_access_request_object_type_enum()
