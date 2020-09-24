@@ -772,6 +772,10 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         self.sysadmin = core_factories.Sysadmin()
         self.requesting_user = core_factories.User()
         self.standard_user = core_factories.User()
+        self.pending_user = core_factories.User(
+            state=model.State.PENDING,
+            email='fred@externaluser.com',
+        )
 
         self.container1_admin = core_factories.User()
         self.container1 = factories.DataContainer(
@@ -794,8 +798,17 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
             message="",
             role="member",
         )
+        self.user_request = AccessRequest(
+            user_id=self.pending_user["id"],
+            object_id=self.pending_user["id"],
+            object_type="user",
+            message="",
+            role="member",
+            data={'containers': [self.container1["id"]]},
+        )
         model.Session.add(self.container_request)
         model.Session.add(self.dataset_request)
+        model.Session.add(self.user_request)
         model.Session.commit()
 
     def test_access_request_update_approve_container_standard_user(self):
@@ -934,6 +947,76 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
         assert_equals(0, len(collaborators))
         assert_equals('rejected', self.dataset_request.status)
+
+    def test_access_request_update_approve_user_standard_user(self):
+        action = toolkit.get_action("access_request_update")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'id': self.user_request.id, 'status': 'approved'}
+        )
+
+        user = toolkit.get_action("user_show")(
+            {"user": self.sysadmin["name"]}, {"id": self.pending_user["id"]}
+        )
+        assert_equals(model.State.PENDING, user['state'])
+
+    def test_access_request_update_approve_user_container_admin(self):
+        mock_mailer = mock.Mock()
+        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+            action = toolkit.get_action("access_request_update")
+            action(
+                {"model": model, "user": self.container1_admin["name"]},
+                {'id': self.user_request.id, 'status': 'approved'}
+            )
+
+            user = toolkit.get_action("user_show")(
+                {"user": self.sysadmin["name"]}, {"id": self.pending_user["id"]}
+            )
+            assert_equals(model.State.ACTIVE, user['state'])
+            assert_equals('approved', self.user_request.status)
+
+            mock_mailer.assert_called_once()
+            assert_equals(
+                self.pending_user["id"],
+                mock_mailer.call_args[0][0]
+            )
+            assert_equals(
+                '[UNHCR RIDL] - User account approved',
+                mock_mailer.call_args[0][1]
+            )
+            assert_in(
+                "Your request for a RIDL user account has been approved",
+                mock_mailer.call_args[0][2]
+            )
+
+    def test_access_request_update_reject_user_standard_user(self):
+        action = toolkit.get_action("access_request_update")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"model": model, "user": self.standard_user["name"]},
+            {'id': self.user_request.id, 'status': 'rejected'}
+        )
+
+        user = toolkit.get_action("user_show")(
+            {"user": self.sysadmin["name"]}, {"id": self.pending_user["id"]}
+        )
+        assert_equals(model.State.PENDING, user['state'])
+
+    def test_access_request_update_reject_user_container_admin(self):
+        action = toolkit.get_action("access_request_update")
+        action(
+            {"model": model, "user": self.container1_admin["name"]},
+            {'id': self.user_request.id, 'status': 'rejected'}
+        )
+
+        user = toolkit.get_action("user_show")(
+            {"user": self.sysadmin["name"]}, {"id": self.pending_user["id"]}
+        )
+        assert_equals(model.State.DELETED, user['state'])
+        assert_equals('rejected', self.user_request.status)
 
     def test_access_request_update_invalid_inputs(self):
         action = toolkit.get_action("access_request_update")
