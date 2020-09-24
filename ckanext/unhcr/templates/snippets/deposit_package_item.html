@@ -66,7 +66,10 @@
                 <dl>
                   <dt>Curator</dt>
                     {% if curator %}
-                      <dd><a href="/user/{{ curator.name }}">{{ curator.title }}</a> <a class="email" href="mailto:{{ curator.email }}">(email)</a></dd>
+                      <dd>
+                        {{ h.link_to(curator.display_name, h.url_for('user.read', id=curator.name)) }}
+                        <a class="email" href="mailto:{{ curator.email }}">(email)</a>
+                      </dd>
                     {% else %}
                       <dd><i>Not yet assigned</i></dd>
                     {% endif %}
@@ -78,7 +81,7 @@
                 <dl>
                   <dt>Depositor</dt>
                   <dd>
-                    <a href="/user/{{ depositor.name }}">{{ depositor.title }}</a>
+                    {{ h.link_to(depositor.display_name, h.url_for('user.read', id=depositor.name)) }}
                     <a class="email" href="mailto:{{ depositor.email }}">(email)</a>
                     {% if depositor.external and curation.role != 'depositor' %}
                       <span

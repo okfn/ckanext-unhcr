@@ -34,7 +34,11 @@
           {% if curator.name == c.user %}
             <p>You have been assigned as Curator of this dataset.</p>
           {% else %}
-            <p><a href="/user/{{ curator.name }}">{{ curator.title }}</a> <a href="mailto:{{ curator.email }}">(email)</a> has been assigned as Curator of this dataset.</p>
+            <p>
+              {{ h.link_to(curator.display_name, h.url_for('user.read', id=curator.name)) }}
+              <a href="mailto:{{ curator.email }}">(email)</a>
+              has been assigned as Curator of this dataset.
+            </p>
           {% endif %}
         {% else %}
           <p>{% trans %}A Curator for this dataset has not yet been assigned.{% endtrans %}</p>
@@ -55,7 +59,7 @@
       {% if depositor.external and curation.role != 'depositor' %}
         <p>
           This dataset was submitted by
-          <strong><a href="/user/{{ depositor.name }}">{{ depositor.title }}</a></strong>
+          <strong>{{ h.link_to(depositor.display_name, h.url_for('user.read', id=depositor.name)) }}</strong>
           who is not a member of the UNHCR organization.
         </p>
       {% endif %}
