@@ -131,15 +131,27 @@ def page_authorized():
         return True
 
     # TODO: remove request_reset and perform_reset when LDAP is integrated
+    allowed_controllers = [
+        'user',  # most actions are defined in the core 'user' blueprint
+        'unhcr_user',  # we override some actions in the 'unhcr_user' blueprint
+    ]
+    allowed_actions = [
+        'logged_in',
+        'logged_out',
+        'logged_out_page',
+        'logged_out_redirect',
+        'login',
+        'perform_reset',
+        'register',
+        'request_reset',
+    ]
     return (
-        toolkit.c.userobj or
-        (toolkit.c.controller == 'user' and
-            toolkit.c.action in [
-                'login', 'logged_in', 'request_reset', 'perform_reset',
-                'logged_out', 'logged_out_page', 'logged_out_redirect'
-                ]
-        ) or
-        toolkit.request.path == '/service/login'
+        toolkit.c.userobj
+        or (
+            toolkit.c.controller in allowed_controllers
+            and toolkit.c.action in allowed_actions
+        )
+        or toolkit.request.path == '/service/login'
     )
 
 

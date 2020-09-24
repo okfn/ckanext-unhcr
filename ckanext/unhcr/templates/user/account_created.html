@@ -1,0 +1,36 @@
+{% extends "page.html" %}
+
+{% block primary_content %}
+  <article class="module">
+    <div class="module-content">
+      {% block primary_content_inner %}
+      <h1 class="page-heading">
+        {% block page_heading %}{{ _('External Account Requested') }}{% endblock %}
+      </h1>
+      <h2>Thanks for registering</h2>
+      <p>
+        We'll send an email with further instructions to
+        <strong>{{ email }}</strong>
+        once your request has been reviewed by a moderator.
+      </p>
+      {% endblock %}
+    </div>
+  </article>
+{% endblock %}
+
+{% block secondary %}
+<aside class="secondary col-sm-3">
+  <div class="module module-narrow module-shallow">
+    <h2 class="module-heading">
+      <i class="fa fa-book"></i>
+      User Guide
+    </h2>
+    <div class="module-content">
+      <p>
+        <a href="https://im.unhcr.org/ridl/#externaldeposit" target="_blank">
+          More guidance on using RIDL</a>.
+      </p>
+    </div>
+  </div>
+</aside>
+{% endblock %}

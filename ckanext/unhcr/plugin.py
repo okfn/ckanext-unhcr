@@ -18,7 +18,7 @@ from ckan.lib.activity_streams import (
     activity_stream_string_icons,
 )
 
-from ckanext.unhcr import actions, auth, blueprints, helpers, jobs, validators
+from ckanext.unhcr import actions, auth, blueprints, helpers, jobs, utils, validators
 
 from ckanext.scheming.helpers import scheming_get_dataset_schema
 from ckanext.hierarchy.helpers import group_tree_section
@@ -28,7 +28,6 @@ log = logging.getLogger(__name__)
 _ = toolkit._
 
 
-INTERNAL_DOMAINS = ['unhcr.org']
 ALLOWED_ACTIONS = [
     'group_list_authz',
     'group_list',
@@ -65,12 +64,7 @@ def user_is_external(user):
         else:
             return True
 
-    internal_domains = toolkit.aslist(
-        toolkit.config.get('ckanext.unhcr.internal_domains', INTERNAL_DOMAINS),
-        sep = ','
-    )
-
-    return domain not in internal_domains
+    return domain not in utils.get_internal_domains()
 
 
 def restrict_external(func):
