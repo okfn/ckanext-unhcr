@@ -1466,6 +1466,10 @@ class TestAccessRequests(base.FunctionalTestBase):
         self.sysadmin = core_factories.Sysadmin()
         self.requesting_user = core_factories.User()
         self.standard_user = core_factories.User()
+        self.pending_user = core_factories.User(
+            state=model.State.PENDING,
+            email='fred@externaluser.com',
+        )
 
         self.container1_admin = core_factories.User()
         self.container1 = factories.DataContainer(
@@ -1496,9 +1500,27 @@ class TestAccessRequests(base.FunctionalTestBase):
             message="",
             role="member",
         )
+        self.user_request_container1 = AccessRequest(
+            user_id=self.pending_user["id"],
+            object_id=self.pending_user["id"],
+            object_type="user",
+            message="",
+            role="member",
+            data={'containers': [self.container1["id"]]},
+        )
+        self.user_request_container2 = AccessRequest(
+            user_id=self.pending_user["id"],
+            object_id=self.pending_user["id"],
+            object_type="user",
+            message="",
+            role="member",
+            data={'containers': [self.container2["id"]]},
+        )
         model.Session.add(self.container1_request)
         model.Session.add(self.container2_request)
         model.Session.add(self.dataset_request)
+        model.Session.add(self.user_request_container1)
+        model.Session.add(self.user_request_container2)
         model.Session.commit()
 
     def make_action_request(self, action, request_id, user=None, data=None, **kwargs):
@@ -1622,6 +1644,14 @@ class TestAccessRequests(base.FunctionalTestBase):
             '/access-requests/approve/{}'.format(self.dataset_request.id),
             resp.body
         )
+        assert_in(
+            '/access-requests/approve/{}'.format(self.user_request_container1.id),
+            resp.body
+        )
+        assert_in(
+            '/access-requests/approve/{}'.format(self.user_request_container2.id),
+            resp.body
+        )
 
     def test_access_requests_list_container_admin(self):
         resp = self.make_list_request(user=self.container1_admin['name'], status=200)
@@ -1633,9 +1663,17 @@ class TestAccessRequests(base.FunctionalTestBase):
             '/access-requests/approve/{}'.format(self.dataset_request.id),
             resp.body
         )
-        # container1_admin can't see the request for container2
+        assert_in(
+            '/access-requests/approve/{}'.format(self.user_request_container1.id),
+            resp.body
+        )
+        # container1_admin can't see the requests for container2
         assert_not_in(
             '/access-requests/approve/{}'.format(self.container2_request.id),
+            resp.body
+        )
+        assert_not_in(
+            '/access-requests/approve/{}'.format(self.user_request_container2.id),
             resp.body
         )
 
