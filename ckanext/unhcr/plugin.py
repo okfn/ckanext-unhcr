@@ -30,7 +30,6 @@ _ = toolkit._
 
 ALLOWED_ACTIONS = [
     'group_list_authz',
-    'group_list',
     'group_show',
     'organization_list_for_user',
     'organization_show',
@@ -484,6 +483,7 @@ class UnhcrPlugin(
         functions['datasets_validation_report'] = auth.datasets_validation_report
         functions['organization_create'] = auth.organization_create
         functions['organization_show'] = auth.organization_show
+        functions['group_list_authz'] = auth.group_list_authz
         functions['package_activity_list'] = auth.package_activity_list
         functions['package_create'] = auth.package_create
         functions['package_update'] = auth.package_update

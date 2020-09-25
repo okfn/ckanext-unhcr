@@ -326,7 +326,6 @@ class TestAuthUnit(base.FunctionalTestBase):
         actions = [
             'package_search',
             'group_list_authz',
-            'group_list',
             'organization_list_for_user',
         ]
         context = {'user': external_user['name']}
