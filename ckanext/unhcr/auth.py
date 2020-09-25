@@ -125,6 +125,10 @@ def organization_create(context, data_dict):
     return {'success': False, 'msg': 'Not allowed to create a data container'}
 
 
+def group_list_authz(context, data_dict):
+    return {'success': True}
+
+
 # Package
 
 def package_create(context, data_dict):
