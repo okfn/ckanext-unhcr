@@ -347,10 +347,26 @@ def external_user_update_state(context, data_dict):
     if target_userobj.state != m.State.PENDING:
         return {'success': False, 'msg': "Can only change state of a 'pending' user"}
 
-    if not helpers.user_is_container_admin(request_userobj.id):
-        return {'success': False, 'msg': "Must be admin of at least one container"}
+    access_requests = model.Session.query(AccessRequest).filter(
+        AccessRequest.user_id==target_userobj.id,
+        AccessRequest.object_id==target_userobj.id,
+        AccessRequest.status=='requested',
+        AccessRequest.object_type=='user',
+    ).all()
 
-    return {'success': True}
+    if not access_requests or len(access_requests) > 1:
+        return {
+            'success': False,
+            'msg': "User must be associated with exactly one pending access request"
+        }
+
+    for container in access_requests[0].data['containers']:
+        if has_user_permission_for_group_or_org(
+            container, request_userobj.id, 'admin'
+        ):
+            return {'success': True}
+
+    return {'success': False}
 
 
 # Admin

@@ -1134,7 +1134,19 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
             state=model.State.PENDING,
             email='fred@externaluser.com',
         )
+        access_request_data_dict = {
+            'object_id': target_user['id'],
+            'object_type': 'user',
+            'message': 'asdf',
+            'role': 'member',
+            'data': {'containers': [self.container1['id']]}
+        }
+        toolkit.get_action(u'access_request_create')(
+            {'user': target_user['id'], 'ignore_auth': True},
+            access_request_data_dict
+        )
         requesting_user = core_factories.User()
+
         action = toolkit.get_action("external_user_update_state")
         assert_raises(
             toolkit.NotAuthorized,
@@ -1143,11 +1155,65 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
             {'id': target_user['id'], 'state': model.State.ACTIVE}
         )
 
+    def test_requesting_user_is_not_admin_of_required_container(self):
+        target_user = core_factories.User(
+            state=model.State.PENDING,
+            email='fred@externaluser.com',
+        )
+        requesting_user = core_factories.User()
+        container2 = factories.DataContainer(
+            users=[{"name": requesting_user["name"], "capacity": "admin"}]
+        )
+        access_request_data_dict = {
+            'object_id': target_user['id'],
+            'object_type': 'user',
+            'message': 'asdf',
+            'role': 'member',
+            'data': {'containers': [self.container1['id']]}
+        }
+        toolkit.get_action(u'access_request_create')(
+            {'user': target_user['id'], 'ignore_auth': True},
+            access_request_data_dict
+        )
+
+        action = toolkit.get_action("external_user_update_state")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"user": requesting_user["name"]},
+            {'id': target_user['id'], 'state': model.State.ACTIVE}
+        )
+
+    def test_no_access_request(self):
+        target_user = core_factories.User(
+            state=model.State.PENDING,
+            email='fred@externaluser.com',
+        )
+        action = toolkit.get_action("external_user_update_state")
+        assert_raises(
+            toolkit.NotAuthorized,
+            action,
+            {"user": self.container1_admin["name"]},
+            {'id': target_user['id'], 'state': model.State.ACTIVE}
+        )
+
     def test_invalid_state(self):
         target_user = core_factories.User(
             state=model.State.PENDING,
             email='fred@externaluser.com',
         )
+        access_request_data_dict = {
+            'object_id': target_user['id'],
+            'object_type': 'user',
+            'message': 'asdf',
+            'role': 'member',
+            'data': {'containers': [self.container1['id']]}
+        }
+        toolkit.get_action(u'access_request_create')(
+            {'user': target_user['id'], 'ignore_auth': True},
+            access_request_data_dict
+        )
+
         action = toolkit.get_action("external_user_update_state")
         assert_raises(
             toolkit.ValidationError,
@@ -1170,6 +1236,18 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
             state=model.State.PENDING,
             email='fred@externaluser.com',
         )
+        access_request_data_dict = {
+            'object_id': target_user['id'],
+            'object_type': 'user',
+            'message': 'asdf',
+            'role': 'member',
+            'data': {'containers': [self.container1['id']]}
+        }
+        toolkit.get_action(u'access_request_create')(
+            {'user': target_user['id'], 'ignore_auth': True},
+            access_request_data_dict
+        )
+
         action = toolkit.get_action("external_user_update_state")
         action(
             {"user": self.container1_admin["name"]},
