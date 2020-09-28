@@ -1909,6 +1909,32 @@ class TestUserRegister(base.FunctionalTestBase):
             {'id': 'externaluser'}
         )
 
+    def test_logged_in(self):
+        user = core_factories.User()
+
+        self.app.get(
+            url_for('user.register'),
+            extra_environ={'REMOTE_USER': user['name'].encode('ascii')},
+            status=403
+        )
+        self.app.get(
+            url_for('user.register'),
+            extra_environ={'REMOTE_USER': self.sysadmin['name'].encode('ascii')},
+            status=403
+        )
+        self.app.post(
+            url_for('user.register'),
+            self.payload,
+            extra_environ={'REMOTE_USER': user['name'].encode('ascii')},
+            status=403
+        )
+        self.app.post(
+            url_for('user.register'),
+            self.payload,
+            extra_environ={'REMOTE_USER': self.sysadmin['name'].encode('ascii')},
+            status=403
+        )
+
 
 class TestMetricsController(base.FunctionalTestBase):
 

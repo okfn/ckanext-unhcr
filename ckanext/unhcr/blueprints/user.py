@@ -63,6 +63,9 @@ class RegisterView(BaseRegisterView):
         return containers
 
     def post(self):
+        if toolkit.c.user:
+            return toolkit.abort(403, "You can't create a new user account while already logged in")
+
         context = self._prepare()
         try:
             data_dict = logic.clean_dict(
@@ -151,38 +154,16 @@ class RegisterView(BaseRegisterView):
             )
             mailer.mail_user_by_id(recipient['name'], subj, body)
 
-        if toolkit.c.user:
-            # #1799 User has managed to register whilst logged in - warn user
-            # they are not re-logged in as new user.
-            toolkit.h.flash_success(
-                _(u'User "%s" is now registered but you are still '
-                  u'logged in as "%s" from before') % (data_dict[u'name'],
-                                                       toolkit.c.user))
-            try:
-                toolkit.check_access('sysadmin', context)
-                return toolkit.h.redirect_to(u'user.activity', id=data_dict[u'name'])
-            except toolkit.NotAuthorized:
-                return toolkit.render(u'user/logout_first.html')
-
         return toolkit.render(
             u'user/account_created.html',
             {'email': data_dict['email']}
         )
 
     def get(self, data=None, errors=None, error_summary=None):
-        self._prepare()
-
-        user_is_sysadmin = False
         if toolkit.c.user:
-            try:
-                toolkit.check_access('sysadmin', {'user': toolkit.c.user})
-                user_is_sysadmin = True
-            except toolkit.NotAuthorized:
-                pass
+            return toolkit.abort(403, "You can't create a new user account while already logged in")
 
-        if toolkit.c.user and not data and not user_is_sysadmin:
-            # #1799 Don't offer the registration form if already logged in
-            return toolkit.render(u'user/logout_first.html', {})
+        self._prepare()
 
         form_vars = {
             u'data': data or {},
@@ -192,7 +173,6 @@ class RegisterView(BaseRegisterView):
         }
 
         extra_vars = {
-            u'is_sysadmin': user_is_sysadmin,
             u'form': toolkit.render(u'user/new_user_form.html', form_vars)
         }
         return toolkit.render(u'user/new.html', extra_vars)
