@@ -272,8 +272,10 @@ def get_dataset_request_access_email_recipients(package_dict):
 def get_user_account_request_access_email_recipients(containers):
     # This email is sent to admins of all containers in `containers` arg plus sysadmins
     recipients = _get_sysadmins()
-    for c in containers:
-        recipients = recipients + get_container_request_access_email_recipients({"id": c})
+    for container in containers:
+        recipients = recipients + get_container_request_access_email_recipients(
+            {"id": container}
+        )
     recipients = [dict(tup) for tup in {tuple(r.items()) for r in recipients}]  # de-dupe
     return recipients
 
