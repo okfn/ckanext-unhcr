@@ -19,19 +19,6 @@
   </article>
 {% endblock %}
 
-{% block secondary %}
-<aside class="secondary col-sm-3">
-  <div class="module module-narrow module-shallow">
-    <h2 class="module-heading">
-      <i class="fa fa-book"></i>
-      User Guide
-    </h2>
-    <div class="module-content">
-      <p>
-        <a href="https://im.unhcr.org/ridl/#externaldeposit" target="_blank">
-          More guidance on using RIDL</a>.
-      </p>
-    </div>
-  </div>
-</aside>
+{% block secondary_content %}
+  {% snippet "user/snippets/login_sidebar.html" %}
 {% endblock %}

@@ -2006,6 +2006,27 @@ ul.hierarchy-tree-top.has-toggle .open.highlighted > .hierarchy-toggle::before {
   color: white;
 }
 
+.login-splash .prompt p {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+}
+
+.login-splash .prompt hr {
+  height: 1px;
+  color: #FFF;
+}
+
+.login-splash .prompt .request {
+  color: #FFF;
+  font-weight: bold;
+  text-align: center;
+}
+
 .login-splash .info {
   position: absolute;
   top: 0;

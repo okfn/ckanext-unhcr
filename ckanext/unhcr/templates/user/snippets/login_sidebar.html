@@ -1,0 +1,31 @@
+<section class="module module-narrow module-shallow">
+  <h2 class="module-heading"><i class="fa fa-user"></i> UNHCR Staff</h2>
+  <nav>
+    <div class="module-content">
+      <ul class="list-unstyled nav nav-simple">
+        <li class="nav-item">
+          <a href="{{ h.url_for('user.login', came_from=h.get_came_from_param()) }}">Log in</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</section>
+
+<section class="module module-narrow module-shallow">
+  <h2 class="module-heading"><i class="fa fa-user"></i> External Users</h2>
+  <nav>
+    <div class="module-content">
+      <ul class="list-unstyled nav nav-simple">
+        <li class="nav-item">
+          <a href="/service/login">Log in</a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ h.url_for('user.register') }}">Request an Account</a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ h.url_for('user.request_reset') }}">Forgot your password?</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</section>

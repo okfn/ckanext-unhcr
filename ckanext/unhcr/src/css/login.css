@@ -24,6 +24,22 @@
     & h2 {
       color: white;
     }
+
+    & p {
+      display: flex;
+      flex-direction: column;
+    }
+
+    & hr {
+      height: 1px;
+      color: var(--white);
+    }
+
+    & .request {
+      color: var(--white);
+      font-weight: bold;
+      text-align: center;
+    }
   }
 
   & .info {
