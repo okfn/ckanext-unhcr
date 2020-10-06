@@ -59,7 +59,9 @@ def get_all_data_containers(exclude_ids=[], include_unknown=False, external_user
     for org in orgs:
         if org['id'] in exclude_ids:
             continue
-        if external_user and not org['visible_external']:
+        if external_user and (
+            'visible_external' not in org or not org['visible_external']
+        ):
             continue
         if org['approval_status'] != u'approved':
             continue
