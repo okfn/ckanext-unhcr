@@ -47,7 +47,8 @@ class RegisterView(BaseRegisterView):
     def _get_container_list(self):
         context = {'model': model, 'ignore_auth': True}
         orgs = toolkit.get_action('organization_list')(
-            context, {'type': 'data-container', 'all_fields': True}
+            context,
+            {'type': 'data-container', 'all_fields': True, 'include_extras': True}
         )
         deposit = get_data_deposit()
         containers = sorted(
@@ -55,7 +56,8 @@ class RegisterView(BaseRegisterView):
                 {'value': o['id'], 'text': o['display_name'] }
                 for o in orgs
                 if o['id'] != deposit['id']
-                # TODO: and o['visible_external']
+                and 'visible_external' in o
+                and o['visible_external']
             ],
             key=lambda o: o['text']
         )
