@@ -3,7 +3,6 @@
 import sys
 import csv
 import ckanapi
-from slugify import slugify
 
 INPUT_CSV = 'scripts/update_container_visibility_aug2020.csv'
 
