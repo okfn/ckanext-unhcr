@@ -13,27 +13,29 @@
     <div role="main" class="hero">
       <div class="container">
         {% block search %}
-        {% set tags = h.get_facet_items_dict('tags', limit=3) %}
+          {% if not c.userobj.external %}
+            {% set tags = h.get_facet_items_dict('tags', limit=3) %}
 
-        <div class="module module-search module-narrow module-shallow box">
-          <form class="module-content search-form" method="get" action="{% url_for controller='package', action='search' %}">
-            <h3 class="heading">{{ _("Search the library of") }} {{ h.SI_number_span(dataset_count) }}
-          {{ _('dataset') if dataset_count == 1 else _('datasets') }}</h3>
-            <div class="search-input form-group search-giant">
-              <input id="field-main-search" type="text" class="form-control" name="q" value="" autocomplete="off" placeholder="Search keywords, metadata, version data etc." />
-              <button type="submit">
-                <i class="fa fa-search"></i>
-                <span class="sr-only">{{ _('Search') }}</span>
-              </button>
+            <div class="module module-search module-narrow module-shallow box">
+              <form class="module-content search-form" method="get" action="{% url_for controller='package', action='search' %}">
+                <h3 class="heading">{{ _("Search the library of") }} {{ h.SI_number_span(dataset_count) }}
+              {{ _('dataset') if dataset_count == 1 else _('datasets') }}</h3>
+                <div class="search-input form-group search-giant">
+                  <input id="field-main-search" type="text" class="form-control" name="q" value="" autocomplete="off" placeholder="Search keywords, metadata, version data etc." />
+                  <button type="submit">
+                    <i class="fa fa-search"></i>
+                    <span class="sr-only">{{ _('Search') }}</span>
+                  </button>
+                </div>
+              </form>
+              <div class="tags">
+                <h3>{{ _('Popular tags') }}</h3>
+                {% for tag in tags %}
+                  <a class="tag" href="{% url_for controller='package', action='search', tags=tag.name %}">{{ h.truncate(tag.display_name, 22) }}</a>
+                {% endfor %}
+              </div>
             </div>
-          </form>
-          <div class="tags">
-            <h3>{{ _('Popular tags') }}</h3>
-            {% for tag in tags %}
-              <a class="tag" href="{% url_for controller='package', action='search', tags=tag.name %}">{{ h.truncate(tag.display_name, 22) }}</a>
-            {% endfor %}
-          </div>
-        </div>
+          {% endif %}
         {% endblock %}
 
         <div>
@@ -53,6 +55,10 @@
                 here
               </strong></a>.
             </p>
+          {% endif %}
+
+          {% if c.userobj.external %}
+            <p><a class="btn btn-inverse btn-lg" href="">Get started</a></p>
           {% endif %}
         </div>
 

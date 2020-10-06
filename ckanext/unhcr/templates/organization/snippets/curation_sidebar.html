@@ -55,7 +55,7 @@
   </section>
 
   {# Facets #}
-  {% if facet_titles %}
+  {% if facet_titles and not c.userobj.external %}
     <section class="module module-narrow module-shallow curation-actions">
       <h2 class="module-heading"><i class="fa fa-search"></i>Filters</h2>
       <p class="module-content">

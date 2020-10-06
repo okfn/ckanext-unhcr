@@ -7,7 +7,10 @@ import ckan.lib.captcha as captcha
 import ckan.lib.navl.dictization_functions as dictization_functions
 import ckan.logic as logic
 import ckan.plugins.toolkit as toolkit
-from ckan.views.user import RegisterView as BaseRegisterView
+from ckan.views.user import (
+    RegisterView as BaseRegisterView,
+    login as core_login
+)
 from ckanext.unhcr.helpers import get_data_deposit
 from ckanext.unhcr.utils import get_internal_domains
 from ckanext.unhcr import mailer
@@ -180,6 +183,30 @@ class RegisterView(BaseRegisterView):
         return toolkit.render(u'user/new.html', extra_vars)
 
 
+def me():
+    route = u'user.login'
+    if toolkit.c.userobj:
+        if toolkit.c.userobj.external:
+            route = u'home.index'
+        else:
+            route = u'dashboard.index'
+    return toolkit.h.redirect_to(route)
+
+
+def logged_in():
+    # redirect if needed
+    came_from = toolkit.request.params.get(u'came_from', u'')
+    if toolkit.h.url_is_local(came_from):
+        return toolkit.redirect_to(str(came_from))
+
+    if toolkit.c.user:
+        return me()
+    else:
+        err = _(u'Login failed. Bad username or password.')
+        toolkit.h.flash_error(err)
+        return core_login()
+
+
 unhcr_user_blueprint.add_url_rule(
     rule=u'/sysadmin',
     view_func=sysadmin,
@@ -189,4 +216,9 @@ unhcr_user_blueprint.add_url_rule(
 unhcr_user_blueprint.add_url_rule(
     u'/register',
     view_func=RegisterView.as_view(str(u'register'))
+)
+
+unhcr_user_blueprint.add_url_rule(
+    u'/logged_in',
+    view_func=logged_in
 )
