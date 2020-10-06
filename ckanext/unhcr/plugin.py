@@ -48,6 +48,7 @@ ALLOWED_ACTIONS = [
     'resource_show',
     'resource_update',
     'resource_view_list',
+    'site_read',
 ]
 
 

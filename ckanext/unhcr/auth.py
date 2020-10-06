@@ -62,8 +62,16 @@ def site_read(context, data_dict):
     elif toolkit.request.path == '/service/login':
         # Allow local logins
         return {'success': True}
-    if not context.get('user'):
+
+    userobj = context.get('auth_user_obj')
+    if not userobj:
         return {'success': False}
+
+    # we've granted external users site_read for the home page, but we
+    # want to deny site_read for all other pages that only need site_read
+    if userobj.external and toolkit.request.path != '/':
+        return {'success': False}
+
     return {'success': True}
 
 

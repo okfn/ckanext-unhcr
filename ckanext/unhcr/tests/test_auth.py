@@ -131,7 +131,6 @@ class TestAuthUI(base.FunctionalTestBase):
         env = {'REMOTE_USER': external_user['name'].encode('ascii')}
 
         endpoints_403 = [
-            '/',
             '/about',
             '/ckan-admin',
             '/dashboard',
@@ -156,6 +155,7 @@ class TestAuthUI(base.FunctionalTestBase):
             resp = app.get(endpoint, extra_environ=env, status=404)
 
         endpoints_200 = [
+            '/',
             '/feeds/dataset.atom',
             '/data-container/data-deposit',
         ]
