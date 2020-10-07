@@ -1356,3 +1356,31 @@ class TestOrganizationMemberCreate(base.FunctionalTestBase):
                 'role': 'member',
             }
         )
+
+
+class TestUserAutocomplete(base.FunctionalTestBase):
+
+    def test_user_autocomplete(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        core_factories.User(fullname='Alice External', email='alice@externaluser.com')
+        core_factories.User(fullname='Bob Internal')
+        core_factories.User(fullname='Carlos Internal')
+        core_factories.User(fullname='David Internal')
+
+        action = toolkit.get_action('user_autocomplete')
+        context = {'user': sysadmin['name']}
+
+        result = action(context, {'q': 'alic'})
+        assert_equals(0, len(result))
+
+        result = action(context, {'q': 'alic', 'include_external': True})
+        assert_equals('Alice External', result[0]['fullname'])
+
+        result = action(context, {'q': 'nal'})
+        fullnames = [r['fullname'] for r in result]
+        assert_in('Bob Internal', fullnames)
+        assert_in('Carlos Internal', fullnames)
+        assert_in('David Internal', fullnames)
+
+        result = action(context, {'q': 'foobar'})
+        assert_equals(0, len(result))
