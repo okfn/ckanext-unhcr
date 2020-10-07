@@ -181,6 +181,10 @@ def user_is_curator():
     return user_id in user_ids
 
 
+def user_is_external(user):
+    return utils.user_is_external(user)
+
+
 def user_is_container_admin(user=None):
     if not user:
         user = toolkit.c.user
