@@ -51,22 +51,6 @@ ALLOWED_ACTIONS = [
 ]
 
 
-def user_is_external(user):
-    '''
-    Returns True if user email is not in the managed internal domains.
-    '''
-    try:
-        domain = user.email.split('@')[1]
-    except AttributeError:
-         # Internal sysadmin user does not have email
-        if user.sysadmin:
-            return False
-        else:
-            return True
-
-    return domain not in utils.get_internal_domains()
-
-
 def restrict_external(func):
     '''
     Decorator function to restrict external users to a small number of allowed_actions
@@ -124,7 +108,7 @@ class UnhcrPlugin(
         activity_stream_string_functions['download resource'] = helpers.download_resource_renderer
         activity_stream_string_icons['download resource'] = 'download'
 
-        User.external = property(user_is_external)
+        User.external = property(utils.user_is_external)
         authz.is_authorized = restrict_external(authz.is_authorized)
         core_helpers.url_for = url_for
 
@@ -300,6 +284,7 @@ class UnhcrPlugin(
             'page_authorized': helpers.page_authorized,
             'get_came_from_param': helpers.get_came_from_param,
             'user_is_curator': helpers.user_is_curator,
+            'user_is_external': helpers.user_is_external,
             'user_is_container_admin': helpers.user_is_container_admin,
             # Linked datasets
             'get_linked_datasets_for_form': helpers.get_linked_datasets_for_form,
