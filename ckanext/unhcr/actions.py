@@ -18,7 +18,7 @@ import ckan.logic.action.patch as patch_core
 import ckan.lib.activity_streams as activity_streams
 import ckan.lib.dictization.model_dictize as model_dictize
 from ckanext.collaborators.logic import action as collaborators_action
-from ckanext.unhcr import helpers, mailer
+from ckanext.unhcr import helpers, mailer, utils
 from ckanext.unhcr.models import AccessRequest
 from ckanext.scheming.helpers import scheming_get_dataset_schema
 
@@ -864,3 +864,67 @@ def search_index_rebuild(context, data_dict):
 
     commit()
     return errors
+
+
+# Autocomplete
+
+@core_logic.schema.validator_args
+def unhcr_autocomplete_schema(
+        not_missing,
+        unicode_safe,
+        ignore_missing,
+        natural_number_validator,
+        boolean_validator
+    ):
+    return {
+        'q': [not_missing, unicode_safe],
+        'ignore_self': [ignore_missing],
+        'limit': [ignore_missing, natural_number_validator],
+        'include_external': [ignore_missing, boolean_validator],
+    }
+
+
+@core_logic.validate(unhcr_autocomplete_schema)
+def user_autocomplete(context, data_dict):
+    '''Return a list of user names that contain a string.
+
+    :param q: the string to search for
+    :type q: string
+    :param limit: the maximum number of user names to return (optional,
+        default: ``20``)
+    :type limit: int
+    :param include_external: include external users in the output (optional,
+        default: ``False``)
+    :type include_external: bool
+
+    :rtype: a list of user dictionaries each with keys ``'name'``,
+        ``'fullname'``, and ``'id'``
+    '''
+    m = context.get('model', model)
+    user = toolkit.get_or_bust(context, "user")
+    include_external_users = data_dict.get('include_external', False)
+
+    toolkit.check_access('user_autocomplete', context, data_dict)
+
+    q = data_dict['q']
+    limit = data_dict.get('limit', 20)
+
+    query = model.User.search(q)
+    query = query.filter(model.User.state != model.State.DELETED)
+    if not include_external_users:
+        conditions = [
+            model.User.email.ilike('%@{}'.format(domain))
+            for domain in utils.get_internal_domains()
+        ]
+        query = query.filter(or_(*conditions))
+    query = query.limit(limit)
+
+    user_list = []
+    for user in query.all():
+        result_dict = {}
+        for k in ['id', 'name', 'fullname']:
+            result_dict[k] = getattr(user, k)
+
+        user_list.append(result_dict)
+
+    return user_list

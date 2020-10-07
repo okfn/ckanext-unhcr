@@ -513,6 +513,7 @@ class UnhcrPlugin(
             'user_update_sysadmin': actions.user_update_sysadmin,
             'external_user_update_state': actions.external_user_update_state,
             'search_index_rebuild': actions.search_index_rebuild,
+            'user_autocomplete': actions.user_autocomplete,
         }
 
     # IValidators
