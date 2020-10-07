@@ -17,6 +17,7 @@ import ckan.logic.action.update as update_core
 import ckan.logic.action.patch as patch_core
 import ckan.lib.activity_streams as activity_streams
 import ckan.lib.dictization.model_dictize as model_dictize
+from ckanext.collaborators.logic import action as collaborators_action
 from ckanext.unhcr import helpers, mailer
 from ckanext.unhcr.models import AccessRequest
 from ckanext.scheming.helpers import scheming_get_dataset_schema
@@ -159,6 +160,22 @@ def package_get_microdata_collections(context, data_dict):
     return collections
 
 
+@toolkit.chained_action
+def dataset_collaborator_create(up_func, context, data_dict):
+
+    m = context.get('model', model)
+    user_id = toolkit.get_or_bust(data_dict, 'user_id')
+    user = m.User.get(user_id)
+    if not user:
+        raise toolkit.ObjectNotFound("User not found")
+
+    if user.external:
+        message = 'External users can not be a dataset collaborator'
+        raise toolkit.ValidationError({'message': message}, error_summary=message)
+
+    return up_func(context, data_dict)
+
+
 # Organization
 
 def organization_create(context, data_dict):
@@ -201,6 +218,16 @@ def organization_create(context, data_dict):
 
 
 def organization_member_create(context, data_dict):
+
+    m = context.get('model', model)
+    username = toolkit.get_or_bust(data_dict, 'username')
+    user = m.User.get(username)
+    if not user:
+        raise toolkit.ObjectNotFound("User not found")
+
+    if user.external:
+        message = 'External users can not be an organisation member'
+        raise toolkit.ValidationError({'message': message}, error_summary=message)
 
     if not data_dict.get('not_notify'):
 

@@ -492,6 +492,7 @@ class UnhcrPlugin(
             'package_update': actions.package_update,
             'package_publish_microdata': actions.package_publish_microdata,
             'package_get_microdata_collections': actions.package_get_microdata_collections,
+            'dataset_collaborator_create': actions.dataset_collaborator_create,
             'organization_create': actions.organization_create,
             'organization_member_create': actions.organization_member_create,
             'organization_member_delete': actions.organization_member_delete,

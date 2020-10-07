@@ -1273,3 +1273,86 @@ class TestPackageSearch(base.FunctionalTestBase):
 
         assert_equals(1, internal_user_search_result['count'])  # internal_user can see this
         assert_equals(0, external_user_search_result['count'])  # external_user can't
+
+
+class TestDatasetCollaboratorCreate(base.FunctionalTestBase):
+
+    def test_internal_user(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        internal_user = core_factories.User()
+        dataset = factories.Dataset(private=True)
+
+        toolkit.get_action("dataset_collaborator_create")(
+            {'user': sysadmin['name']},
+            {
+                'id': dataset['id'],
+                'user_id': internal_user['id'],
+                'capacity': 'member',
+            }
+        )
+
+        collabs_list = toolkit.get_action("dataset_collaborator_list_for_user")(
+            {'user': sysadmin['name']},
+            {'id': internal_user['id']}
+        )
+        assert_equals(dataset['id'], collabs_list[0]['dataset_id'])
+        assert_equals('member', collabs_list[0]['capacity'])
+
+    def test_external_user(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        external_user = core_factories.User(email='fred@externaluser.com')
+        dataset = factories.Dataset(private=True)
+
+        action = toolkit.get_action("dataset_collaborator_create")
+        assert_raises(
+            toolkit.ValidationError,
+            action,
+            {'user': sysadmin['name']},
+            {
+                'id': dataset['id'],
+                'user_id': external_user['id'],
+                'capacity': 'member',
+            }
+        )
+
+
+class TestOrganizationMemberCreate(base.FunctionalTestBase):
+
+    def test_internal_user(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        internal_user = core_factories.User()
+        container = factories.DataContainer()
+
+        toolkit.get_action("organization_member_create")(
+            {'user': sysadmin['name']},
+            {
+                'id': container['id'],
+                'username': internal_user['name'],
+                'role': 'member',
+            }
+        )
+
+        org_list = toolkit.get_action("organization_list_for_user")(
+            {'user': sysadmin['name']},
+            {'id': internal_user['id']}
+        )
+        assert_equals(container['id'], org_list[0]['id'])
+        assert_equals('member', org_list[0]['capacity'])
+
+
+    def test_external_user(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        external_user = core_factories.User(email='fred@externaluser.com')
+        container = factories.DataContainer()
+
+        action = toolkit.get_action("organization_member_create")
+        assert_raises(
+            toolkit.ValidationError,
+            action,
+            {'user': sysadmin['name']},
+            {
+                'id': container['id'],
+                'username': external_user['name'],
+                'role': 'member',
+            }
+        )
