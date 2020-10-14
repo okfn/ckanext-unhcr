@@ -280,7 +280,7 @@ class DepositedDatasetController(toolkit.BaseController):
         message = toolkit.request.params.get('message')
         curator = curation['contacts']['curator']
         # We don't bother all curators if someone is already assigned
-        users = [curator] if curator else helpers.get_data_curation_users()
+        users = [curator] if curator else helpers.get_data_curation_users(dataset)
         for user in users:
             subj = mailer.compose_curation_email_subj(dataset)
             body = mailer.compose_curation_email_body(
@@ -321,7 +321,7 @@ class DepositedDatasetController(toolkit.BaseController):
 
         # Send notification email
         message = toolkit.request.params.get('message')
-        for user in helpers.get_data_curation_users():
+        for user in helpers.get_data_curation_users(dataset):
             subj = mailer.compose_curation_email_subj(dataset)
             body = mailer.compose_curation_email_body(
                 dataset, curation, user['display_name'], 'withdraw', message=message)

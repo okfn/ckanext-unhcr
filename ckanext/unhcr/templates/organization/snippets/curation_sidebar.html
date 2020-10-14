@@ -30,7 +30,7 @@
         {% trans %}Deposit Dataset{% endtrans %}
       </a>
 
-      {% if curation_role in ['admin', 'curator'] %}
+      {% if curation_role in ['admin', 'curator', 'container admin'] %}
         {% if not editing %}
           <a href="/data-container/{{ deposit.name }}?curator_display_name={{ c.userobj.display_name }}" role="button" class="btn btn-warning">
             {% trans %}Show Assigned To Me{% endtrans %}
