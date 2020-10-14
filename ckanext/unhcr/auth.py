@@ -225,10 +225,17 @@ def resource_download(context, data_dict):
     visibility = dataset.get('visibility')
 
     # Use default check
-    is_depositor = (
-        dataset.get('type') == 'deposited-dataset' and
-        dataset.get('creator_user_id') == getattr(context.get('auth_user_obj'), 'id', None))
-    if not user or is_depositor or not visibility or visibility != 'restricted':
+    user_id = getattr(context.get('auth_user_obj'), 'id', None)
+    is_deposit = dataset.get('type') == 'deposited-dataset'
+    if is_deposit:
+        is_depositor = is_deposit and dataset.get('creator_user_id') == user_id
+        curators = [u['id'] for u in helpers.get_data_curation_users(dataset)]
+        is_curator = is_deposit and user_id in curators
+    else:
+        is_depositor = False
+        is_curator = False
+
+    if not user or is_depositor or is_curator or not visibility or visibility != 'restricted':
         try:
             toolkit.check_access('resource_show', context, data_dict)
             return {'success': True}

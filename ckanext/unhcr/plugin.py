@@ -543,10 +543,21 @@ class UnhcrPlugin(
 
         # For deposited datasets
         if dataset_obj.type == 'deposited-dataset':
+            context = {'ignore_auth': True}
+            dataset = toolkit.get_action('package_show')(
+                context,
+                {'id': dataset_obj.id}
+            )
+            deposit = helpers.get_data_deposit()
+
             labels = [
                 'deposited-dataset',
                 'creator-%s' % dataset_obj.creator_user_id,
             ]
+            if dataset['owner_org_dest'] not in [deposit['id'], 'unknown']:
+                labels.append(
+                    'deposited-dataset-{}'.format(dataset['owner_org_dest'])
+                )
 
         # For normal datasets
         else:
@@ -573,7 +584,12 @@ class UnhcrPlugin(
             orgs = toolkit.get_action('organization_list_for_user')(context, {})
             for org in orgs:
                 if deposit['id'] == org['id']:
-                    labels.extend(['deposited-dataset'])
+                    labels.append('deposited-dataset')
+                    continue
+                if org['capacity'] == 'admin':
+                    labels.append(
+                        'deposited-dataset-{}'.format(org['id'])
+                    )
 
         return labels
 

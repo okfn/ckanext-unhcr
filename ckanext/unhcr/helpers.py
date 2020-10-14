@@ -312,7 +312,7 @@ def get_data_deposit():
     return deposit
 
 
-def get_data_curation_users():
+def get_data_curation_users(dataset):
     context = {'model': model, 'ignore_auth': True}
     deposit = get_data_deposit()
 
@@ -330,15 +330,25 @@ def get_data_curation_users():
         'object_type': 'user',
     })
 
+    container_admins = []
+    owner_org_dest = dataset.get('owner_org_dest')
+    if owner_org_dest and owner_org_dest != 'unknown':
+        container_admins = toolkit.get_action('member_list')(context, {
+            'id': owner_org_dest,
+            'capacity': 'admin',
+            'object_type': 'user',
+        })
+
     # Get users
     users = []
-    for item in depadmins + curators:
+    for item in depadmins + curators + container_admins:
         user = toolkit.get_action('user_show')(context, {'id': item[0]})
         users.append(user)
 
+    users = [dict(tup) for tup in {tuple(u.items()) for u in users}]  # de-dupe
+
     # Sort users
-    users = list(sorted(users,
-        key=itemgetter('display_name')))
+    users = list(sorted(users, key=itemgetter('display_name', 'name')))
 
     return users
 
@@ -350,7 +360,7 @@ def get_deposited_dataset_user_curation_status(dataset, user_id):
     # General
     status = {}
     status['error'] = get_dataset_validation_error_or_none(dataset, context)
-    status['role'] = get_deposited_dataset_user_curation_role(user_id)
+    status['role'] = get_deposited_dataset_user_curation_role(user_id, dataset)
     status['state'] = dataset['curation_state']
     status['final_review'] = dataset.get('curation_final_review')
     status['active'] = dataset['state'] == 'active'
@@ -371,23 +381,39 @@ def get_deposited_dataset_user_curation_status(dataset, user_id):
     return status
 
 
-def get_deposited_dataset_user_curation_role(user_id):
+def get_deposited_dataset_user_curation_role(user_id, dataset=None):
     action = toolkit.get_action('organization_list_for_user')
     context = {'model': model, 'user': user_id}
     deposit = get_data_deposit()
 
-    # Admin
-    orgs = action(context, {'permission': 'admin'})
-    if deposit['id'] in [org['id'] for org in orgs]:
+    admin_orgs = action(context, {'permission': 'admin'})
+    admin_orgs_ids = [org['id'] for org in admin_orgs]
+
+    member_orgs = action(context, {'permission': 'create_dataset'})
+    member_org_ids = [org['id'] for org in member_orgs]
+
+
+    if deposit['id'] in admin_orgs_ids:
         return 'admin'
 
-    # Curator
-    orgs = action(context, {'permission': 'create_dataset'})
-    if deposit['id'] in [org['id'] for org in orgs]:
+    if deposit['id'] in member_org_ids:
         return 'curator'
 
-    # Depositor
-    return 'depositor'
+    if not dataset:
+        if len(admin_orgs_ids) > 0:
+            return 'container admin'
+        return 'depositor'
+
+    if (
+        dataset['owner_org_dest'] != 'unknown'
+        and dataset['owner_org_dest'] in admin_orgs_ids
+    ):
+        return 'container admin'
+
+    if dataset['creator_user_id'] == user_id:
+        return 'depositor'
+
+    return 'user'
 
 
 def get_deposited_dataset_user_curation_actions(status):
@@ -402,7 +428,7 @@ def get_deposited_dataset_user_curation_actions(status):
 
     # Submitted
     if status['state'] == 'submitted':
-        if status['role'] in ['admin', 'curator']:
+        if status['role'] in ['admin', 'curator', 'container admin']:
             actions.extend(['edit', 'reject'])
             if status['role'] == 'admin':
                 actions.extend(['assign'])

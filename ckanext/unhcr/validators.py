@@ -139,10 +139,19 @@ def deposited_dataset_curation_state(value, context):
 
 def deposited_dataset_curator_id(value, context):
 
+    dataset = None
+    allowed_roles = ['admin', 'curator']
+    if context.get('package'):
+        dataset = toolkit.get_action('package_show')(
+            context,
+            {'id': context['package'].id}
+        )
+        allowed_roles.append('container admin')
+
     # Get curation role and raise if not curator
     if value:
-        curation_role = helpers.get_deposited_dataset_user_curation_role(value)
-        if curation_role not in ['admin', 'curator']:
+        curation_role = helpers.get_deposited_dataset_user_curation_role(value, dataset)
+        if curation_role not in allowed_roles:
             raise Invalid('Invalid Curator id')
 
     return value
