@@ -96,9 +96,6 @@ class TestValidators(base.FunctionalTestBase):
         assert_raises(toolkit.Invalid,
             validators.deposited_dataset_curation_state, 'invalid', {})
 
-    def test_deposited_dataset_curation_id_invalid(self):
-        assert_raises(toolkit.Invalid,
-            validators.deposited_dataset_curator_id, 'invalid', {})
 
     # Private datasets
 
@@ -295,3 +292,100 @@ class TestValidators(base.FunctionalTestBase):
                 {},
                 context,
             )
+
+
+class TestDepositedDatasetCurationId(base.FunctionalTestBase):
+
+    def setup(self):
+        super(TestDepositedDatasetCurationId, self).setup()
+
+        self.depadmin = core_factories.User()
+        self.curator = core_factories.User()
+        self.target_container_admin = core_factories.User()
+        self.target_container_member = core_factories.User()
+        self.other_container_admin = core_factories.User()
+
+        deposit = factories.DataContainer(
+            id='data-deposit',
+            users=[
+                {'name': self.depadmin['name'], 'capacity': 'admin'},
+                {'name': self.curator['name'], 'capacity': 'editor'},
+            ]
+        )
+        target = factories.DataContainer(
+            users=[
+                {'name': self.target_container_admin['name'], 'capacity': 'admin'},
+                {'name': self.target_container_member['name'], 'capacity': 'member'},
+            ]
+        )
+        container = factories.DataContainer(
+            users=[
+                {'name': self.other_container_admin['name'], 'capacity': 'admin'},
+            ]
+        )
+
+        dataset = factories.DepositedDataset(
+            owner_org=deposit['id'],
+            owner_org_dest=target['id']
+        )
+        self.package = model.Package.get(dataset['id'])
+
+    def test_deposited_dataset_curation_id_no_package_in_context_valid(self):
+        assert_equals(
+            self.depadmin['name'],
+            validators.deposited_dataset_curator_id(self.depadmin['name'], {})
+        )
+        assert_equals(
+            self.curator['name'],
+            validators.deposited_dataset_curator_id(self.curator['name'], {})
+        )
+
+    def test_deposited_dataset_curation_id_no_package_in_context_invalid(self):
+        assert_raises(
+            toolkit.Invalid,
+            validators.deposited_dataset_curator_id,
+            self.target_container_admin['name'],
+            {},
+        )
+        assert_raises(
+            toolkit.Invalid,
+            validators.deposited_dataset_curator_id,
+            self.target_container_member['name'],
+            {},
+        )
+        assert_raises(
+            toolkit.Invalid,
+            validators.deposited_dataset_curator_id,
+            self.other_container_admin['name'],
+            {},
+        )
+
+    def test_deposited_dataset_curation_id_with_package_in_context_valid(self):
+        context = {'package': self.package, 'user': self.depadmin['name']}
+        assert_equals(
+            self.depadmin['name'],
+            validators.deposited_dataset_curator_id(self.depadmin['name'], context)
+        )
+        assert_equals(
+            self.curator['name'],
+            validators.deposited_dataset_curator_id(self.curator['name'], context)
+        )
+        assert_equals(
+            self.target_container_admin['name'],
+            validators.deposited_dataset_curator_id(self.target_container_admin['name'], context)
+        )
+
+    def test_deposited_dataset_curation_id_with_package_in_context_invalid(self):
+        context = {'package': self.package, 'user': self.depadmin['name']}
+        assert_raises(
+            toolkit.Invalid,
+            validators.deposited_dataset_curator_id,
+            self.target_container_member['name'],
+            context,
+        )
+        assert_raises(
+            toolkit.Invalid,
+            validators.deposited_dataset_curator_id,
+            self.other_container_admin['name'],
+            context,
+        )

@@ -253,7 +253,7 @@ class TestAuthUnit(base.FunctionalTestBase):
     def test_resource_download(self):
         container_member = core_factories.User()
         dataset_member = core_factories.User()
-        external_user = core_factories.User()
+        another_user = core_factories.User()
         data_container = factories.DataContainer(
             users=[{'name': container_member['name'], 'capacity': 'admin'}]
         )
@@ -280,8 +280,55 @@ class TestAuthUnit(base.FunctionalTestBase):
 
         assert_equals(
             {'success': False},
-            auth.resource_download({'user': external_user['name']}, resource)
+            auth.resource_download({'user': another_user['name']}, resource)
         )
+
+    def test_resource_download_deposited_dataset(self):
+        depadmin = core_factories.User()
+        curator = core_factories.User()
+        target_container_admin = core_factories.User()
+        target_container_member = core_factories.User()
+        other_container_admin = core_factories.User()
+
+        deposit = factories.DataContainer(
+            id='data-deposit',
+            users=[
+                {'name': depadmin['name'], 'capacity': 'admin'},
+                {'name': curator['name'], 'capacity': 'editor'},
+            ]
+        )
+        target = factories.DataContainer(
+            users=[
+                {'name': target_container_admin['name'], 'capacity': 'admin'},
+                {'name': target_container_member['name'], 'capacity': 'member'},
+            ]
+        )
+        container = factories.DataContainer(
+            users=[
+                {'name': other_container_admin['name'], 'capacity': 'admin'},
+            ]
+        )
+
+        dataset = factories.DepositedDataset(
+            owner_org=deposit['id'],
+            owner_org_dest=target['id']
+        )
+        resource = factories.Resource(
+            package_id=dataset['id'],
+            url_type='upload',
+        )
+
+        for user in [depadmin, curator, target_container_admin]:
+            assert_equals(
+                {'success': True},
+                auth.resource_download({'user': user['name']}, resource)
+            )
+
+        for user in [target_container_member, other_container_admin]:
+            assert_equals(
+                {'success': False},
+                auth.resource_download({'user': user['name']}, resource)
+            )
 
     def test_external_users_core_actions(self):
         external_user = core_factories.User(email='fred@externaluser.com')
