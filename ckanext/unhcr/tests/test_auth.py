@@ -158,6 +158,8 @@ class TestAuthUI(base.FunctionalTestBase):
             '/',
             '/feeds/dataset.atom',
             '/data-container/data-deposit',
+            '/api/2/util/resource/format_autocomplete?incomplete=a',
+            '/api/2/util/tag/autocomplete?incomplete=a',
         ]
         for endpoint in endpoints_200:
             resp = app.get(endpoint, extra_environ=env, status=200)
@@ -324,9 +326,12 @@ class TestAuthUnit(base.FunctionalTestBase):
         # these actions should always return True,
         # regardless of the content of data_dict
         actions = [
+            'format_autocomplete',
             'package_search',
             'group_list_authz',
             'organization_list_for_user',
+            'tag_autocomplete',
+            'tag_list',
         ]
         context = {'user': external_user['name']}
 

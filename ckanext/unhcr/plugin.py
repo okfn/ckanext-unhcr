@@ -29,6 +29,7 @@ _ = toolkit._
 
 
 ALLOWED_ACTIONS = [
+    'format_autocomplete',
     'group_list_authz',
     'group_show',
     'organization_list_for_user',
@@ -48,6 +49,8 @@ ALLOWED_ACTIONS = [
     'resource_update',
     'resource_view_list',
     'site_read',
+    'tag_autocomplete',
+    'tag_list',
 ]
 
 
