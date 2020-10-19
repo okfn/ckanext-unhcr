@@ -102,19 +102,22 @@ def deposited_dataset_owner_org(value, context):
 
 def deposited_dataset_owner_org_dest(value, context):
     user = context.get('user')
-
     userobj = model.User.get(user)
-    if not userobj:
-        external = True
-    else:
-        external = userobj.external
+
+    include_ids = []
+    package = context.get('package')
+    if package:
+        # 'Package' object has no attribute 'owner_org_dest'
+        dataset = toolkit.get_action('package_show')(context, {'id': package.id})
+        include_ids = [dataset['owner_org_dest']]
 
     # Pass validation if data container exists and NOT for depositing
     deposit = helpers.get_data_deposit()
     orgs = helpers.get_all_data_containers(
         exclude_ids=[deposit['id']],
         include_unknown=True,
-        external_user=external
+        userobj=userobj,
+        include_ids=include_ids,
     )
     for org in orgs:
         if value == org['id']:

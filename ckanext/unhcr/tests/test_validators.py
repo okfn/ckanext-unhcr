@@ -50,20 +50,23 @@ class TestValidators(base.FunctionalTestBase):
     def test_deposited_dataset_owner_org_dest(self):
         deposit = factories.DataContainer(id='data-deposit')
         target = factories.DataContainer(id='data-target')
-        result = validators.deposited_dataset_owner_org_dest('data-target', {})
+        user = core_factories.User()
+        result = validators.deposited_dataset_owner_org_dest('data-target', {'user': user['name']})
         assert_equals(result, 'data-target')
 
     def test_deposited_dataset_owner_org_dest_invalid_data_deposit(self):
         deposit = factories.DataContainer(id='data-deposit')
         target = factories.DataContainer(id='data-target')
+        user = core_factories.User()
         assert_raises(toolkit.Invalid,
-            validators.deposited_dataset_owner_org_dest, 'data-deposit', {})
+            validators.deposited_dataset_owner_org_dest, 'data-deposit', {'user': user['name']})
 
     def test_deposited_dataset_owner_org_dest_invalid_not_existent(self):
         deposit = factories.DataContainer(id='data-deposit')
         target = factories.DataContainer(id='data-target')
+        user = core_factories.User()
         assert_raises(toolkit.Invalid,
-            validators.deposited_dataset_owner_org_dest, 'not-existent', {})
+            validators.deposited_dataset_owner_org_dest, 'not-existent', {'user': user['name']})
 
     def test_deposited_dataset_owner_org_dest_not_visible_external(self):
         deposit = factories.DataContainer(id='data-deposit')
