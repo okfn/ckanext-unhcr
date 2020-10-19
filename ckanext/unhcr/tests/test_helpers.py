@@ -30,7 +30,10 @@ class TestHelpers(base.FunctionalTestBase):
     def test_get_all_data_containers(self):
         container1 = factories.DataContainer(title='container1')
         container2 = factories.DataContainer(title='container2')
-        result = helpers.get_all_data_containers()
+        user = core_factories.User()
+        result = helpers.get_all_data_containers(
+            userobj=model.User.get(user['id'])
+        )
         assert_equals(len(result), 2)
         assert_equals(result[0]['title'], container1['title'])
         assert_equals(result[1]['title'], container2['title'])
@@ -38,15 +41,50 @@ class TestHelpers(base.FunctionalTestBase):
     def test_get_all_data_containers_exclude(self):
         container1 = factories.DataContainer(title='container1')
         container2 = factories.DataContainer(title='container2')
-        result = helpers.get_all_data_containers(exclude_ids=[container2['id']])
+        user = core_factories.User()
+        result = helpers.get_all_data_containers(
+            exclude_ids=[container2['id']],
+            userobj=model.User.get(user['id']),
+        )
         assert_equals(len(result), 1)
         assert_equals(result[0]['title'], 'container1')
 
     def test_get_all_data_containers_external_user(self):
         container1 = factories.DataContainer(title='container1', visible_external=True)
         container2 = factories.DataContainer(title='container2', visible_external=False)
-        assert_equals(len(helpers.get_all_data_containers(external_user=True)), 1)
-        assert_equals(len(helpers.get_all_data_containers(external_user=False)), 2)
+        internal_user = core_factories.User()
+        external_user = core_factories.User(email='fred@externaluser.com')
+
+        # internal_user can see all the containers
+        assert_equals(
+            2,
+            len(
+                helpers.get_all_data_containers(
+                    userobj=model.User.get(internal_user['id']),
+                )
+            ),
+        )
+
+        # external_user can only see the container with visible_external by default
+        assert_equals(
+            1,
+            len(
+                helpers.get_all_data_containers(
+                    userobj=model.User.get(external_user['id']),
+                )
+            ),
+        )
+
+        # ..but if we explicitly include the other container, we can see that too
+        assert_equals(
+            2,
+            len(
+                helpers.get_all_data_containers(
+                    userobj=model.User.get(external_user['id']),
+                    include_ids=[container2['id']],
+                )
+            ),
+        )
 
     # Linked Datasets
 

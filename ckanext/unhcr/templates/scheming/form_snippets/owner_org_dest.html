@@ -42,7 +42,13 @@
 
   {% set deposit = h.get_data_deposit() %}
 
-  {% set organizations_available=h.get_all_data_containers(exclude_ids=[deposit.id], include_unknown=True) %}
+  {%
+    set organizations_available=h.get_all_data_containers(
+      exclude_ids=[deposit.id],
+      include_ids=[data.owner_org_dest],
+      include_unknown=True
+    )
+  %}
   {% set org_required=not h.check_config_permission('create_unowned_dataset') or h.scheming_field_required(field) %}
 
   {% call _organization() %}
