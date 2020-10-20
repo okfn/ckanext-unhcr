@@ -287,7 +287,6 @@ class UnhcrPlugin(
             'page_authorized': helpers.page_authorized,
             'get_came_from_param': helpers.get_came_from_param,
             'user_is_curator': helpers.user_is_curator,
-            'user_is_external': helpers.user_is_external,
             'user_is_container_admin': helpers.user_is_container_admin,
             # Linked datasets
             'get_linked_datasets_for_form': helpers.get_linked_datasets_for_form,
@@ -517,6 +516,8 @@ class UnhcrPlugin(
             'external_user_update_state': actions.external_user_update_state,
             'search_index_rebuild': actions.search_index_rebuild,
             'user_autocomplete': actions.user_autocomplete,
+            'user_list': actions.user_list,
+            'user_show': actions.user_show,
         }
 
     # IValidators

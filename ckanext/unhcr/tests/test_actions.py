@@ -4,7 +4,7 @@ import responses
 from ckan import model
 from ckan.plugins import toolkit
 from ckan.tests import helpers as core_helpers, factories as core_factories
-from nose.tools import assert_raises, assert_equals, nottest
+from nose.tools import assert_raises, assert_equals, assert_true, assert_false, nottest
 from ckanext.unhcr.models import AccessRequest
 from ckanext.unhcr.tests import base, factories, mocks
 from ckanext.unhcr import helpers
@@ -1384,3 +1384,26 @@ class TestUserAutocomplete(base.FunctionalTestBase):
 
         result = action(context, {'q': 'foobar'})
         assert_equals(0, len(result))
+
+
+class TestUserActions(base.FunctionalTestBase):
+    def test_user_list(self):
+        sysadmin = core_factories.Sysadmin()
+        external_user = core_factories.User(email='fred@externaluser.com')
+        internal_user = core_factories.User()
+
+        action = toolkit.get_action('user_list')
+        context = {'user': sysadmin['name']}
+        users = action(context, {})
+        assert_equals(1, len([u for u in users if u['external']]))
+        assert_equals(2, len([u for u in users if not u['external']]))
+
+    def test_user_show(self):
+        sysadmin = core_factories.Sysadmin()
+        external_user = core_factories.User(email='fred@externaluser.com')
+        internal_user = core_factories.User()
+
+        action = toolkit.get_action('user_show')
+        context = {'user': sysadmin['name']}
+        assert_true(action(context, {'id': external_user['id']})['external'])
+        assert_false(action(context, {'id': internal_user['id']})['external'])
