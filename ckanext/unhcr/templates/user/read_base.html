@@ -30,7 +30,7 @@
     <dt>{{ _('Organisation') }}</dt>
     <dd>
       {% if h.user_is_external(user) %}
-        <span class="label label-warning">external</span>
+        <span class="label label-warning">External</span>
       {% else %}
         UNHCR
       {% endif %}</dd>
@@ -39,9 +39,9 @@
     <dt>{{ _('State') }}</dt>
     <dd>
       {% if user.state != 'active' %}
-        <span class="label label-warning">{{ user.state }}</span>
+        <span class="label label-warning">{{ user.state.capitalize() }}</span>
       {% else %}
-        {{ user.state }}
+        {{ user.state.capitalize() }}
       {% endif %}
     </dd>
   </dl>
