@@ -4,7 +4,7 @@ import ckan.plugins.toolkit as toolkit
 import ckan.logic.action.get as get_core
 import ckan.logic.action.patch as patch_core
 import ckan.logic.action.delete as delete_core
-from ckanext.unhcr import helpers, mailer, utils
+from ckanext.unhcr import helpers, mailer
 log = logging.getLogger(__name__)
 
 
@@ -71,7 +71,7 @@ class DataContainerController(toolkit.BaseController):
         # Get users
         users = toolkit.get_action('user_list')(
             context, {'order_by': 'display_name'})
-        users = [u for u in users if not utils.user_is_external(u)]
+        users = [u for u in users if not u['external']]
 
         # Get user
         user = None

@@ -35,34 +35,17 @@ def get_module_functions(module_path):
     return module_functions
 
 
-
 def user_is_external(user):
     '''
     Returns True if user email is not in the managed internal domains.
     '''
-
     try:
-        email = user.email
-        sysadmin = user.sysadmin
-    except AttributeError:
-        try:
-            email = user['email']
-            sysadmin = user['sysadmin']
-        except KeyError:
-            raise toolkit.Invalid('not a user object')
-
-    try:
-        domain = email.split('@')[1]
+        domain = user.email.split('@')[1]
     except AttributeError:
          # Internal sysadmin user does not have email
-        if sysadmin:
+        if user.sysadmin:
             return False
         else:
             return True
-
-    internal_domains = toolkit.aslist(
-        toolkit.config.get('ckanext.unhcr.internal_domains', INTERNAL_DOMAINS),
-        sep = ','
-    )
 
     return domain not in get_internal_domains()

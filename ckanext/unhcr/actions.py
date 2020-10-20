@@ -928,3 +928,28 @@ def user_autocomplete(context, data_dict):
         user_list.append(result_dict)
 
     return user_list
+
+
+@toolkit.chained_action
+def user_list(up_func, context, data_dict):
+    users = up_func(context, data_dict)
+    m = context.get('model', model)
+
+    if type(users[0]) == dict:
+        users_db = (
+            m.Session.query(m.User)
+            .filter(m.User.id.in_([u['id'] for u in users]))
+            .all()
+        )
+        id_to_external = {u.id: u.external for u in users_db}
+        for user in users:
+            user['external'] = id_to_external[user['id']]
+
+    return users
+
+
+@toolkit.chained_action
+def user_show(up_func, context, data_dict):
+    user = up_func(context, data_dict)
+    user['external'] = context['user_obj'].external
+    return user
