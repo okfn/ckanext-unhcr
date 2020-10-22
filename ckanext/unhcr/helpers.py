@@ -288,8 +288,14 @@ def get_existing_access_request(user_id, object_id, status):
 
 cached_deposit = None
 def get_data_deposit():
-    """This function uses a cache so it's OK to call it multiple times
-    """
+    '''
+    Return the dict of the underlyig organization for the data deposit
+
+    This function uses a cache so it's OK to call it multiple times
+
+    :returns: The data deposit organization dict
+    :rtype: dict
+    '''
 
     # Check cache
     deposit = None
@@ -313,6 +319,20 @@ def get_data_deposit():
 
 
 def get_data_curation_users(dataset):
+    '''
+    Return a list of users that are allowed to curate a particular dataset.
+    This includes:
+
+    * Sysadmins
+    * Curation team (Admins and Editors of the data-deposit org)
+    * Admins of the target data container
+
+    :param dataset: The dataset that needs to be curated
+    :type dataset: dict
+
+    :returns: A list of user dicts that can curate the dataset
+    :rtype: list
+    '''
     context = {'model': model, 'ignore_auth': True}
     deposit = get_data_deposit()
 
@@ -354,6 +374,34 @@ def get_data_curation_users(dataset):
 
 
 def get_deposited_dataset_user_curation_status(dataset, user_id):
+    '''
+    Returns an object describing the status of a given dataset and user
+    in the context of the data deposit.
+
+    :param dataset: A deposited dataset dict
+    :type dataset: dict
+    :param user_id: The id of the relevant user
+    :type user_id: string
+
+    :returns: An object with the following keys:
+
+        * `state`: The curation state of the dataset (eg "review", "submitted",
+            "draft", etc)
+        * `active`: Whether the status of the dataset is "active"
+        * `final_review`: Whether the depositor requested a final review
+        * `error`: Validation errors of the deposited dataset
+        * `role`: Role that the provided user has on this particular dataset,
+            see :py:func:`~ckanext.unhcr.helpers.get_deposited_dataset_user_curation_role`
+        * `is_depositor`: Whether the provided user was the original depositor
+        * `is_curator`: Whether the provided user is the assigned curator to the dataset
+        * `actions`: List of allowed actions for the provided user,
+            see :py:func:`~ckanext.unhcr.helpers.get_deposited_dataset_user_curation_actions`
+        * `contacts`: An object with the following keys (
+            see :py:func:`~ckanext.unhcr.helpers.get_deposited_dataset_user_contact`
+            `depositor`: an object with the original depositor user details
+            `curator`: an object with the assigned curator user details
+    :rtype: dict
+    '''
     deposit = get_data_deposit()
     context = {'user': user_id, 'model': model, 'session': model.Session}
 
@@ -382,6 +430,29 @@ def get_deposited_dataset_user_curation_status(dataset, user_id):
 
 
 def get_deposited_dataset_user_curation_role(user_id, dataset=None):
+    '''
+    Returns the role that the provided user has in the context of the
+    data deposit.
+
+    If a dataset dict is provided, the admins of the organization the
+    dataset belongs to are also considered when deciding the user role.
+
+    The available roles are:
+
+    * admin: Can manage members of the data deposit
+    * curator: Can edit and manage deposited datasets
+    * container admin: Can edit and manage deposited datasets (that are
+        targetted to one of the admins the user is admin of)
+    * depositor: Can create new deposited datasets
+    * user: No permissions available on the data deposit
+
+    :param user_id: The user that we want to know the role of in the data
+        deposit
+    :type user_id: string
+
+    :returns: The role the user has
+    :rtype: string
+    '''
     action = toolkit.get_action('organization_list_for_user')
     context = {'model': model, 'user': user_id}
     deposit = get_data_deposit()
@@ -417,6 +488,20 @@ def get_deposited_dataset_user_curation_role(user_id, dataset=None):
 
 
 def get_deposited_dataset_user_curation_actions(status):
+    '''
+    Return a list of actions that the user is allowed to perform on a deposited
+    dataset
+
+    :param status: An object containing the following keys: "state", "is_depositor",
+        "active", "role", "error", "final_review"
+        (see :py:func:`~ckanext.unhcr.helpers.get_deposited_dataset_user_curation_status`
+        for details.
+    :type status: dict
+
+    :returns: A list of allowed actions. Possible values are: "edit", "submit", "withdraw",
+        "reject", "request_changes", "assign", "request_review", "approve"
+    :rtype: list
+    '''
     actions = []
 
     # Draft
@@ -451,6 +536,16 @@ def get_deposited_dataset_user_curation_actions(status):
 
 
 def get_deposited_dataset_user_contact(user_id=None):
+    '''
+    Returns selected attributes from the provided user id, or None if not found
+
+    :param user_id: The provided user id
+    :type user_id: string
+
+    :returns: A user dict with the following keys: "id", "name", "display_name",
+        "title" (same as "display_name"), "email", "external"
+    :rtype: dict
+    '''
 
     # Return none (no id)
     if not user_id:
