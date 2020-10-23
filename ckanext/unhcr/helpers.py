@@ -56,6 +56,7 @@ def get_all_data_containers(
     include_ids=None,
     include_unknown=False,
     userobj=None,
+    dataset=None,
 ):
     if not exclude_ids:
         exclude_ids = []
@@ -85,6 +86,28 @@ def get_all_data_containers(
             'visible_external' not in org or not org['visible_external']
         ):
             continue
+
+        if (
+            # we're editing an existing dataset, not creating a new one
+            dataset
+
+            # curators and sysadmins can always change the target to anything
+            and not user_is_curator(userobj)
+            and not userobj.sysadmin
+
+            # external users can always change the target of their own dataset to any visible_external container
+            and not userobj.external
+
+            # if I'm editing my own deposit, I can always change the target to anything
+            and 'creator_user_id' in dataset and dataset['creator_user_id'] != userobj.id
+        ):
+            user_orgs = toolkit.get_action('organization_list_for_user')(
+                context,
+                {'id': userobj.id, "permission": "admin"}
+            )
+            user_orgs_ids = [o['id'] for o in user_orgs]
+            if org['id'] not in user_orgs_ids:
+                continue
 
         data_containers.append(org)
 
@@ -188,8 +211,9 @@ def get_came_from_param():
     return toolkit.request.environ.get('CKAN_CURRENT_URL', '')
 
 
-def user_is_curator():
-    user = toolkit.c.user
+def user_is_curator(userobj=None):
+    if not userobj:
+        userobj = toolkit.c.userobj
     group = get_data_deposit()
     try:
         users = toolkit.get_action('member_list')(
@@ -199,7 +223,7 @@ def user_is_curator():
     except toolkit.ObjectNotFound:
         return False
     user_ids = [u[0] for u in users]
-    user_id = toolkit.c.userobj.id
+    user_id = userobj.id
     return user_id in user_ids
 
 
