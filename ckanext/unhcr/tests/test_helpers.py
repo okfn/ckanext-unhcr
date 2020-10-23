@@ -86,6 +86,91 @@ class TestHelpers(base.FunctionalTestBase):
             ),
         )
 
+    def test_get_all_data_containers_with_dataset(self):
+        depadmin = core_factories.User()
+        deposit = factories.DataContainer(
+            id='data-deposit',
+            users=[
+                {'name': depadmin['name'], 'capacity': 'admin'},
+            ]
+        )
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+
+        container_admin = core_factories.User()
+        container1 = factories.DataContainer(title='container1', visible_external=False)
+        container2 = factories.DataContainer(title='container2', visible_external=False)
+        container3 = factories.DataContainer(title='container3', visible_external=False,
+            users=[{'name': container_admin['name'], 'capacity': 'admin'}]
+        )
+        container4 = factories.DataContainer(title='container4', visible_external=False,
+            users=[{'name': container_admin['name'], 'capacity': 'admin'}]
+        )
+        container5 = factories.DataContainer(title='container5', visible_external=False,
+            users=[{'name': container_admin['name'], 'capacity': 'editor'}]
+        )
+
+        # if I'm creating a new dataset, I can see all the containers
+        assert_equals(
+            5,
+            len(
+                helpers.get_all_data_containers(
+                    userobj=model.User.get(container_admin['id']),
+                    exclude_ids=[deposit['id']],
+                    dataset=None,
+                )
+            ),
+        )
+
+        # if I'm editing my own dataset, I can still see all the containers
+        assert_equals(
+            5,
+            len(
+                helpers.get_all_data_containers(
+                    userobj=model.User.get(container_admin['id']),
+                    exclude_ids=[deposit['id']],
+                    dataset={'creator_user_id': container_admin['id']}
+                )
+            ),
+        )
+
+        # but if I'm editing someone else's dataset, I can only see containers I'm an admin of
+        assert_equals(
+            2,
+            len(
+                helpers.get_all_data_containers(
+                    userobj=model.User.get(container_admin['id']),
+                    exclude_ids=[deposit['id']],
+                    dataset={'creator_user_id': 'someone else'}
+                )
+            ),
+        )
+
+        # ..unless we explicitly say to include others (which takes precedence)
+        assert_equals(
+            3,
+            len(
+                helpers.get_all_data_containers(
+                    userobj=model.User.get(container_admin['id']),
+                    exclude_ids=[deposit['id']],
+                    dataset={'creator_user_id': 'someone else'},
+                    include_ids=[container2['id']],
+                )
+            ),
+        )
+
+        # ..or we're a more priveledged user, in which case we can see all of them
+        for user in [depadmin, sysadmin]:
+            assert_equals(
+                5,
+                len(
+                    helpers.get_all_data_containers(
+                        userobj=model.User.get(user['id']),
+                        exclude_ids=[deposit['id']],
+                        dataset={'creator_user_id': 'anyone'},
+                    )
+                ),
+            )
+
     # Linked Datasets
 
     def test_get_linked_datasets_for_form_none(self):

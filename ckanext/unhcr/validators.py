@@ -106,6 +106,7 @@ def deposited_dataset_owner_org_dest(value, context):
 
     include_ids = []
     package = context.get('package')
+    dataset = None
     if package:
         # 'Package' object has no attribute 'owner_org_dest'
         dataset = toolkit.get_action('package_show')(context, {'id': package.id})
@@ -118,6 +119,7 @@ def deposited_dataset_owner_org_dest(value, context):
         include_unknown=True,
         userobj=userobj,
         include_ids=include_ids,
+        dataset=dataset,
     )
     for org in orgs:
         if value == org['id']:
