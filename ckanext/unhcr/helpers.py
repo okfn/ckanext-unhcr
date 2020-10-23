@@ -307,7 +307,7 @@ def get_existing_access_request(user_id, object_id, status):
 cached_deposit = None
 def get_data_deposit():
     '''
-    Return the dict of the underlyig organization for the data deposit
+    Return the dict of the underlying organization for the data deposit
 
     This function uses a cache so it's OK to call it multiple times
 
