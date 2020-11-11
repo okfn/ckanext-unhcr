@@ -257,6 +257,8 @@ def get_container_request_access_email_recipients(container_dict):
             user for user in org["users"]
             if user["capacity"] == "admin" and user["name"] != default_user["name"]
         ]
+        for user in recipients:
+            user.pop("capacity")
     except toolkit.ObjectNotFound:
         recipients = []
 
@@ -276,7 +278,9 @@ def get_user_account_request_access_email_recipients(containers):
         recipients = recipients + get_container_request_access_email_recipients(
             {"id": container}
         )
-    recipients = [dict(tup) for tup in {tuple(r.items()) for r in recipients}]  # de-dupe
+    recipients = [
+        dict(tup) for tup in {tuple(sorted(r.items())) for r in recipients}
+    ]  # de-dupe
     return recipients
 
 
