@@ -170,7 +170,7 @@ def dataset_collaborator_create(up_func, context, data_dict):
         raise toolkit.ObjectNotFound("User not found")
 
     if user.external:
-        message = 'External users can not be a dataset collaborator'
+        message = 'Partner users can not be a dataset collaborator'
         raise toolkit.ValidationError({'message': message}, error_summary=message)
 
     return up_func(context, data_dict)
@@ -226,7 +226,7 @@ def organization_member_create(context, data_dict):
         raise toolkit.ObjectNotFound("User not found")
 
     if user.external:
-        message = 'External users can not be an organisation member'
+        message = 'Partner users can not be an organisation member'
         raise toolkit.ValidationError({'message': message}, error_summary=message)
 
     if not data_dict.get('not_notify'):

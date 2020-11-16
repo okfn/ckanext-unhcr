@@ -95,7 +95,7 @@ class RegisterView(BaseRegisterView):
 
         if domain in get_internal_domains():
             message = (
-                'Users with an @{domain} email may not register for an external account. '.format(
+                'Users with an @{domain} email may not register for a partner account. '.format(
                     domain=domain
                 ) + 'Log in to {site} using {email} and use your Active Directory password to access RIDL'.format(
                     site=toolkit.config.get('ckan.site_url'),

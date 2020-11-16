@@ -10,7 +10,7 @@
   {% for user in page.items %}
     <tr>
       <td>{{ h.linked_user(user['name'], maxlength=20) }}</td>
-      <td>{% if user.User.external %}External{% else %}UNHCR{% endif %}</td>
+      <td>{% if user.User.external %}Partner{% else %}UNHCR{% endif %}</td>
       <td>{{ user.User.state.capitalize() }}</td>
     </tr>
   {% endfor %}

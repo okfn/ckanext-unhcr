@@ -1171,7 +1171,7 @@
         },
         {
             "field_name": "visible_external",
-            "label": "Visible to External users",
+            "label": "Visible to Partner users",
             "required": true,
             "validators": "boolean_validator",
             "output_validators": "boolean_validator",

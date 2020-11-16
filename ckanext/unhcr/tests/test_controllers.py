@@ -1957,7 +1957,7 @@ class TestUserRegister(base.FunctionalTestBase):
 
         # 'success' page content
         assert_equals(resp.status_int, 200)
-        assert_in('External Account Requested', resp.body)
+        assert_in('Partner Account Requested', resp.body)
         assert_in("We'll send an email with further instructions", resp.body)
 
     def test_register_empty_message(self):
@@ -1988,7 +1988,7 @@ class TestUserRegister(base.FunctionalTestBase):
         self.payload['email'] = 'fred@unhcr.org'
         resp = self.app.post(url_for('user.register'), self.payload)
         assert_in(
-            "Users with an @unhcr.org email may not register for an external account.",
+            "Users with an @unhcr.org email may not register for a partner account.",
             resp.body
         )
         action = toolkit.get_action("user_show")
