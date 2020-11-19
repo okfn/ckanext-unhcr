@@ -90,11 +90,11 @@ class RegisterView(BaseRegisterView):
         try:
             domain = toolkit.request.form['email'].split('@')[1]
         except IndexError:
-            message = 'Please enter an email address'
-            return self.get(data_dict, {'email': [message]}, {'email': message})
+            error_message = 'Please enter an email address'
+            return self.get(data_dict, {'email': [error_message]}, {'email': error_message})
 
         if domain in get_internal_domains():
-            message = (
+            error_message = (
                 'Users with an @{domain} email may not register for a partner account. '.format(
                     domain=domain
                 ) + 'Log in to {site} using {email} and use your Active Directory password to access RIDL'.format(
@@ -102,11 +102,15 @@ class RegisterView(BaseRegisterView):
                     email=toolkit.request.form['email']
                 )
             )
-            return self.get(data_dict, {'email': [message]}, {'email': message})
+            return self.get(data_dict, {'email': [error_message]}, {'email': error_message})
 
         if not data_dict.get('container'):
-            message = "A region must be specified"
-            return self.get(data_dict, {'container': [message]}, {'container': message})
+            error_message = "A region must be specified"
+            return self.get(data_dict, {'container': [error_message]}, {'container': error_message})
+
+        if not data_dict.get('focal_point'):
+            error_message = "A focal point must be specified"
+            return self.get(data_dict, {'focal_point': [error_message]}, {'focal_point': error_message})
 
         context['defer_commit'] = True
         data_dict['state'] = context['model'].State.PENDING

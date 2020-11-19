@@ -1,6 +1,8 @@
+import copy
 import json
 import logging
 import requests
+from datetime import date, timedelta
 from sqlalchemy import and_, desc, or_, select
 from sqlalchemy.dialects.postgresql import array
 from ckan import model
@@ -952,4 +954,55 @@ def user_list(up_func, context, data_dict):
 def user_show(up_func, context, data_dict):
     user = up_func(context, data_dict)
     user['external'] = context['user_obj'].external
+
+    extras = _init_plugin_extras(context['user_obj'].plugin_extras)
+    extras = _validate_plugin_extras(extras['unhcr'])
+
+    user['focal_point'] = extras['focal_point']
+    user['expiry_date'] = extras['expiry_date']
+
     return user
+
+
+@toolkit.chained_action
+def user_create(up_func, context, data_dict):
+    user = up_func(context, data_dict)
+
+    if not context['user_obj'].external:
+        return user
+
+    plugin_extras = _init_plugin_extras(context['user_obj'].plugin_extras)
+    expiry_date = date.today() + timedelta(days=180)  # six months-ish
+    plugin_extras['unhcr']['expiry_date'] = expiry_date.isoformat()
+    plugin_extras['unhcr']['focal_point'] = data_dict.get('focal_point', '')
+    context['user_obj'].plugin_extras = plugin_extras
+
+    if not context.get('defer_commit'):
+        m = context.get('model', model)
+        model.Session.commit()
+
+    user['expiry_date'] = plugin_extras['unhcr']['expiry_date']
+    user['focal_point'] = plugin_extras['unhcr']['focal_point']
+    return user
+
+
+def _init_plugin_extras(plugin_extras):
+    out_dict = copy.deepcopy(plugin_extras)
+    if not out_dict:
+        out_dict = {}
+    if 'unhcr' not in out_dict:
+        out_dict['unhcr'] = {}
+    return out_dict
+
+
+def _validate_plugin_extras(extras):
+    CUSTOM_FIELDS = [
+        {'name': 'focal_point', 'default': ''},
+        {'name': 'expiry_date', 'default': None}
+    ]
+    if not extras:
+        extras = {}
+    out_dict = {}
+    for field in CUSTOM_FIELDS:
+        out_dict[field['name']] = extras.get(field['name'], field['default'])
+    return out_dict
