@@ -1407,3 +1407,25 @@ class TestUserActions(base.FunctionalTestBase):
         context = {'user': sysadmin['name']}
         assert_true(action(context, {'id': external_user['id']})['external'])
         assert_false(action(context, {'id': internal_user['id']})['external'])
+
+    def test_unhcr_plugin_extras_empty(self):
+        user = core_factories.User()
+        context = {'user': user['name']}
+        user = toolkit.get_action('user_show')(context, {'id': user['id']})
+        assert None is user['expiry_date']
+        assert '' == user['focal_point']
+
+    def test_unhcr_plugin_extras_with_data(self):
+        sysadmin = core_factories.Sysadmin()
+        user = core_factories.User(
+            email='fred@externaluser.com',
+            focal_point='Alice',
+        )
+
+        # TODO: you can get rid of sysadmin and switch it to
+        # context = {'user': user['name']} once #444 is merged
+        context = {'user': sysadmin['name']}
+
+        user = toolkit.get_action('user_show')(context, {'id': user['id']})
+        assert 'expiry_date' in user
+        assert 'Alice' == user['focal_point']

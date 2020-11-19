@@ -518,6 +518,7 @@ class UnhcrPlugin(
             'user_autocomplete': actions.user_autocomplete,
             'user_list': actions.user_list,
             'user_show': actions.user_show,
+            'user_create': actions.user_create,
         }
 
     # IValidators

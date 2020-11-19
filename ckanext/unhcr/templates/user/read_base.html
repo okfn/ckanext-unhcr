@@ -45,6 +45,18 @@
       {% endif %}
     </dd>
   </dl>
+  {% if user.external %}
+  <dl>
+    <dt>{{ _('Focal Point') }}</dt>
+    <dd>
+      {% if user.focal_point %}
+        {{ user.focal_point }}
+      {% else %}
+        Unknown
+      {% endif %}
+    </dd>
+  </dl>
+  {% endif %}
   {% if is_myself %}
     <dl>
       <dt class="key">

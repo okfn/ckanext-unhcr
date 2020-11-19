@@ -7,10 +7,20 @@
   {{ form.input("email", id="field-email", label=_("Email"), type="email", placeholder=_("joe@example.com"), value=data.email, error=errors.email, classes=["control-medium"], is_required=True) }}
   {{ form.input("password1", id="field-password", label=_("Password"), type="password", placeholder="••••••••", value=data.password1, error=errors.password1, classes=["control-medium"], is_required=True) }}
   {{ form.input("password2", id="field-confirm-password", label=_("Confirm"), type="password", placeholder="••••••••", value=data.password2, error=errors.password1, classes=["control-medium"], is_required=True) }}
+  {{ form.input(
+      "focal_point",
+      id="field-focal-point",
+      label=_("Please provide a focal point (the name of the team or individual inside UNHCR who you are working with on your project or partnership)."),
+      placeholder="",
+      value=data.focal_point,
+      classes=["control-medium"],
+      error=errors.focal_point,
+      is_required=True
+  ) }}
   {{ form.textarea(
       "message",
       id="field-message",
-      label=_("Please describe the dataset(s) you would like to submit to UNHCR's data library by entering the project title, project year, the name of the country/region/location(s) where the data was collected, the Project Partnership Agreement number (if available), and the name of the focal point in UNHCR."),
+      label=_("Please describe the dataset(s) you would like to submit to UNHCR's data library by entering the project title, project year, the name of the country/region/location(s) where the data was collected, the Project Partnership Agreement number (if available)."),
       placeholder="",
       value=data.message,
       classes=["control-medium"],
