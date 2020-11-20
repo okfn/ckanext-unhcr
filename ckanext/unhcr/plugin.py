@@ -51,6 +51,9 @@ ALLOWED_ACTIONS = [
     'site_read',
     'tag_autocomplete',
     'tag_list',
+    'user_show',
+    'user_update',
+    'user_generate_apikey',
 ]
 
 

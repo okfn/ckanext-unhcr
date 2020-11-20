@@ -140,6 +140,7 @@ class TestAuthUI(base.FunctionalTestBase):
             '/data-container',
             '/organization',
             '/group',
+            '/user',
         ]
         for endpoint in endpoints_403:
             resp = app.get(endpoint, extra_environ=env, status=403)
@@ -160,6 +161,7 @@ class TestAuthUI(base.FunctionalTestBase):
             '/data-container/data-deposit',
             '/api/2/util/resource/format_autocomplete?incomplete=a',
             '/api/2/util/tag/autocomplete?incomplete=a',
+            '/user/{}'.format(external_user['name']),
         ]
         for endpoint in endpoints_200:
             resp = app.get(endpoint, extra_environ=env, status=200)
