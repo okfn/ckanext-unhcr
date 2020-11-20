@@ -1391,12 +1391,25 @@ class TestUserActions(base.FunctionalTestBase):
         sysadmin = core_factories.Sysadmin()
         external_user = core_factories.User(email='fred@externaluser.com')
         internal_user = core_factories.User()
+        default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
 
         action = toolkit.get_action('user_list')
         context = {'user': sysadmin['name']}
         users = action(context, {})
-        assert_equals(1, len([u for u in users if u['external']]))
-        assert_equals(2, len([u for u in users if not u['external']]))
+        assert_equals(1, len(
+            [
+                u for u in users
+                if u['external']
+                and u['name'] != default_user['name']
+            ])
+        )
+        assert_equals(2, len(
+            [
+                u for u in users
+                if not u['external']
+                and u['name'] != default_user['name']
+            ])
+        )
 
     def test_user_show(self):
         sysadmin = core_factories.Sysadmin()
