@@ -1901,6 +1901,7 @@ class TestUserRegister(base.FunctionalTestBase):
             'password1': 'TestPassword1',
             'password2': 'TestPassword1',
             'message': 'I can haz access?',
+            'focal_point': 'REACH',
             'container': self.container['id'],
         }
 
@@ -1964,6 +1965,18 @@ class TestUserRegister(base.FunctionalTestBase):
         self.payload['message'] = ''
         resp = self.app.post(url_for('user.register'), self.payload)
         assert_in("&#39;message&#39; is required", resp.body)
+        action = toolkit.get_action("user_show")
+        assert_raises(
+            toolkit.ObjectNotFound,
+            action,
+            {'ignore_auth': True},
+            {'id': 'externaluser'}
+        )
+
+    def test_register_empty_focal_point(self):
+        self.payload['focal_point'] = ''
+        resp = self.app.post(url_for('user.register'), self.payload)
+        assert_in("A focal point must be specified", resp.body)
         action = toolkit.get_action("user_show")
         assert_raises(
             toolkit.ObjectNotFound,
