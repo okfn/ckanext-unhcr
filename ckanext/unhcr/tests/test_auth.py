@@ -164,6 +164,7 @@ class TestAuthUI(base.FunctionalTestBase):
             '/user/{}'.format(external_user['name']),
         ]
         print('test_external_users_endpoints')
+        print(env)
         for endpoint in endpoints_200:
             print(endpoint)
             resp = app.get(endpoint, extra_environ=env, status=200)

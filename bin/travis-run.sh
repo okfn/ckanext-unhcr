@@ -12,5 +12,5 @@ nosetests --ckan \
           --cover-inclusive \
           --cover-erase \
           --cover-tests \
-          ckanext/unhcr
+          ckanext/unhcr/tests/test_auth.py
 
