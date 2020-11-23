@@ -57,6 +57,13 @@
     </dd>
   </dl>
   {% endif %}
+  {% set access_request = h.get_access_request_for_user(user.id) %}
+  {% if user.external and access_request and access_request.actioned_by %}
+  <dl>
+    <dt>Account {{ access_request.status }} by</dt>
+    <dd>{{ h.linked_user(access_request.actioned_by) }}</dd>
+  </dl>
+  {% endif %}
   {% if is_myself %}
     <dl>
       <dt class="key">

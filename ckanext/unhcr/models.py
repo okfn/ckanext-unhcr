@@ -50,6 +50,7 @@ class AccessRequest(Base):
     )
     object_id = Column(UnicodeText, nullable=False)
     data = Column(MutableDict.as_mutable(JSONB), nullable=True)
+    actioned_by = Column(UnicodeText, nullable=True)  # user who approved or rejected the request
 
 
 def create_metric_columns():
@@ -91,6 +92,14 @@ def add_access_request_data_column():
     )
     model.Session.commit()
 
+def add_access_request_actioned_by_column():
+    table = AccessRequest.__tablename__
+    model.Session.execute(
+        u"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS actioned_by text;".format(
+            table=table
+        )
+    )
+    model.Session.commit()
 
 def create_tables():
     if not TimeSeriesMetric.__table__.exists():
@@ -105,4 +114,5 @@ def create_tables():
         log.info(u'AccessRequest database table created')
 
     add_access_request_data_column()
+    add_access_request_actioned_by_column()
     extend_access_request_object_type_enum()

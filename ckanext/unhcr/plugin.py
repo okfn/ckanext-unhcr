@@ -297,6 +297,7 @@ class UnhcrPlugin(
             # Access requests
             'get_pending_requests_total': helpers.get_pending_requests_total,
             'get_existing_access_request': helpers.get_existing_access_request,
+            'get_access_request_for_user': helpers.get_access_request_for_user,
             # Deposited datasets
             'get_data_deposit': helpers.get_data_deposit,
             'get_data_curation_users': helpers.get_data_curation_users,
