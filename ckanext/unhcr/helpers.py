@@ -326,6 +326,13 @@ def get_existing_access_request(user_id, object_id, status):
     ).all()
 
 
+def get_access_request_for_user(user_id):
+    return model.Session.query(AccessRequest).filter(
+        AccessRequest.object_id==user_id,
+        AccessRequest.object_type=='user',
+    ).one_or_none()
+
+
 # Deposited datasets
 
 cached_deposit = None

@@ -826,6 +826,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
         assert_equals(0, len(orgs))
         assert_equals('requested', self.container_request.status)
+        assert_equals(None, self.container_request.actioned_by)
 
     def test_access_request_update_approve_container_container_admin(self):
         mock_mailer = mock.Mock()
@@ -842,6 +843,10 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
             )
             assert_equals(self.container1['id'], orgs[0]['id'])
             assert_equals('approved', self.container_request.status)
+            assert_equals(
+                self.container1_admin["id"],
+                self.container_request.actioned_by,
+            )
 
             mock_mailer.assert_called_once()
             assert_equals(
@@ -869,6 +874,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
         assert_equals(0, len(orgs))
         assert_equals('requested', self.container_request.status)
+        assert_equals(None, self.container_request.actioned_by)
 
     def test_access_request_update_reject_container_container_admin(self):
         action = toolkit.get_action("access_request_update")
@@ -883,6 +889,10 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
         assert_equals(0, len(orgs))
         assert_equals('rejected', self.container_request.status)
+        assert_equals(
+            self.container1_admin["id"],
+            self.container_request.actioned_by
+        )
 
     def test_access_request_update_approve_dataset_standard_user(self):
         action = toolkit.get_action("access_request_update")
@@ -898,6 +908,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
         assert_equals(0, len(collaborators))
         assert_equals('requested', self.dataset_request.status)
+        assert_equals(None, self.dataset_request.actioned_by)
 
     def test_access_request_update_approve_dataset_container_admin(self):
         mock_mailer = mock.Mock()
@@ -913,6 +924,10 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
             )
             assert_equals(self.requesting_user["id"], collaborators[0]["user_id"])
             assert_equals('approved', self.dataset_request.status)
+            assert_equals(
+                self.container1_admin["id"],
+                self.dataset_request.actioned_by,
+            )
 
             mock_mailer.assert_called_once()
             assert_equals(self.dataset_request.object_id, mock_mailer.call_args[0][0])
@@ -934,6 +949,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
         assert_equals(0, len(collaborators))
         assert_equals('requested', self.dataset_request.status)
+        assert_equals(None, self.dataset_request.actioned_by)
 
     def test_access_request_update_reject_dataset_container_admin(self):
         action = toolkit.get_action("access_request_update")
@@ -947,6 +963,10 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
         assert_equals(0, len(collaborators))
         assert_equals('rejected', self.dataset_request.status)
+        assert_equals(
+            self.container1_admin["id"],
+            self.dataset_request.actioned_by
+        )
 
     def test_access_request_update_approve_user_standard_user(self):
         action = toolkit.get_action("access_request_update")
@@ -961,6 +981,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
             {"ignore_auth": True}, {"id": self.pending_user["id"]}
         )
         assert_equals(model.State.PENDING, user['state'])
+        assert_equals(None, self.user_request.actioned_by)
 
     def test_access_request_update_approve_user_container_admin(self):
         mock_mailer = mock.Mock()
@@ -976,6 +997,10 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
             )
             assert_equals(model.State.ACTIVE, user['state'])
             assert_equals('approved', self.user_request.status)
+            assert_equals(
+                self.container1_admin["id"],
+                self.user_request.actioned_by,
+            )
 
             mock_mailer.assert_called_once()
             assert_equals(
@@ -1004,6 +1029,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
             {"ignore_auth": True}, {"id": self.pending_user["id"]}
         )
         assert_equals(model.State.PENDING, user['state'])
+        assert_equals(None, self.user_request.actioned_by)
 
     def test_access_request_update_reject_user_container_admin(self):
         action = toolkit.get_action("access_request_update")
@@ -1017,6 +1043,10 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         )
         assert_equals(model.State.DELETED, user['state'])
         assert_equals('rejected', self.user_request.status)
+        assert_equals(
+            self.container1_admin["id"],
+            self.user_request.actioned_by
+        )
 
     def test_access_request_update_invalid_inputs(self):
         action = toolkit.get_action("access_request_update")

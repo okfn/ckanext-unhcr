@@ -702,6 +702,7 @@ def access_request_update(context, data_dict):
         raise toolkit.Invalid("Unknown Object Type")
 
     request.status = status
+    request.actioned_by = model.User.by_name(context['user']).id
     model.Session.commit()
     model.Session.refresh(request)
 
