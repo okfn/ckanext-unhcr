@@ -163,7 +163,9 @@ class TestAuthUI(base.FunctionalTestBase):
             '/api/2/util/tag/autocomplete?incomplete=a',
             '/user/{}'.format(external_user['name']),
         ]
+        print('test_external_users_endpoints')
         for endpoint in endpoints_200:
+            print(endpoint)
             resp = app.get(endpoint, extra_environ=env, status=200)
 
 
