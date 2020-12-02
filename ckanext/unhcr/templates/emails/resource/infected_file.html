@@ -1,0 +1,21 @@
+{% extends "emails/base.html" %}
+{% import 'macros/email.html' as email with context %}
+
+{% block email_body %}
+
+{% call email.paragraph() %}
+Dear <b>{{ recipient.fullname or recipient.name }}</b>,
+{% endcall %}
+
+  {% call email.paragraph() %}
+      Resource <a href="{{ resource_url }}">{{ resource_name }}</a> was scanned and found to be infected.
+      The result of the scan was:
+<pre>
+{{ clamav_report }}</pre>
+  {% endcall %}
+
+  {% call email.paragraph() %}
+    To protect users, we have disabled file downloads for this resource.
+  {% endcall %}
+
+{% endblock %}

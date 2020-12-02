@@ -480,6 +480,8 @@ class UnhcrPlugin(
         functions['package_create'] = auth.package_create
         functions['package_update'] = auth.package_update
         functions['dataset_collaborator_create'] = auth.dataset_collaborator_create
+        functions['scan_hook'] = auth.scan_hook
+        functions['scan_submit'] = auth.scan_submit
         functions['access_request_list_for_user'] = auth.access_request_list_for_user
         functions['access_request_create'] = auth.access_request_create
         functions['access_request_update'] = auth.access_request_update
@@ -492,7 +494,7 @@ class UnhcrPlugin(
     # IActions
 
     def get_actions(self):
-        return {
+        functions = {
             'access_request_list_for_user': actions.access_request_list_for_user,
             'access_request_update': actions.access_request_update,
             'access_request_create': actions.access_request_create,
@@ -517,6 +519,10 @@ class UnhcrPlugin(
             'organization_activity_list_html': actions.organization_activity_list_html,
             'recently_changed_packages_activity_list_html': actions.recently_changed_packages_activity_list_html,
             'datasets_validation_report': actions.datasets_validation_report,
+            'scan_hook': actions.scan_hook,
+            'scan_submit': actions.scan_submit,
+            'resource_create': actions.resource_create,
+            'resource_update': actions.resource_update,
             'user_update_sysadmin': actions.user_update_sysadmin,
             'external_user_update_state': actions.external_user_update_state,
             'search_index_rebuild': actions.search_index_rebuild,
@@ -525,6 +531,9 @@ class UnhcrPlugin(
             'user_show': actions.user_show,
             'user_create': actions.user_create,
         }
+        if 'cloudstorage' in config['ckan.plugins']:
+            functions['cloudstorage_finish_multipart'] = actions.cloudstorage_finish_multipart
+        return functions
 
     # IValidators
 
