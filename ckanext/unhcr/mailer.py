@@ -340,3 +340,31 @@ def compose_account_approved_email_body(recipient):
     context['h'] = toolkit.h
 
     return render_jinja2('emails/user/account_approved.html', context)
+
+
+# Clam AV Scan
+
+def get_infected_file_email_recipients():
+    return _get_sysadmins()
+
+
+def compose_infected_file_email_subj():
+    return '[UNHCR RIDL] - Infected file found'
+
+
+def compose_infected_file_email_body(recipient, resource_name, package_id, resource_id, clamav_report):
+    context = {}
+
+    context['recipient'] = recipient
+    context['resource_name'] = resource_name
+    context['resource_url'] = toolkit.url_for(
+        controller='package',
+        action='resource_read',
+        id=package_id,
+        resource_id=resource_id,
+        qualified=True
+    )
+    context['clamav_report'] = clamav_report
+    context['h'] = toolkit.h
+
+    return render_jinja2('emails/resource/infected_file.html', context)

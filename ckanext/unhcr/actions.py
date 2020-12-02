@@ -1,11 +1,14 @@
+import datetime
 import json
 import logging
 import requests
+from urlparse import urljoin
 from sqlalchemy import and_, desc, or_, select
 from sqlalchemy.dialects.postgresql import array
 from ckan import model
 from ckan.authz import has_user_permission_for_group_or_org
 from ckan.plugins import toolkit
+from ckan.lib import mailer as core_mailer
 from ckan.lib.mailer import MailerException
 import ckan.lib.plugins as lib_plugins
 from ckan.lib.search import index_for, commit
@@ -522,6 +525,184 @@ def datasets_validation_report(context, data_dict):
             })
 
     return out
+
+
+def _fail_task(context, task, error):
+    task['error'] = json.dumps(error)
+    task['state'] = 'error'
+    task['last_updated'] = str(datetime.datetime.utcnow())
+    return toolkit.get_action('task_status_update')(context, task)
+
+
+def _task_is_stale(task):
+    assume_task_stale_after = datetime.timedelta(seconds=3600)
+    updated = datetime.datetime.strptime(task['last_updated'], '%Y-%m-%dT%H:%M:%S.%f')
+    time_since_last_updated = datetime.datetime.utcnow() - updated
+    return time_since_last_updated > assume_task_stale_after
+
+
+def scan_submit(context, data_dict):
+    resource_id = toolkit.get_or_bust(data_dict, "id")
+    toolkit.check_access('scan_submit', context, data_dict)
+
+    clamav_service_base_url = toolkit.config.get('ckanext.unhcr.clamav_url')
+    site_url = toolkit.config.get('ckan.site_url')
+    callback_url = toolkit.url_for('/api/3/action/scan_hook', qualified=True)
+    site_user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
+
+    payload = json.dumps({
+        'api_key': site_user['apikey'],
+        'job_type': 'scan',
+        'result_url': callback_url,
+        'metadata': {
+            'ckan_url': site_url,
+            'resource_id': resource_id,
+        }
+    })
+
+    task = {
+        'entity_id': resource_id,
+        'entity_type': 'resource',
+        'task_type': 'clamav',
+        'last_updated': str(datetime.datetime.utcnow()),
+        'state': 'submitting',
+        'key': 'clamav',
+        'value': '{}',
+        'error': 'null',
+    }
+    try:
+        existing_task = toolkit.get_action('task_status_show')(context, {
+            'entity_id': resource_id,
+            'task_type': 'clamav',
+            'key': 'clamav'
+        })
+        if (
+            existing_task.get('state') == 'pending'
+            and not _task_is_stale(existing_task)
+        ):
+            log.info(
+                'A pending task was found {} for this resource, so '
+                'skipping this duplicate task'.format(existing_task['id'])
+            )
+            return False
+    except toolkit.ObjectNotFound:
+        pass
+
+    context['ignore_auth'] = True
+    toolkit.get_action('task_status_update')(context, task)
+
+    if not clamav_service_base_url:
+        error = {'message': 'Could not submit to Clam AV Service.'}
+        _fail_task(context, task, error)
+        return False
+
+    try:
+        r = requests.post(
+            urljoin(clamav_service_base_url, 'job'),
+            headers={'Content-Type': 'application/json'},
+            data=payload,
+        )
+        r.raise_for_status()
+    except requests.exceptions.ConnectionError as e:
+        error = {'message': 'Could not connect to Clam AV Service.', 'details': str(e)}
+        _fail_task(context, task, error)
+        raise toolkit.ValidationError(error)
+    except requests.exceptions.HTTPError as e:
+        m = 'An Error occurred while sending the job: {0}'.format(e.message)
+        try:
+            body = e.response.json()
+        except ValueError:
+            body = e.response.text
+        error = {'message': m, 'details': body, 'status_code': r.status_code}
+        _fail_task(context, task, error)
+        raise toolkit.ValidationError(error)
+
+    task['value'] = r.text
+    task['state'] = 'pending'
+    task['last_updated'] = str(datetime.datetime.utcnow()),
+    toolkit.get_action('task_status_update')(context, task)
+
+    return True
+
+
+def scan_hook(context, data_dict):
+    metadata, status = toolkit.get_or_bust(data_dict, ['metadata', 'status'])
+    resource_id = toolkit.get_or_bust(metadata, 'resource_id')
+
+    toolkit.check_access('scan_hook', context, {'id': resource_id})
+
+    task = toolkit.get_action('task_status_show')(context, {
+        'entity_id': resource_id,
+        'task_type': 'clamav',
+        'key': 'clamav'
+    })
+
+    task['state'] = status
+    task['last_updated'] = str(datetime.datetime.utcnow())
+    task['value'] = json.dumps(data_dict)
+    task['error'] = json.dumps(data_dict.get('error'))
+
+    context['ignore_auth'] = True
+    toolkit.get_action('task_status_update')(context, task)
+
+    if task['state'] == 'error':
+        recipients = toolkit.aslist(toolkit.config.get('ckanext.unhcr.error_emails', []))
+        for address in recipients:
+            subj = '[UNHCR RIDL] Error performing Clam AV Scan'
+            core_mailer.mail_recipient(
+                'admin',
+                address,
+                subj,
+                json.dumps(data_dict, indent=4)
+            )
+    elif task['state'] == 'complete' and task['value'] and data_dict.get('data'):
+        scan_status = data_dict.get('data').get('status_code')
+        if scan_status == 1:
+            # file is infected
+            resource = toolkit.get_action('resource_show')(context, {'id': resource_id})
+            resource_name = resource['name'] or "Unnamed resource"
+            recipients = mailer.get_infected_file_email_recipients()
+            scan_report = data_dict.get('data').get('description', '')
+            for recipient in recipients:
+                subj = mailer.compose_infected_file_email_subj()
+                body = mailer.compose_infected_file_email_body(
+                    recipient,
+                    resource_name,
+                    resource['package_id'],
+                    resource['id'],
+                    scan_report
+                )
+                mailer.mail_user_by_id(recipient['id'], subj, body)
+
+    return data_dict
+
+
+@toolkit.chained_action
+def cloudstorage_finish_multipart(up_func, context, data_dict):
+    toolkit.check_access('cloudstorage_finish_multipart', context, data_dict)
+    result = up_func(context, data_dict)
+    toolkit.get_action('scan_submit')(context, {'id': data_dict['id']})
+    return result
+
+
+@toolkit.chained_action
+def resource_create(up_func, context, data_dict):
+    toolkit.check_access('resource_create', context, data_dict)
+    has_upload = data_dict.get('upload') is not None
+    resource = up_func(context, data_dict)
+    if has_upload:
+        toolkit.get_action('scan_submit')(context, {'id': resource['id']})
+    return resource
+
+
+@toolkit.chained_action
+def resource_update(up_func, context, data_dict):
+    toolkit.check_access('resource_update', context, data_dict)
+    has_upload = data_dict.get('upload') is not None
+    resource = up_func(context, data_dict)
+    if has_upload:
+        toolkit.get_action('scan_submit')(context, {'id': resource['id']})
+    return resource
 
 
 # Access Requests

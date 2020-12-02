@@ -291,6 +291,22 @@ def datasets_validation_report(context, data_dict):
     return {'success': False}
 
 
+def scan_submit(context, data_dict):
+    try:
+        toolkit.check_access('resource_update', context, data_dict)
+        return {'success': True}
+    except toolkit.NotAuthorized:
+        return {'success': False}
+
+
+def scan_hook(context, data_dict):
+    try:
+        toolkit.check_access('resource_update', context, data_dict)
+        return {'success': True}
+    except toolkit.NotAuthorized:
+        return {'success': False}
+
+
 @toolkit.chained_auth_function
 def dataset_collaborator_create(next_auth, context, data_dict):
     dataset = toolkit.get_action('package_show')(
