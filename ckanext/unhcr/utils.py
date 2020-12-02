@@ -1,3 +1,4 @@
+import json
 import ckan.plugins.toolkit as toolkit
 # TODO: move here helpers not used in templates?
 
@@ -49,3 +50,22 @@ def user_is_external(user):
             return True
 
     return domain not in get_internal_domains()
+
+
+def resource_is_blocked(context, resource_id):
+    try:
+        task = toolkit.get_action('task_status_show')(context, {
+            'entity_id': resource_id,
+            'task_type': 'clamav',
+            'key': 'clamav'
+        })
+        if task['state'] == 'complete' and task['value']:
+            task_data = json.loads(task['value'])
+            if task_data.get('data'):
+                scan_status = task_data.get('data').get('status_code', '')
+                if scan_status == 1:
+                    return True
+    except toolkit.ObjectNotFound:
+        pass
+
+    return False
