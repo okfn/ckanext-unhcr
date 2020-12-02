@@ -485,6 +485,7 @@ class UnhcrPlugin(
         functions['user_update_sysadmin'] = auth.user_update_sysadmin
         functions['external_user_update_state'] = auth.external_user_update_state
         functions['search_index_rebuild'] = auth.search_index_rebuild
+        functions['user_show'] = auth.user_show
         return functions
 
     # IActions

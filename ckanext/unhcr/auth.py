@@ -396,3 +396,13 @@ def user_update_sysadmin(context, data_dict):
 
 def search_index_rebuild(context, data_dict):
     return {'success': False}
+
+
+@toolkit.chained_auth_function
+def user_show(next_auth, context, data_dict):
+    auth_user_obj = context.get('auth_user_obj')
+    if not auth_user_obj:
+        return {'success': False}
+    if auth_user_obj.external and context['user'] != data_dict['id']:
+        return {'success': False}
+    return next_auth(context, data_dict)

@@ -810,3 +810,49 @@ class TestExternalUserPackageAuths(base.FunctionalTestBase):
                 'package_id': self.dataset['id'],
                 'id': self.arbitrary_resource['id'],
             })
+
+class TestUserAuth(base.FunctionalTestBase):
+
+    def setup(self):
+        super(TestUserAuth, self).setup()
+        self.sysadmin = core_factories.Sysadmin()
+        self.external_user = core_factories.User(email='fred@externaluser.com')
+        self.internal_user = core_factories.User()
+
+    def test_user_show_internal_user(self):
+        assert toolkit.check_access(
+            'user_show',
+            {'user': self.internal_user['name']},
+            {'id': self.internal_user['name']},
+        )
+        assert toolkit.check_access(
+            'user_show',
+            {'user': self.internal_user['name']},
+            {'id': self.external_user['name']},
+        )
+        assert toolkit.check_access(
+            'user_show',
+            {'user': self.internal_user['name']},
+            {'id': self.sysadmin['name']},
+        )
+
+    def test_user_show_external_user(self):
+        assert toolkit.check_access(
+            'user_show',
+            {'user': self.external_user['name']},
+            {'id': self.external_user['name']},
+        )
+        assert_raises(
+            toolkit.NotAuthorized,
+            toolkit.check_access,
+            'user_show',
+            context={'user': self.external_user['name']},
+            data_dict={'id': self.internal_user['name']},
+        )
+        assert_raises(
+            toolkit.NotAuthorized,
+            toolkit.check_access,
+            'user_show',
+            context={'user': self.external_user['name']},
+            data_dict={'id': self.sysadmin['name']},
+        )
