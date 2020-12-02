@@ -428,3 +428,28 @@ class TestAccessRequestMailer(base.FunctionalTestBase):
 
         # we should always mail sysadmin
         assert self.sysadmin['id'] in recipient_ids
+
+
+class TestInfectedFileMailer(base.FunctionalTestBase):
+
+    def test_email_body(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        email_body = mailer.compose_infected_file_email_body(
+            sysadmin,
+            'infected resource',
+            'package-id',
+            'resource-id',
+            '/tmp/tmpmmy4xf83: Win.Test.EICAR_HDB-1 FOUND\n\n----------- SCAN SUMMARY -----------\nKnown viruses: 8945582\nEngine version: 0.102.4\nScanned directories: 0\nScanned files: 1\nInfected files: 1\nData scanned: 0.00 MB\nData read: 0.00 MB (ratio 0.00:1)\nTime: 27.025 sec (0 m 27 s)\n',
+        )
+        regularised_body = regularise_html(email_body)
+
+        resource_link = toolkit.url_for(
+            controller='package',
+            action='resource_read',
+            id='package-id',
+            resource_id='resource-id',
+            qualified=True
+        )
+        assert '<a href="{}">infected resource</a>'.format(resource_link) in regularised_body
+        assert 'scanned and found to be infected.' in regularised_body
+        assert 'Win.Test.EICAR_HDB-1 FOUND' in regularised_body
