@@ -211,7 +211,7 @@ class UnhcrPlugin(
             '/deposited-dataset/{id}/resource/{resource_id}/download',
             '/deposited-dataset/{id}/resource/{resource_id}/download/{filename}',
         ]
-        if 'cloudstorage' not in config['ckan.plugins']:
+        if not plugins.plugin_loaded('cloudstorage'):
             for route in download_routes:
                 _map.connect(route, controller=controller, action='resource_download')
         else:
@@ -531,7 +531,7 @@ class UnhcrPlugin(
             'user_show': actions.user_show,
             'user_create': actions.user_create,
         }
-        if 'cloudstorage' in config['ckan.plugins']:
+        if plugins.plugin_loaded('cloudstorage'):
             functions['cloudstorage_finish_multipart'] = actions.cloudstorage_finish_multipart
         return functions
 
