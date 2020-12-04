@@ -4,6 +4,7 @@ import json
 import logging
 import requests
 from urlparse import urljoin
+from dateutil.parser import parse as parse_date
 from sqlalchemy import and_, desc, or_, select
 from sqlalchemy.dialects.postgresql import array
 from ckan import model
@@ -542,6 +543,44 @@ def _task_is_stale(task):
     return time_since_last_updated > assume_task_stale_after
 
 
+def _should_resubmit(context, task, metadata):
+    if task['state'] != 'complete':
+        return False
+
+    try:
+        resource_show = toolkit.get_action('resource_show')
+        resource_dict = resource_show(context, {'id': task['entity_id']})
+    except toolkit.ObjectNotFound:
+        return False
+
+    if resource_dict.get('last_modified') and metadata.get('task_created'):
+        try:
+            last_modified_datetime = parse_date(resource_dict['last_modified'])
+            task_created_datetime = parse_date(metadata['task_created'])
+            if last_modified_datetime > task_created_datetime:
+                log.debug('Uploaded file more recent: {0} > {1}'.format(
+                        last_modified_datetime,
+                        task_created_datetime,
+                    )
+                )
+                return True
+        except ValueError:
+            pass
+    elif (
+        resource_dict.get('url')
+        and metadata.get('original_url')
+        and resource_dict['url'] != metadata['original_url']
+    ):
+        log.debug('URLs are different: {0} != {1}'.format(
+                resource_dict['url'],
+                metadata['original_url'],
+            )
+        )
+        return True
+
+    return False
+
+
 def scan_submit(context, data_dict):
     resource_id = toolkit.get_or_bust(data_dict, "id")
     toolkit.check_access('scan_submit', context, data_dict)
@@ -551,15 +590,10 @@ def scan_submit(context, data_dict):
     callback_url = toolkit.url_for('/api/3/action/scan_hook', qualified=True)
     site_user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
 
-    payload = json.dumps({
-        'api_key': site_user['apikey'],
-        'job_type': 'scan',
-        'result_url': callback_url,
-        'metadata': {
-            'ckan_url': site_url,
-            'resource_id': resource_id,
-        }
-    })
+    try:
+        resource_dict = toolkit.get_action('resource_show')(context, {'id': resource_id})
+    except toolkit.ObjectNotFound:
+        return False
 
     task = {
         'entity_id': resource_id,
@@ -571,6 +605,19 @@ def scan_submit(context, data_dict):
         'value': '{}',
         'error': 'null',
     }
+
+    payload = json.dumps({
+        'api_key': site_user['apikey'],
+        'job_type': 'scan',
+        'result_url': callback_url,
+        'metadata': {
+            'ckan_url': site_url,
+            'resource_id': resource_id,
+            'task_created': task['last_updated'],
+            'original_url': resource_dict.get('url'),
+        }
+    })
+
     try:
         existing_task = toolkit.get_action('task_status_show')(context, {
             'entity_id': resource_id,
@@ -643,8 +690,8 @@ def scan_hook(context, data_dict):
     task['value'] = json.dumps(data_dict)
     task['error'] = json.dumps(data_dict.get('error'))
 
-    context['ignore_auth'] = True
-    toolkit.get_action('task_status_update')(context, task)
+    task = toolkit.get_action('task_status_update')({'ignore_auth': True}, task)
+    context['session'].refresh(context['task_status'])
 
     if task['state'] == 'error':
         recipients = toolkit.aslist(toolkit.config.get('ckanext.unhcr.error_emails', []))
@@ -674,6 +721,12 @@ def scan_hook(context, data_dict):
                     scan_report
                 )
                 mailer.mail_user_by_id(recipient['id'], subj, body)
+
+    if _should_resubmit(context, task, metadata):
+        log.debug(
+            'Resource {} has been modified, resubmitting to Clam AV'.format(resource_id)
+        )
+        toolkit.get_action('scan_submit')(context, {'id': resource_id})
 
     return data_dict
 
