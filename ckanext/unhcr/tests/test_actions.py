@@ -774,6 +774,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
         self.pending_user = core_factories.User(
             state=model.State.PENDING,
             email='fred@externaluser.com',
+            focal_point='REACH',
         )
 
         self.container1_admin = core_factories.User()
@@ -1120,6 +1121,7 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
     def test_target_user_is_not_pending(self):
         target_user = core_factories.User(
             email='fred@externaluser.com',
+            focal_point='REACH',
         )
         action = toolkit.get_action("external_user_update_state")
         assert_raises(
@@ -1133,6 +1135,7 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
         target_user = core_factories.User(
             state=model.State.PENDING,
             email='fred@externaluser.com',
+            focal_point='REACH',
         )
         access_request_data_dict = {
             'object_id': target_user['id'],
@@ -1159,6 +1162,7 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
         target_user = core_factories.User(
             state=model.State.PENDING,
             email='fred@externaluser.com',
+            focal_point='REACH',
         )
         requesting_user = core_factories.User()
         container2 = factories.DataContainer(
@@ -1188,6 +1192,7 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
         target_user = core_factories.User(
             state=model.State.PENDING,
             email='fred@externaluser.com',
+            focal_point='REACH',
         )
         action = toolkit.get_action("external_user_update_state")
         assert_raises(
@@ -1201,6 +1206,7 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
         target_user = core_factories.User(
             state=model.State.PENDING,
             email='fred@externaluser.com',
+            focal_point='REACH',
         )
         access_request_data_dict = {
             'object_id': target_user['id'],
@@ -1235,6 +1241,7 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
         target_user = core_factories.User(
             state=model.State.PENDING,
             email='fred@externaluser.com',
+            focal_point='REACH',
         )
         access_request_data_dict = {
             'object_id': target_user['id'],
@@ -1264,7 +1271,7 @@ class TestPackageSearch(base.FunctionalTestBase):
 
     def test_package_search_permissions(self):
         internal_user = core_factories.User()
-        external_user = core_factories.User(email='fred@externaluser.com')
+        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
         dataset = factories.Dataset(private=True)
         action = toolkit.get_action("package_search")
 
@@ -1300,7 +1307,7 @@ class TestDatasetCollaboratorCreate(base.FunctionalTestBase):
 
     def test_external_user(self):
         sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
-        external_user = core_factories.User(email='fred@externaluser.com')
+        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
         dataset = factories.Dataset(private=True)
 
         action = toolkit.get_action("dataset_collaborator_create")
@@ -1342,7 +1349,7 @@ class TestOrganizationMemberCreate(base.FunctionalTestBase):
 
     def test_external_user(self):
         sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
-        external_user = core_factories.User(email='fred@externaluser.com')
+        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
         container = factories.DataContainer()
 
         action = toolkit.get_action("organization_member_create")
@@ -1362,7 +1369,11 @@ class TestUserAutocomplete(base.FunctionalTestBase):
 
     def test_user_autocomplete(self):
         sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
-        core_factories.User(fullname='Alice External', email='alice@externaluser.com')
+        core_factories.User(
+            fullname='Alice External',
+            email='alice@externaluser.com',
+            focal_point='REACH',
+        )
         core_factories.User(fullname='Bob Internal')
         core_factories.User(fullname='Carlos Internal')
         core_factories.User(fullname='David Internal')
@@ -1389,7 +1400,7 @@ class TestUserAutocomplete(base.FunctionalTestBase):
 class TestUserActions(base.FunctionalTestBase):
     def test_user_list(self):
         sysadmin = core_factories.Sysadmin()
-        external_user = core_factories.User(email='fred@externaluser.com')
+        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
         internal_user = core_factories.User()
         default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
 
@@ -1413,7 +1424,7 @@ class TestUserActions(base.FunctionalTestBase):
 
     def test_user_show(self):
         sysadmin = core_factories.Sysadmin()
-        external_user = core_factories.User(email='fred@externaluser.com')
+        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
         internal_user = core_factories.User()
 
         action = toolkit.get_action('user_show')

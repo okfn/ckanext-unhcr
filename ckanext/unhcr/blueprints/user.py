@@ -108,10 +108,6 @@ class RegisterView(BaseRegisterView):
             error_message = "A region must be specified"
             return self.get(data_dict, {'container': [error_message]}, {'container': error_message})
 
-        if not data_dict.get('focal_point'):
-            error_message = "A focal point must be specified"
-            return self.get(data_dict, {'focal_point': [error_message]}, {'focal_point': error_message})
-
         context['defer_commit'] = True
         data_dict['state'] = context['model'].State.PENDING
         deposit = get_data_deposit()

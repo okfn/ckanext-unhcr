@@ -72,7 +72,7 @@ class TestValidators(base.FunctionalTestBase):
         deposit = factories.DataContainer(id='data-deposit')
         target = factories.DataContainer(id='data-target', visible_external=False)
         internal_user = core_factories.User()
-        external_user = core_factories.User(email='fred@externaluser.com')
+        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
         assert_raises(
             toolkit.Invalid,
             validators.deposited_dataset_owner_org_dest,
