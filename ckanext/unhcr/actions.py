@@ -972,7 +972,12 @@ def user_create(up_func, context, data_dict):
         return user
 
     plugin_extras = _init_plugin_extras(context['user_obj'].plugin_extras)
-    expiry_date = date.today() + timedelta(days=180)  # six months-ish
+    expiry_date = date.today() + timedelta(
+        days=toolkit.config.get(
+            'ckanext.unhcr.external_accounts_expiry_delta',
+            180  # six months-ish
+        )
+    )
     plugin_extras['unhcr']['expiry_date'] = expiry_date.isoformat()
     plugin_extras['unhcr']['focal_point'] = data_dict.get('focal_point', '')
     context['user_obj'].plugin_extras = plugin_extras
