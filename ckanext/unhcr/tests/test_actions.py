@@ -1421,6 +1421,7 @@ class TestClamAVActions(base.FunctionalTestBase):
         self.resource = factories.Resource(
             package_id=dataset['id'],
             url_type='upload',
+            last_modified=datetime.datetime.utcnow(),
         )
 
     def get_task(self):
@@ -1530,8 +1531,8 @@ class TestClamAVActions(base.FunctionalTestBase):
                 {
                     "status": "complete",
                     "data": {
-                        "status_code": 0, 
-                        "status_text": "SUCCESSFUL SCAN, FILE CLEAN", 
+                        "status_code": 0,
+                        "status_text": "SUCCESSFUL SCAN, FILE CLEAN",
                         "description": "/tmp/tmp37q_kv9u: OK\n\n----------- SCAN SUMMARY -----------\nKnown viruses: 8945669\nEngine version: 0.102.4\nScanned directories: 0\nScanned files: 1\nInfected files: 0\nData scanned: 0.00 MB\nData read: 0.00 MB (ratio 0.00:1)\nTime: 25.064 sec (0 m 25 s)\n"
                     },
                     "metadata": {
@@ -1616,6 +1617,90 @@ class TestClamAVActions(base.FunctionalTestBase):
         )
         task = self.get_task()
         assert u'some other status' == task['state']
+
+    @responses.activate
+    @core_helpers.change_config('ckanext.unhcr.clamav_url', 'http://clamav:1234')
+    def test_scan_hook_resubmit_not_required(self):
+        responses.add_passthru(re.compile(r'^http:\/\/solr.*$'))
+        responses.add(responses.POST, 'http://clamav:1234/job', status=200)
+
+        self.insert_pending_task()
+
+        toolkit.get_action("scan_hook")(
+            {'user': self.sysadmin['name']},
+            {
+                "status": "complete",
+                "data": {
+                    "status_code": 0,
+                        "status_text": "SUCCESSFUL SCAN, FILE CLEAN",
+                        "description": "/tmp/tmp37q_kv9u: OK...",
+                },
+                "metadata": {
+                    "resource_id": self.resource['id'],
+                    'original_url': self.resource['url'],
+                    'task_created': self.resource['last_modified'],
+                }
+            }
+        )
+
+        assert responses.assert_call_count('http://clamav:1234/job', 0)
+
+    @responses.activate
+    @core_helpers.change_config('ckanext.unhcr.clamav_url', 'http://clamav:1234')
+    def test_scan_hook_resubmit_required_changed_url(self):
+        responses.add_passthru(re.compile(r'^http:\/\/solr.*$'))
+        responses.add(responses.POST, 'http://clamav:1234/job', status=200)
+
+        self.insert_pending_task()
+
+        toolkit.get_action("scan_hook")(
+            {'user': self.sysadmin['name']},
+            {
+                "status": "complete",
+                "data": {
+                    "status_code": 0,
+                        "status_text": "SUCCESSFUL SCAN, FILE CLEAN",
+                        "description": "/tmp/tmp37q_kv9u: OK...",
+                },
+                "metadata": {
+                    "resource_id": self.resource['id'],
+                    'original_url': 'not the same url stored on the task'
+                }
+            }
+        )
+
+        assert responses.assert_call_count('http://clamav:1234/job', 1)
+
+    @responses.activate
+    @core_helpers.change_config('ckanext.unhcr.clamav_url', 'http://clamav:1234')
+    def test_scan_hook_resubmit_required_more_recent_date(self):
+        responses.add_passthru(re.compile(r'^http:\/\/solr.*$'))
+        responses.add(responses.POST, 'http://clamav:1234/job', status=200)
+
+        self.insert_pending_task()
+
+        toolkit.get_action("scan_hook")(
+            {'user': self.sysadmin['name']},
+            {
+                "status": "complete",
+                "data": {
+                    "status_code": 0,
+                        "status_text": "SUCCESSFUL SCAN, FILE CLEAN",
+                        "description": "/tmp/tmp37q_kv9u: OK...",
+                },
+                "metadata": {
+                    "resource_id": self.resource['id'],
+                    'task_created': str(
+                        datetime.datetime.strptime(
+                            self.resource['last_modified'],
+                            '%Y-%m-%dT%H:%M:%S.%f'
+                        ) - datetime.timedelta(minutes=1)
+                    ),
+                }
+            }
+        )
+
+        assert responses.assert_call_count('http://clamav:1234/job', 1)
 
     def test_scan_hook_invalid_params(self):
         with assert_raises(toolkit.ValidationError):
