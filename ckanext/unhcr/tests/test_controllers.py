@@ -1559,6 +1559,7 @@ class TestAccessRequests(base.FunctionalTestBase):
         self.pending_user = core_factories.User(
             state=model.State.PENDING,
             email='fred@externaluser.com',
+            focal_point='REACH',
         )
 
         self.container1_admin = core_factories.User()

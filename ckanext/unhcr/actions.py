@@ -971,6 +971,9 @@ def user_create(up_func, context, data_dict):
     if not context['user_obj'].external:
         return user
 
+    if not data_dict.get('focal_point'):
+        raise toolkit.ValidationError({'focal_point': ["A focal point must be specified"]})
+
     plugin_extras = _init_plugin_extras(context['user_obj'].plugin_extras)
     expiry_date = date.today() + timedelta(
         days=toolkit.config.get(
@@ -979,7 +982,7 @@ def user_create(up_func, context, data_dict):
         )
     )
     plugin_extras['unhcr']['expiry_date'] = expiry_date.isoformat()
-    plugin_extras['unhcr']['focal_point'] = data_dict.get('focal_point', '')
+    plugin_extras['unhcr']['focal_point'] = data_dict['focal_point']
     context['user_obj'].plugin_extras = plugin_extras
 
     if not context.get('defer_commit'):
