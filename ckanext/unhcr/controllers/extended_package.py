@@ -233,7 +233,7 @@ class ExtendedPackageController(PackageController):
                 toolkit.c.userobj,
                 message,
             )
-            mailer.mail_user_by_id(recipient['name'], subj, body)
+            toolkit.enqueue_job(mailer.mail_user_by_id, [recipient['name'], subj, body])
 
         toolkit.h.flash_success(
             'Requested access to download resources from {}'.format(

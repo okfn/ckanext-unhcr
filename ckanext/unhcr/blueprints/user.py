@@ -157,7 +157,7 @@ class RegisterView(BaseRegisterView):
                 user,
                 data_dict['message']
             )
-            mailer.mail_user_by_id(recipient['name'], subj, body)
+            toolkit.enqueue_job(mailer.mail_user_by_id, [recipient['name'], subj, body])
 
         return toolkit.render(
             u'user/account_created.html',
