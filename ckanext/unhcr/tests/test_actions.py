@@ -1452,7 +1452,7 @@ class TestClamAVActions(base.FunctionalTestBase):
     @responses.activate
     @core_helpers.change_config('ckanext.unhcr.clamav_url', 'http://clamav:1234')
     def test_scan_submit_valid(self):
-        responses.add_passthru(re.compile(r'^http:\/\/solr.*$'))
+        responses.add_passthru(re.compile(r'^http:\/\/.*solr/.*$'))
         responses.add(responses.POST, 'http://clamav:1234/job', status=200)
 
         result = toolkit.get_action("scan_submit")(
@@ -1482,7 +1482,7 @@ class TestClamAVActions(base.FunctionalTestBase):
     @responses.activate
     @core_helpers.change_config('ckanext.unhcr.clamav_url', 'http://clamav:1234')
     def test_scan_submit_duplicate_task(self):
-        responses.add_passthru(re.compile(r'^http:\/\/solr.*$'))
+        responses.add_passthru(re.compile(r'^http:\/\/.*solr/.*$'))
 
         self.insert_pending_task()
 
@@ -1494,7 +1494,7 @@ class TestClamAVActions(base.FunctionalTestBase):
 
     @responses.activate
     def test_scan_submit_base_url_not_set(self):
-        responses.add_passthru(re.compile(r'^http:\/\/solr.*$'))
+        responses.add_passthru(re.compile(r'^http:\/\/.*solr/.*$'))
 
         result = toolkit.get_action("scan_submit")(
             {'user': self.sysadmin['name']},
@@ -1509,7 +1509,7 @@ class TestClamAVActions(base.FunctionalTestBase):
     @responses.activate
     @core_helpers.change_config('ckanext.unhcr.clamav_url', 'http://clamav:1234')
     def test_scan_submit_failure(self):
-        responses.add_passthru(re.compile(r'^http:\/\/solr.*$'))
+        responses.add_passthru(re.compile(r'^http:\/\/.*solr/.*$'))
         responses.add(responses.POST, 'http://clamav:1234/job', status=500)
 
         with assert_raises(toolkit.ValidationError):
@@ -1628,7 +1628,7 @@ class TestClamAVActions(base.FunctionalTestBase):
     @responses.activate
     @core_helpers.change_config('ckanext.unhcr.clamav_url', 'http://clamav:1234')
     def test_scan_hook_resubmit_not_required(self):
-        responses.add_passthru(re.compile(r'^http:\/\/solr.*$'))
+        responses.add_passthru(re.compile(r'^http:\/\/.*solr/.*$'))
         responses.add(responses.POST, 'http://clamav:1234/job', status=200)
 
         self.insert_pending_task()
@@ -1655,7 +1655,7 @@ class TestClamAVActions(base.FunctionalTestBase):
     @responses.activate
     @core_helpers.change_config('ckanext.unhcr.clamav_url', 'http://clamav:1234')
     def test_scan_hook_resubmit_required_changed_url(self):
-        responses.add_passthru(re.compile(r'^http:\/\/solr.*$'))
+        responses.add_passthru(re.compile(r'^http:\/\/.*solr/.*$'))
         responses.add(responses.POST, 'http://clamav:1234/job', status=200)
 
         self.insert_pending_task()
@@ -1681,7 +1681,7 @@ class TestClamAVActions(base.FunctionalTestBase):
     @responses.activate
     @core_helpers.change_config('ckanext.unhcr.clamav_url', 'http://clamav:1234')
     def test_scan_hook_resubmit_required_more_recent_date(self):
-        responses.add_passthru(re.compile(r'^http:\/\/solr.*$'))
+        responses.add_passthru(re.compile(r'^http:\/\/.*solr/.*$'))
         responses.add(responses.POST, 'http://clamav:1234/job', status=200)
 
         self.insert_pending_task()
