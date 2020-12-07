@@ -12,5 +12,5 @@ nosetests --ckan \
           --cover-inclusive \
           --cover-erase \
           --cover-tests \
-          ckanext/unhcr
+          ckanext/unhcr/tests/test_actions.py:TestClamAVActions.test_scan_submit_valid
 

@@ -1462,6 +1462,13 @@ class TestClamAVActions(base.FunctionalTestBase):
         assert result
 
         assert responses.assert_call_count('http://clamav:1234/job', 1)
+
+        print(len(responses.calls))
+        print(responses.calls[0])
+        print(responses.calls[0].request.url)
+        print(responses.calls[0].request.body)
+        print(type(responses.calls[0].request.body))
+
         request_body = json.loads(responses.calls[0].request.body)
         assert request_body['api_key']
         assert request_body['result_url'].endswith('/api/3/action/scan_hook')
