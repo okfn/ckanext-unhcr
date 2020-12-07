@@ -285,7 +285,7 @@ class DepositedDatasetController(toolkit.BaseController):
             subj = mailer.compose_curation_email_subj(dataset)
             body = mailer.compose_curation_email_body(
                 dataset, curation, user['display_name'], 'submit', message=message)
-            mailer.mail_user_by_id(user['id'], subj, body)
+            toolkit.enqueue_job(mailer.mail_user_by_id, [user['id'], subj, body])
 
         # Show flash message and redirect
         message = 'Dataset "%s" submitted'

@@ -765,17 +765,24 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['creator']:
             yield self.check_submit_draft, user
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckan.plugins.toolkit.enqueue_job')
     def check_submit_draft(self, user, mail):
 
         # Submit dataset
         self.make_request('submit', user=user, status=302)
+
         assert_equals(self.dataset['curation_state'], 'submitted')
-        self.assert_mail(mail,
-            users=['curator', 'depadmin'],
-            subject='[UNHCR RIDL] Curation: Test Dataset',
-            texts=['A new dataset has been submitted for curation by %s' % self.creator['display_name']],
-        )
+        subject = '[UNHCR RIDL] Curation: Test Dataset'
+        text = 'A new dataset has been submitted for curation by %s' % self.creator['display_name']
+        calls = [call for call in mail.call_args_list if call[0][0].__name__ == 'mail_user_by_id']
+
+        assert_equals(calls[0][0][1][0], 'curator')
+        assert_equals(calls[0][0][1][1], subject)
+        assert_in(text, calls[0][0][1][2])
+
+        assert_equals(calls[1][0][1][0], 'depadmin')
+        assert_equals(calls[1][0][1][1], subject)
+        assert_in(text, calls[1][0][1][2])
 
     def test_submit_draft_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
@@ -956,7 +963,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         assert_not_in('Internal Activity', resp.body)
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckan.plugins.toolkit.enqueue_job')
     def test_activity_created_in_deposited_dataset(self, mail):
 
 
@@ -1353,19 +1360,19 @@ class TestExtendedPackageController(base.FunctionalTestBase):
 
     def test_request_access_valid(self):
         mock_mailer = mock.Mock()
-        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+        with mock.patch('ckan.plugins.toolkit.enqueue_job', mock_mailer):
             resp = self.make_request_access_request(
                 dataset_id='dataset1', user='user3', message='I can haz access?',
                 status=302
             )
 
         mock_mailer.assert_called_once()
-        assert_equals('user1', mock_mailer.call_args[0][0])
+        assert_equals('user1', mock_mailer.call_args[0][1][0])
         assert_equals(
             '[UNHCR RIDL] - Request for access to dataset: "dataset1"',
-            mock_mailer.call_args[0][1]
+            mock_mailer.call_args[0][1][1]
         )
-        # call_args[0][2] is the HTML message body
+        # call_args[0][1][2] is the HTML message body
         # but we're not going to make any assertions about it here
         # see the mailer tests for this
 
@@ -1386,7 +1393,7 @@ class TestExtendedPackageController(base.FunctionalTestBase):
 
     def test_request_access_user_already_has_access(self):
         mock_mailer = mock.Mock()
-        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+        with mock.patch('ckan.plugins.toolkit.enqueue_job', mock_mailer):
             resp = self.make_request_access_request(
                 dataset_id='dataset1', user='user1', message='I can haz access?',
                 status=302
@@ -1492,19 +1499,19 @@ class TestDataContainer(base.FunctionalTestBase):
 
     def test_request_access_valid(self):
         mock_mailer = mock.Mock()
-        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+        with mock.patch('ckan.plugins.toolkit.enqueue_job', mock_mailer):
             resp = self.make_request_access_request(
                 container_id='container1', user='user1', message='I can haz access?',
                 status=302
             )
 
         mock_mailer.assert_called_once()
-        assert_equals('admin', mock_mailer.call_args[0][0])
+        assert_equals('admin', mock_mailer.call_args[0][1][0])
         assert_equals(
             '[UNHCR RIDL] - Request for access to container: "Test Container"',
-            mock_mailer.call_args[0][1]
+            mock_mailer.call_args[0][1][1]
         )
-        # call_args[0][2] is the HTML message body
+        # call_args[0][1][2] is the HTML message body
         # but we're not going to make any assertions about it here
         # see the mailer tests for this
 
@@ -1525,7 +1532,7 @@ class TestDataContainer(base.FunctionalTestBase):
 
     def test_request_access_user_already_has_access(self):
         mock_mailer = mock.Mock()
-        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+        with mock.patch('ckan.plugins.toolkit.enqueue_job', mock_mailer):
             resp = self.make_request_access_request(
                 container_id='container1', user='admin', message='I can haz access?',
                 status=302
@@ -1928,7 +1935,7 @@ class TestUserRegister(base.FunctionalTestBase):
 
     def test_register_success(self):
         mock_mailer = mock.Mock()
-        with mock.patch('ckanext.unhcr.mailer.mail_user_by_id', mock_mailer):
+        with mock.patch('ckan.plugins.toolkit.enqueue_job', mock_mailer):
             resp = self.app.post(url_for('user.register'), self.payload)
 
 
@@ -1951,10 +1958,10 @@ class TestUserRegister(base.FunctionalTestBase):
 
         # we should have sent an email to someone to approve/reject the account
         mock_mailer.assert_called_once()
-        assert_equals(self.sysadmin['name'], mock_mailer.call_args[0][0])
+        assert_equals(self.sysadmin['name'], mock_mailer.call_args[0][1][0])
         assert_equals(
             '[UNHCR RIDL] - Request for new user account',
-            mock_mailer.call_args[0][1]
+            mock_mailer.call_args[0][1][1]
         )
 
         # 'success' page content
