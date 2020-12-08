@@ -816,7 +816,10 @@ class TestUserAuth(base.FunctionalTestBase):
     def setup(self):
         super(TestUserAuth, self).setup()
         self.sysadmin = core_factories.Sysadmin()
-        self.external_user = core_factories.User(email='fred@externaluser.com')
+        self.external_user = core_factories.User(
+            email='fred@externaluser.com',
+            focal_point='REACH'
+        )
         self.internal_user = core_factories.User()
 
     def test_user_show_internal_user(self):
