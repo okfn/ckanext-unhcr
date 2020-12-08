@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 from ckan import model
 import ckan.plugins.toolkit as toolkit
@@ -30,7 +32,7 @@ class DataContainerController(toolkit.BaseController):
                 mailer.mail_user(user, subj, body)
 
         # show flash message and redirect
-        toolkit.h.flash_success('Data container "{}" approved'.format(org_dict['title']))
+        toolkit.h.flash_success(u'Data container "{}" approved'.format(org_dict['title']))
         toolkit.redirect_to('data-container_read', id=id)
 
     def reject(self, id, *args, **kwargs):
@@ -52,7 +54,7 @@ class DataContainerController(toolkit.BaseController):
         delete_core.organization_purge({'model': model}, {'id': id})
 
         # show flash message and redirect
-        toolkit.h.flash_error('Data container "{}" rejected'.format(org_dict['title']))
+        toolkit.h.flash_error(u'Data container "{}" rejected'.format(org_dict['title']))
         toolkit.redirect_to('data-container_index')
 
     # Membership

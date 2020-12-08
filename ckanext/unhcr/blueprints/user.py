@@ -24,9 +24,9 @@ def sysadmin():
         return toolkit.abort(404, 'User not found')
 
     if status:
-        toolkit.h.flash_success('Promoted {} to sysadmin'.format(user['display_name']))
+        toolkit.h.flash_success(u'Promoted {} to sysadmin'.format(user['display_name']))
     else:
-        toolkit.h.flash_success('Revoked sysadmin permission from {}'.format(user['display_name']))
+        toolkit.h.flash_success(u'Revoked sysadmin permission from {}'.format(user['display_name']))
     return toolkit.h.redirect_to('unhcr_admin.index')
 
 
