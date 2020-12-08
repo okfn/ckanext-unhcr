@@ -419,6 +419,8 @@ def user_show(next_auth, context, data_dict):
     auth_user_obj = context.get('auth_user_obj')
     if not auth_user_obj:
         return {'success': False}
-    if auth_user_obj.external and context['user'] != data_dict['id']:
+    if auth_user_obj.external:
+        if context['user'] == data_dict['id'] or auth_user_obj.id == data_dict['id']:
+            return next_auth(context, data_dict)
         return {'success': False}
     return next_auth(context, data_dict)
