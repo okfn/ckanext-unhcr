@@ -1456,7 +1456,10 @@ class TestUserActions(base.FunctionalTestBase):
 
     def test_user_show(self):
         sysadmin = core_factories.Sysadmin()
-        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
+        external_user = core_factories.User(
+            email='fred@externaluser.com',
+            focal_point='REACH'
+        )
         internal_user = core_factories.User()
 
         action = toolkit.get_action('user_show')
@@ -1472,16 +1475,11 @@ class TestUserActions(base.FunctionalTestBase):
         assert '' == user['focal_point']
 
     def test_unhcr_plugin_extras_with_data(self):
-        sysadmin = core_factories.Sysadmin()
         user = core_factories.User(
             email='fred@externaluser.com',
             focal_point='Alice',
         )
-
-        # TODO: you can get rid of sysadmin and switch it to
-        # context = {'user': user['name']} once #444 is merged
-        context = {'user': sysadmin['name']}
-
+        context = {'user': user['name']}
         user = toolkit.get_action('user_show')(context, {'id': user['id']})
         assert 'expiry_date' in user
         assert 'Alice' == user['focal_point']
