@@ -15,12 +15,4 @@
     <b>{{ container.title }}</b>
   {% endcall %}
 
-  {% call email.paragraph() %}
-    You can view the data container on the following page after logging in to the site:
-  {% endcall %}
-
-  {% call email.action(container_url) %}
-    View Data Container
-  {% endcall %}
-
 {% endblock %}
