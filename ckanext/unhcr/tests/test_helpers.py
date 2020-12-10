@@ -53,7 +53,7 @@ class TestHelpers(base.FunctionalTestBase):
         container1 = factories.DataContainer(title='container1', visible_external=True)
         container2 = factories.DataContainer(title='container2', visible_external=False)
         internal_user = core_factories.User()
-        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
+        external_user = factories.ExternalUser()
 
         # internal_user can see all the containers
         assert_equals(

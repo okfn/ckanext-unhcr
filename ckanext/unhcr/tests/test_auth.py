@@ -121,7 +121,7 @@ class TestAuthUI(base.FunctionalTestBase):
     def test_external_users_endpoints(self):
         app = self._get_test_app()
 
-        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
+        external_user = factories.ExternalUser()
         dataset = factories.Dataset()
         container = factories.DataContainer()
         deposit = factories.DataContainer(
@@ -333,7 +333,7 @@ class TestAuthUnit(base.FunctionalTestBase):
             )
 
     def test_external_users_core_actions(self):
-        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
+        external_user = factories.ExternalUser()
 
         core_auth_modules = [
             'ckan.logic.auth.create',
@@ -356,7 +356,7 @@ class TestAuthUnit(base.FunctionalTestBase):
                     )
 
     def test_external_users_plugin_actions(self):
-        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
+        external_user = factories.ExternalUser()
 
         for plugin in plugins.PluginImplementations(plugins.IAuthFunctions):
             for action in plugin.get_auth_functions().keys():
@@ -370,7 +370,7 @@ class TestAuthUnit(base.FunctionalTestBase):
                     )
 
     def test_external_users_always_allowed_actions(self):
-        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
+        external_user = factories.ExternalUser()
 
         # these actions should always return True,
         # regardless of the content of data_dict
@@ -388,7 +388,7 @@ class TestAuthUnit(base.FunctionalTestBase):
             assert_equals(True, toolkit.check_access(action, context))
 
     def test_organization_show(self):
-        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
+        external_user = factories.ExternalUser()
         internal_user = core_factories.User()
         container = factories.DataContainer()
         deposit = factories.DataContainer(
@@ -432,7 +432,7 @@ class TestAuthUnit(base.FunctionalTestBase):
         )
 
     def test_external_user_approved_deposit(self):
-        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
+        external_user = factories.ExternalUser()
 
         target = factories.DataContainer(
             id='data-target',
@@ -613,7 +613,7 @@ class TestPackageCreateAuth(base.FunctionalTestBase):
     @helpers.change_config('ckan.auth.create_unowned_dataset', False)
     def test_integration_new_deposit(self):
         # everyone can create datasets in the data-deposit
-        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
+        external_user = factories.ExternalUser()
         resp = self.app.get(
             url='/deposited-dataset/new',
             extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
@@ -629,7 +629,7 @@ class TestPackageCreateAuth(base.FunctionalTestBase):
 
     @helpers.change_config('ckan.auth.create_unowned_dataset', False)
     def test_integration_new_dataset(self):
-        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
+        external_user = factories.ExternalUser()
         # external_user can't create a new dataset
         resp = self.app.get(
             url='/dataset/new',
@@ -660,7 +660,7 @@ class TestPackageCreateAuth(base.FunctionalTestBase):
     @helpers.change_config('ckan.auth.create_unowned_dataset', False)
     def test_integration_edit_deposit(self):
         # everyone can edit their own draft deposited datasets
-        external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
+        external_user = factories.ExternalUser()
         external_deposit = factories.DepositedDataset(
             name='dataset1',
             owner_org='data-deposit',
@@ -692,7 +692,7 @@ class TestPackageCreateAuth(base.FunctionalTestBase):
 class TestExternalUserPackageAuths(base.FunctionalTestBase):
 
     def setup(self):
-        self.external_user = core_factories.User(email='fred@externaluser.com', focal_point='REACH')
+        self.external_user = factories.ExternalUser()
         user = core_factories.User()
 
         target = factories.DataContainer(
@@ -816,10 +816,7 @@ class TestUserAuth(base.FunctionalTestBase):
     def setup(self):
         super(TestUserAuth, self).setup()
         self.sysadmin = core_factories.Sysadmin()
-        self.external_user = core_factories.User(
-            email='fred@externaluser.com',
-            focal_point='REACH'
-        )
+        self.external_user = factories.ExternalUser()
         self.internal_user = core_factories.User()
 
     def test_user_show_internal_user(self):
