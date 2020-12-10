@@ -1194,6 +1194,7 @@ def user_show(up_func, context, data_dict):
 
     user['focal_point'] = extras['focal_point']
     user['expiry_date'] = extras['expiry_date']
+    user['containers'] = extras['containers']
 
     return user
 
@@ -1208,6 +1209,9 @@ def user_create(up_func, context, data_dict):
     if not data_dict.get('focal_point'):
         raise toolkit.ValidationError({'focal_point': ["A focal point must be specified"]})
 
+    if not isinstance(data_dict.get('containers'), list):
+        raise toolkit.ValidationError({'containers': ["Specify one or more containers"]})
+
     plugin_extras = _init_plugin_extras(context['user_obj'].plugin_extras)
     expiry_date = datetime.date.today() + datetime.timedelta(
         days=toolkit.config.get(
@@ -1217,6 +1221,7 @@ def user_create(up_func, context, data_dict):
     )
     plugin_extras['unhcr']['expiry_date'] = expiry_date.isoformat()
     plugin_extras['unhcr']['focal_point'] = data_dict['focal_point']
+    plugin_extras['unhcr']['containers'] = data_dict['containers']
     context['user_obj'].plugin_extras = plugin_extras
 
     if not context.get('defer_commit'):
@@ -1225,6 +1230,7 @@ def user_create(up_func, context, data_dict):
 
     user['expiry_date'] = plugin_extras['unhcr']['expiry_date']
     user['focal_point'] = plugin_extras['unhcr']['focal_point']
+    user['containers'] = plugin_extras['unhcr']['containers']
     return user
 
 
@@ -1240,7 +1246,8 @@ def _init_plugin_extras(plugin_extras):
 def _validate_plugin_extras(extras):
     CUSTOM_FIELDS = [
         {'name': 'focal_point', 'default': ''},
-        {'name': 'expiry_date', 'default': None}
+        {'name': 'expiry_date', 'default': None},
+        {'name': 'containers',  'default': []},
     ]
     if not extras:
         extras = {}

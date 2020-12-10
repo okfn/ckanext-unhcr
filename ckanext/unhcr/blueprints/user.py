@@ -112,6 +112,7 @@ class RegisterView(BaseRegisterView):
         data_dict['state'] = context['model'].State.PENDING
         deposit = get_data_deposit()
         containers = [data_dict.get('container'), deposit['id']]
+        data_dict['containers'] = containers
 
         try:
             model.Session.begin_nested()
