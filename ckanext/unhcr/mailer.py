@@ -278,6 +278,8 @@ def get_user_account_request_access_email_recipients(containers):
         recipients = recipients + get_container_request_access_email_recipients(
             {"id": container}
         )
+    for user in recipients:
+        user.pop('containers', None)
     recipients = [
         dict(tup) for tup in {tuple(sorted(r.items())) for r in recipients}
     ]  # de-dupe
