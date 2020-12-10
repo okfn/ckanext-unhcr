@@ -1,4 +1,9 @@
+import factory
 from ckan.tests import factories
+
+
+def _generate_email(user):
+    return "{0}@externaluser.com".format(user.name).lower()
 
 
 class DataContainer(factories.Organization):
@@ -39,3 +44,10 @@ class DepositedDataset(factories.Dataset):
     owner_org = 'id-data-deposit'
     owner_org_dest = 'id-data-target'
     visibility = 'public'
+
+
+class ExternalUser(factories.User):
+
+    email = factory.LazyAttribute(_generate_email)
+    focal_point = 'focal-point'
+    containers = []
