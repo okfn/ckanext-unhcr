@@ -305,6 +305,7 @@ class UnhcrPlugin(
             'get_deposited_dataset_user_curation_role': helpers.get_deposited_dataset_user_curation_role,
             'get_dataset_validation_report': helpers.get_dataset_validation_report,
             'get_user_deposited_drafts': helpers.get_user_deposited_drafts,
+            'get_default_container_for_user': helpers.get_default_container_for_user,
             # Microdata
             'get_microdata_collections': helpers.get_microdata_collections,
             # Misc
