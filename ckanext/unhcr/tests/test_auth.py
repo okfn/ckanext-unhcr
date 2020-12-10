@@ -67,7 +67,7 @@ class TestAuthUI(base.FunctionalTestBase):
 
         container_member = core_factories.User()
         dataset_member = core_factories.User()
-        external_user = core_factories.User()
+        other_user = core_factories.User()
         data_container = factories.DataContainer(
             users=[{'name': container_member['name'], 'capacity': 'admin'}]
         )
@@ -102,12 +102,12 @@ class TestAuthUI(base.FunctionalTestBase):
 
         response = app.get(
             '/dataset/{}'.format(dataset['name']),
-            extra_environ={ 'REMOTE_USER': str(external_user['name']) },
+            extra_environ={ 'REMOTE_USER': str(other_user['name']) },
             status=200,
         )
-        # external_user is allowed to see the dataset_read view too
+        # other_user is allowed to see the dataset_read view too
         assert_not_in('You must be logged in', response.body)
-        # external_user is not allowed to download the resource
+        # other_user is not allowed to download the resource
         assert_in(
             'You are not authorized to download the resources from this dataset',
             response.body
