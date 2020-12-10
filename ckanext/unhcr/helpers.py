@@ -692,6 +692,15 @@ def get_user_deposited_drafts():
     return datasets
 
 
+def get_default_container_for_user():
+    context = {'model': model, 'user': toolkit.c.user}
+    user = toolkit.get_action('user_show')(context, {'id': toolkit.c.user})
+    log.info(user)
+    if len(user['containers']) > 0:
+        return user['containers'][0]
+    return 'unknown'
+
+
 # Internal activity
 
 def create_curation_activity(
