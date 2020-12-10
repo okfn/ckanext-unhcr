@@ -417,6 +417,7 @@ def get_data_curation_users(dataset):
     users = []
     for item in depadmins + curators + container_admins:
         user = toolkit.get_action('user_show')(context, {'id': item[0]})
+        user.pop('containers', None)
         users.append(user)
 
     users = [dict(tup) for tup in {tuple(u.items()) for u in users}]  # de-dupe
