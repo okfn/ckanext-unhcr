@@ -1563,11 +1563,7 @@ class TestAccessRequests(base.FunctionalTestBase):
         self.sysadmin = core_factories.Sysadmin()
         self.requesting_user = core_factories.User()
         self.standard_user = core_factories.User()
-        self.pending_user = core_factories.User(
-            state=model.State.PENDING,
-            email='fred@externaluser.com',
-            focal_point='REACH',
-        )
+        self.pending_user = factories.ExternalUser(state=model.State.PENDING)
 
         self.container1_admin = core_factories.User()
         self.container1 = factories.DataContainer(
