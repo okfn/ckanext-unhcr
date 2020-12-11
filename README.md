@@ -1,7 +1,8 @@
 # ckanext-unhcr
 
-[![Build Status](https://travis-ci.org/okfn/ckanext-unhcr.svg?branch=master)](https://travis-ci.org/okfn/ckanext-unhcr)
-[![Coverage Status](https://coveralls.io/repos/github/okfn/ckanext-unhcr/badge.svg?branch=master)](https://coveralls.io/github/okfn/ckanext-unhcr?branch=master)
+![Run tests](https://github.com/okfn/ckanext-unhcr/workflows/Run%20tests/badge.svg?branch=master)
+[![codecov](https://codecov.io/gh/okfn/ckanext-unhcr/branch/master/graph/badge.svg?token=WfcRlsn6sE)](https://codecov.io/gh/okfn/ckanext-unhcr)
+
 
 CKAN extension for the UNHCR RIDL project
 
