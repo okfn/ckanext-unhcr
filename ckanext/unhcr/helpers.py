@@ -417,7 +417,7 @@ def get_data_curation_users(dataset):
     users = []
     for item in depadmins + curators + container_admins:
         user = toolkit.get_action('user_show')(context, {'id': item[0]})
-        user.pop('containers', None)
+        user.pop('default_containers', None)
         users.append(user)
 
     users = [dict(tup) for tup in {tuple(u.items()) for u in users}]  # de-dupe
@@ -695,9 +695,8 @@ def get_user_deposited_drafts():
 def get_default_container_for_user():
     context = {'model': model, 'user': toolkit.c.user}
     user = toolkit.get_action('user_show')(context, {'id': toolkit.c.user})
-    log.info(user)
-    if len(user['containers']) > 0:
-        return user['containers'][0]
+    if len(user['default_containers']) > 0:
+        return user['default_containers'][0]
     return 'unknown'
 
 

@@ -112,7 +112,7 @@ class RegisterView(BaseRegisterView):
         data_dict['state'] = context['model'].State.PENDING
         deposit = get_data_deposit()
         containers = [data_dict.get('container'), deposit['id']]
-        data_dict['containers'] = containers
+        data_dict['default_containers'] = containers
 
         try:
             model.Session.begin_nested()
@@ -123,7 +123,7 @@ class RegisterView(BaseRegisterView):
                 'object_type': 'user',
                 'message': data_dict['message'],
                 'role': 'member',
-                'data': {'containers': containers}
+                'data': {'default_containers': containers}
             }
             toolkit.get_action(u'access_request_create')(
                 {'user': user['id'], 'ignore_auth': True, 'defer_commit': True},

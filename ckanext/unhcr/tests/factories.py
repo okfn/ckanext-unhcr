@@ -50,4 +50,4 @@ class ExternalUser(factories.User):
 
     email = factory.LazyAttribute(_generate_email)
     focal_point = 'focal-point'
-    containers = []
+    default_containers = []
