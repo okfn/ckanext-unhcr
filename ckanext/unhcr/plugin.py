@@ -417,7 +417,10 @@ class UnhcrPlugin(
 
     # Always include sub-containers to container_read search
     def before_search(self, search_params):
-        if toolkit.c.controller == 'ckanext.unhcr.controllers.extended_organization:ExtendedOrganizationController':
+        if toolkit.c.controller in (
+            'organization',
+            'ckanext.unhcr.controllers.extended_organization:ExtendedOrganizationController'
+        ):
             toolkit.c.include_children_selected = True
 
             # helper function
@@ -429,12 +432,20 @@ class UnhcrPlugin(
                 return name_list
 
             # update filter query
-            children = _children_name_list(group_tree_section(toolkit.c.id, type_='data-container', include_parents=False, include_siblings=False).get('children',[]))
-            if children:
-                search_params['fq'] = 'organization:%s' % toolkit.c.id
-                for name in children:
-                    if name:
-                        search_params['fq'] += ' OR organization:%s' %  name
+            if toolkit.c.id:
+                children = _children_name_list(
+                    group_tree_section(
+                        toolkit.c.id,
+                        type_='data-container',
+                        include_parents=False,
+                        include_siblings=False
+                    ).get('children',[])
+                )
+                if children:
+                    search_params['fq'] = 'organization:%s' % toolkit.c.id
+                    for name in children:
+                        if name:
+                            search_params['fq'] += ' OR organization:%s' %  name
 
         return search_params
 

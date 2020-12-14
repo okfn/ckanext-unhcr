@@ -247,8 +247,12 @@ def get_linked_datasets_for_form(selected_ids=[], exclude_ids=[], context=None, 
     fq_list = []
     get_containers = toolkit.get_action('organization_list_for_user')
     containers = get_containers(context, {'id': user_id})
-    for container in containers:
-        fq_list.append('owner_org:{}'.format(container['id']))
+    deposit = get_data_deposit()
+    fq_list = [
+        "owner_org:{}".format(container["id"])
+        for container in containers
+        if container["id"] != deposit["id"]
+    ]
 
     # Get search results
     search_datasets = toolkit.get_action('package_search')
@@ -256,6 +260,7 @@ def get_linked_datasets_for_form(selected_ids=[], exclude_ids=[], context=None, 
         'fq': ' OR '.join(fq_list),
         'include_private': True,
         'sort': 'organization asc, title asc',
+        'rows': 1000,
     })
 
     # Get datasets
