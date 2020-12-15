@@ -451,7 +451,7 @@ class UnhcrPlugin(
         return search_params
 
     def after_create(self, context, data_dict):
-        if not context.get('job'):
+        if not context.get('job') and not context.get('defer_commit'):
             if data_dict.get('state') == 'active':
                 toolkit.enqueue_job(jobs.process_dataset_on_create, [data_dict['id']])
 
@@ -472,7 +472,7 @@ class UnhcrPlugin(
             toolkit.enqueue_job(jobs.process_dataset_on_delete, [data_dict['id']])
 
     def after_update(self, context, data_dict):
-        if not context.get('job'):
+        if not context.get('job') and not context.get('defer_commit'):
             if data_dict.get('state') == 'active':
                 toolkit.enqueue_job(jobs.process_dataset_on_update, [data_dict['id']])
 
@@ -635,3 +635,17 @@ class UnhcrPlugin(
             blueprints.unhcr_search_index_blueprint,
             blueprints.unhcr_user_blueprint,
         ]
+
+
+class UnhcrResourcePlugin(plugins.SingletonPlugin):
+    plugins.implements(plugins.IResourceController, inherit=True)
+
+    def after_create(self, context, resource):
+        if not context.get('job') and not context.get('defer_commit'):
+            if resource.get('state') == 'active':
+                toolkit.enqueue_job(jobs.process_dataset_on_update, [resource['package_id']])
+
+    def after_update(self, context, resource):
+        if not context.get('job') and not context.get('defer_commit'):
+            if resource.get('state') == 'active':
+                toolkit.enqueue_job(jobs.process_dataset_on_update, [resource['package_id']])

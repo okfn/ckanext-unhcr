@@ -83,6 +83,7 @@ setup(
     entry_points='''
         [ckan.plugins]
         unhcr = ckanext.unhcr.plugin:UnhcrPlugin
+        unhcr_resources = ckanext.unhcr.plugin:UnhcrResourcePlugin
 
         [paste.paster_command]
         unhcr = ckanext.unhcr.commands:Unhcr
