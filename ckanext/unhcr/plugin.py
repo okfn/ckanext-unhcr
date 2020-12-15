@@ -92,6 +92,7 @@ class UnhcrPlugin(
     plugins.implements(plugins.IFacets)
     plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IPackageController, inherit=True)
+    plugins.implements(plugins.IResourceController, inherit=True)
     plugins.implements(plugins.IAuthFunctions)
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.IValidators)
@@ -450,12 +451,27 @@ class UnhcrPlugin(
 
         return search_params
 
-    def after_create(self, context, data_dict):
-        if not context.get('job'):
-            if data_dict.get('state') == 'active':
-                toolkit.enqueue_job(jobs.process_dataset_on_create, [data_dict['id']])
 
-        if data_dict.get('type') == 'deposited-dataset':
+    # IPackageController, IResourceController
+    # note: if we add more hooks that are in the interface for both
+    # IPackageController and IResourceController (e.g: before_update)
+    # we need to account for the fact that data_dict might be a package
+    # and might be a resource.
+    # Refs https://github.com/okfn/ckanext-unhcr/pull/459
+
+    def after_create(self, context, data_dict):
+        if 'owner_org' in data_dict and 'package_id' not in data_dict:
+            self._package_after_create(context, data_dict)
+
+        if 'resource_type' in data_dict and 'package_id' in data_dict:
+            self._resource_after_create(context, data_dict)
+
+    def _package_after_create(self, context, pkg_dict):
+        if not context.get('job') and not context.get('defer_commit'):
+            if pkg_dict.get('state') == 'active':
+                toolkit.enqueue_job(jobs.process_dataset_on_create, [pkg_dict['id']])
+
+        if pkg_dict.get('type') == 'deposited-dataset':
             user_id = None
             if context.get('auth_user_obj'):
                 user_id = context['auth_user_obj'].id
@@ -464,17 +480,38 @@ class UnhcrPlugin(
                     {'ignore_auth': True}, {'id': context['user']})
                 user_id = user['id']
             if user_id:
-                helpers.create_curation_activity('dataset_deposited', data_dict['id'],
-                    data_dict['name'], user_id)
+                helpers.create_curation_activity('dataset_deposited', pkg_dict['id'],
+                    pkg_dict['name'], user_id)
 
-    def after_delete(self, context, data_dict):
+    def _resource_after_create(self, context, res_dict):
         if not context.get('job'):
-            toolkit.enqueue_job(jobs.process_dataset_on_delete, [data_dict['id']])
+            if res_dict.get('state') == 'active':
+                toolkit.enqueue_job(jobs.process_dataset_on_update, [res_dict['package_id']])
+
 
     def after_update(self, context, data_dict):
+        if 'owner_org' in data_dict and 'package_id' not in data_dict:
+            self._package_after_update(context, data_dict)
+
+        if 'resource_type' in data_dict and 'package_id' in data_dict:
+            self._resource_after_update(context, data_dict)
+
+    def _package_after_update(self, context, pkg_dict):
+        if not context.get('job') and not context.get('defer_commit'):
+            if pkg_dict.get('state') == 'active':
+                toolkit.enqueue_job(jobs.process_dataset_on_update, [pkg_dict['id']])
+
+    def _resource_after_update(self, context, res_dict):
         if not context.get('job'):
-            if data_dict.get('state') == 'active':
-                toolkit.enqueue_job(jobs.process_dataset_on_update, [data_dict['id']])
+            if res_dict.get('state') == 'active':
+                toolkit.enqueue_job(jobs.process_dataset_on_update, [res_dict['package_id']])
+
+
+    def after_delete(self, context, data_dict):
+        if 'owner_org' in data_dict and 'package_id' not in data_dict:
+            if not context.get('job'):
+                toolkit.enqueue_job(jobs.process_dataset_on_delete, [data_dict['id']])
+
 
     # IAuthFunctions
 
