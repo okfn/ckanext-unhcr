@@ -904,6 +904,7 @@ def access_request_update(context, data_dict):
             'id': request.object_id,
             'user_id': request.user_id,
             'capacity': request.role,
+            'send_mail': True,
         }
         if status == 'approved':
             toolkit.get_action('dataset_collaborator_create')(
