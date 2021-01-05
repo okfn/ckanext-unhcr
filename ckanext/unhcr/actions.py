@@ -124,7 +124,7 @@ def package_publish_microdata(context, data_dict):
                     raise RuntimeError(str(response.get('errors', default_error)))
                 survey['files'].append(response)
 
-    except requests.exceptions.HTTPError:
+    except requests.exceptions.HTTPError as exception:
         log.exception(exception)
         raise RuntimeError('Microdata connection failed')
 
@@ -150,7 +150,7 @@ def package_get_microdata_collections(context, data_dict):
             raise RuntimeError(str(response.get('errors', default_error)))
         collections = response['collections']
 
-    except requests.exceptions.HTTPError:
+    except requests.exceptions.HTTPError as exception:
         log.exception(exception)
         raise RuntimeError('Microdata connection failed')
 
