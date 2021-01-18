@@ -1,5 +1,11 @@
 # RIDL Changelog
 
+## v2.0.0 - 2021-01-20
+
+Features:
+* Allow external users to deposit datasets
+  See https://github.com/okfn/ckanext-unhcr/milestone/3?closed=1 for more detail
+
 ## v1.8.2 - 2020-11-18
 
 Fixes:
