@@ -1,6 +1,16 @@
+import json
+import ckan.plugins.toolkit as toolkit
 # TODO: move here helpers not used in templates?
 
-# Misc
+
+INTERNAL_DOMAINS = ['unhcr.org']
+
+def get_internal_domains():
+    return toolkit.aslist(
+        toolkit.config.get('ckanext.unhcr.internal_domains', INTERNAL_DOMAINS),
+        sep = ','
+    )
+
 
 def normalize_list(value):
     if isinstance(value, list):
@@ -9,3 +19,53 @@ def normalize_list(value):
     if value:
         return value.split(',')
     return []
+
+
+def get_module_functions(module_path):
+    module_functions = {}
+    module = __import__(module_path)
+
+    for part in module_path.split('.')[1:]:
+        module = getattr(module, part)
+
+    for key, value in module.__dict__.items():
+        if not key.startswith('_') and (
+            hasattr(value, '__call__')
+                and (value.__module__ == module_path)):
+            module_functions[key] = value
+    return module_functions
+
+
+def user_is_external(user):
+    '''
+    Returns True if user email is not in the managed internal domains.
+    '''
+    try:
+        domain = user.email.split('@')[1]
+    except AttributeError:
+         # Internal sysadmin user does not have email
+        if user.sysadmin:
+            return False
+        else:
+            return True
+
+    return domain not in get_internal_domains()
+
+
+def resource_is_blocked(context, resource_id):
+    try:
+        task = toolkit.get_action('task_status_show')(context, {
+            'entity_id': resource_id,
+            'task_type': 'clamav',
+            'key': 'clamav'
+        })
+        if task['state'] == 'complete' and task['value']:
+            task_data = json.loads(task['value'])
+            if task_data.get('data'):
+                scan_status = task_data.get('data').get('status_code', '')
+                if scan_status == 1:
+                    return True
+    except toolkit.ObjectNotFound:
+        pass
+
+    return False

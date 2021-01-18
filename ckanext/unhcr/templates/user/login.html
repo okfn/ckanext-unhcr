@@ -1,13 +1,13 @@
 {% ckan_extends %}
 
+{% block subtitle %}Partner Login{% endblock %}
+
+{% block page_heading %}Partner Login{% endblock %}
+
+{% block form %}
+  {{ super.super() }}
+{% endblock %}
 
 {% block secondary_content %}
-
-  <h2 class="module-heading">{{ _('Log in to the RIDL site') }}</h2>
-  <section class="module module-narrow module-shallow">
-    <div class="module-content">
-    <p>{% trans %}To log in, please use your UNHCR Active Directory user name and password. Note that your user name is the part before the @ in your email address, e.g. for example@unhcr.org the user name is "example".{% endtrans %}</p>
-    </div>
-  </section>
-
+  {% snippet "user/snippets/login_sidebar.html" %}
 {% endblock %}

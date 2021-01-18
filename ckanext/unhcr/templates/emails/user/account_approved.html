@@ -1,0 +1,18 @@
+{% extends "emails/base.html" %}
+{% import 'macros/email.html' as email with context %}
+
+{% block email_body %}
+
+{% call email.paragraph() %}
+Dear <b>{{ recipient.fullname or recipient.name }}</b>,
+{% endcall %}
+
+  {% call email.paragraph() %}
+      Your request for a RIDL user account has been approved by an administrator.
+  {% endcall %}
+
+  {% call email.action(login_url) %}
+    Log In
+  {% endcall %}
+
+{% endblock %}

@@ -1,7 +1,10 @@
+import logging
 from ckan import model
 import ckan.plugins.toolkit as toolkit
 from ckanext.cloudstorage.controller import StorageController
 from ckanext.unhcr.activity import log_download_activity
+from ckanext.unhcr.utils import resource_is_blocked
+log = logging.getLogger(__name__)
 
 
 class ExtendedStorageController(StorageController):
@@ -21,6 +24,9 @@ class ExtendedStorageController(StorageController):
             return toolkit.abort(404, toolkit._(u'Resource not found'))
         except toolkit.NotAuthorized:
             return toolkit.abort(403, toolkit._(u'Not Authorized to download the resource'))
+
+        if resource_is_blocked(context, resource_id):
+            return toolkit.abort(404, toolkit._(u'Resource not found'))
 
         """
         ckanext.cloudstorage.controller.StorageController

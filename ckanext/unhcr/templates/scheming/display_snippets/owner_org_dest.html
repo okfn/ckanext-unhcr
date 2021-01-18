@@ -3,5 +3,9 @@
   Unknown
 {% else %}
   {% set data_container = h.get_data_container(value) %}
-  <a href="{{ h.url_for('data-container_read', id=data_container.name) }}">{{ data_container.title }}</a>
+  {% if c.userobj.external %}
+    {{ data_container.title }}
+  {% else %}
+    <a href="{{ h.url_for('data-container_read', id=data_container.name) }}">{{ data_container.title }}</a>
+  {% endif %}
 {% endif %}

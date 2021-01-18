@@ -236,6 +236,16 @@ def get_summary_email_recipients():
 
 # Access Requests
 
+def _get_sysadmins():
+    context = {"ignore_auth": True}
+    default_user = toolkit.get_action("get_site_user")(context)
+
+    sysadmins = helpers.get_sysadmins()
+    return [
+        model_dictize.user_dictize(user, context) for user in sysadmins
+        if user.sysadmin and user.name != default_user["name"]
+    ]
+
 def get_container_request_access_email_recipients(container_dict):
     context = {"ignore_auth": True}
     default_user = toolkit.get_action("get_site_user")(context)
@@ -247,21 +257,33 @@ def get_container_request_access_email_recipients(container_dict):
             user for user in org["users"]
             if user["capacity"] == "admin" and user["name"] != default_user["name"]
         ]
+        for user in recipients:
+            user.pop("capacity")
     except toolkit.ObjectNotFound:
         recipients = []
 
     # if we couldn't find any org admins, fall back to sysadmins
     if not recipients:
-        all_users = helpers.get_sysadmins()
-        recipients = [
-            model_dictize.user_dictize(user, context) for user in all_users
-            if user.sysadmin and user.name != default_user["name"]
-        ]
+        recipients = _get_sysadmins()
 
     return recipients
 
 def get_dataset_request_access_email_recipients(package_dict):
     return get_container_request_access_email_recipients({"id": package_dict["owner_org"]})
+
+def get_user_account_request_access_email_recipients(containers):
+    # This email is sent to admins of all containers in `containers` arg plus sysadmins
+    recipients = _get_sysadmins()
+    for container in containers:
+        recipients = recipients + get_container_request_access_email_recipients(
+            {"id": container}
+        )
+    for user in recipients:
+        user.pop('default_containers', None)
+    recipients = [
+        dict(tup) for tup in {tuple(sorted(r.items())) for r in recipients}
+    ]  # de-dupe
+    return recipients
 
 
 def compose_dataset_request_access_email_subj(package_dict):
@@ -274,6 +296,9 @@ def compose_container_request_access_email_subj(container_dict):
         container_dict['display_name']
     )
 
+def compose_user_request_access_email_subj():
+    return '[UNHCR RIDL] - Request for new user account'
+
 
 def compose_request_access_email_body(object_type, recipient, obj, requesting_user, message):
     context = {}
@@ -282,11 +307,12 @@ def compose_request_access_email_body(object_type, recipient, obj, requesting_us
     context['object'] = obj
     context['requesting_user'] = requesting_user
     context['message'] = message
-    context['collaborators_url'] = toolkit.url_for(
+    context['dashboard_url'] = toolkit.url_for(
         'dashboard.requests',
         qualified=True,
     )
     context['h'] = toolkit.h
+
     return render_jinja2('emails/access_requests/access_request.html', context)
 
 
@@ -294,10 +320,53 @@ def compose_request_rejected_email_subj(obj):
     return '[UNHCR RIDL] - Request for access to: "{}"'.format(obj['name'])
 
 
-def compose_request_rejected_email_body(recipient, obj, message):
+def compose_request_rejected_email_body(object_type, recipient, obj, message):
     context = {}
+    context['object_type'] = object_type
     context['recipient'] = recipient
     context['object'] = obj
     context['message'] = message
     context['h'] = toolkit.h
+
     return render_jinja2('emails/access_requests/rejection.html', context)
+
+
+def compose_account_approved_email_subj():
+    return '[UNHCR RIDL] - User account approved'
+
+
+def compose_account_approved_email_body(recipient):
+    context = {}
+    context['recipient'] = recipient
+    context['login_url'] = toolkit.url_for('/service/login', qualified=True)
+    context['h'] = toolkit.h
+
+    return render_jinja2('emails/user/account_approved.html', context)
+
+
+# Clam AV Scan
+
+def get_infected_file_email_recipients():
+    return _get_sysadmins()
+
+
+def compose_infected_file_email_subj():
+    return '[UNHCR RIDL] - Infected file found'
+
+
+def compose_infected_file_email_body(recipient, resource_name, package_id, resource_id, clamav_report):
+    context = {}
+
+    context['recipient'] = recipient
+    context['resource_name'] = resource_name
+    context['resource_url'] = toolkit.url_for(
+        controller='package',
+        action='resource_read',
+        id=package_id,
+        resource_id=resource_id,
+        qualified=True
+    )
+    context['clamav_report'] = clamav_report
+    context['h'] = toolkit.h
+
+    return render_jinja2('emails/resource/infected_file.html', context)

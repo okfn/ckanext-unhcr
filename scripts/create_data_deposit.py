@@ -14,6 +14,7 @@ def create_data_deposit(url, api_key):
             'type': 'data-container',
             'country': 'VAR',
             'geographic_area': 'World',
+            'visible_external': False,
         }, requests_kwargs={'verify': False})
         print('Created data deposit')
     except ckanapi.errors.ValidationError as e:

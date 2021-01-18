@@ -1,0 +1,9 @@
+<div class="form-group control-ful">
+  <label for="field-visible_external" class="control-label">Visible to Partner users</label>
+  <div class="controls">
+    <select id="field-visible_external" name="visible_external"  class="form-control">
+      <option value="true" {% if data.visible_external %}selected="selected"{% endif %}>Yes</option>
+      <option value="false" {% if not(data.visible_external) %}selected="selected"{% endif %}>No</option>
+    </select>
+  </div>
+</div>

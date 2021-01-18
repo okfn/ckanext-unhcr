@@ -30,6 +30,7 @@ def create_data_containers(url, api_key):
                     'geographic_area': row[0],
                     # TODO: replace by real values
                     'country': 'VAR',
+                    'visible_external': True,
                 })
 
             # Save 1st level containers
@@ -44,6 +45,7 @@ def create_data_containers(url, api_key):
                     # TODO: replace by real values
                     'country': 'VAR',
                     'groups': [{'name': slugify(row[0])}],
+                    'visible_external': True,
                 })
 
             # Save 2nd level containers
@@ -58,6 +60,7 @@ def create_data_containers(url, api_key):
                     # TODO: replace by real values
                     'country': 'VAR',
                     'groups': [{'name': slugify(row[1])}],
+                    'visible_external': True,
                 })
 
     # Create orgs in CKAN

@@ -48,8 +48,11 @@ def reject(request_id):
         obj = toolkit.get_action('{}_show'.format(request['object_type']))(
             {'user': toolkit.c.user}, {'id': request['object_id']}
         )
-        subj = mailer.compose_request_rejected_email_subj(obj)
-        body = mailer.compose_request_rejected_email_body(recipient, obj, message)
+        if request['object_type'] == 'user':
+            subj = '[UNHCR RIDL] - User account rejected'
+        else:
+            subj = mailer.compose_request_rejected_email_subj(obj)
+        body = mailer.compose_request_rejected_email_body(request['object_type'], recipient, obj, message)
         mailer.mail_user_by_id(recipient.name, subj, body)
     except toolkit.ObjectNotFound as e:
         return toolkit.abort(404, toolkit._(str(e)))

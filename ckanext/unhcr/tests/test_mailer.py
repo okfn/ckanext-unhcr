@@ -271,6 +271,23 @@ class TestAccessRequestMailer(base.FunctionalTestBase):
         assert expected in regularised_body
         assert '<p>I can haz access?<br> kthxbye</p>' in regularised_body
 
+    def test_user_request_access_body(self):
+        user1 = core_factories.User(name='user1', id='user1')
+
+        user_message = 'I can haz access?\nkthxbye'
+        email_body = mailer.compose_request_access_email_body(
+            'user', self.sysadmin, user1, user1, user_message
+        )
+        regularised_body = regularise_html(email_body)
+        expected = regularise_html(
+            'External user <a href="{user_link}">Mr. Test User</a> has requested access to deposit datasets.'.format(
+                user_link=toolkit.url_for('user.read', id=user1['id'], qualified=True),
+            )
+        )
+
+        assert expected in regularised_body
+        assert '<p>I can haz access?<br> kthxbye</p>' in regularised_body
+
     def test_recipients_with_org_admins(self):
         editor = core_factories.User()
         admin = core_factories.User()
@@ -322,7 +339,7 @@ class TestAccessRequestMailer(base.FunctionalTestBase):
         dataset1 = factories.Dataset(title='Test Dataset 1')
 
         message = 'Nope\nNot today thank you'
-        email_body = mailer.compose_request_rejected_email_body(user1, dataset1, message)
+        email_body = mailer.compose_request_rejected_email_body('dataset', user1, dataset1, message)
         regularised_body = regularise_html(email_body)
 
         assert 'Your request to access <strong>Test Dataset 1</strong> has been rejected.' in regularised_body
@@ -333,8 +350,106 @@ class TestAccessRequestMailer(base.FunctionalTestBase):
         container1 = factories.DataContainer(title='Test Organization 1')
 
         message = 'Nope\nNot today thank you'
-        email_body = mailer.compose_request_rejected_email_body(user1, container1, message)
+        email_body = mailer.compose_request_rejected_email_body('container', user1, container1, message)
         regularised_body = regularise_html(email_body)
 
         assert 'Your request to access <strong>Test Organization 1</strong> has been rejected.' in regularised_body
         assert '<p>Nope<br> Not today thank you</p>' in regularised_body
+
+    def test_request_rejected_email_body_user(self):
+        user1 = core_factories.User(name='user1', id='user1')
+
+        message = 'Nope\nNot today thank you'
+        email_body = mailer.compose_request_rejected_email_body('user', user1, user1, message)
+        regularised_body = regularise_html(email_body)
+
+        assert 'Your request for a RIDL user account has been rejected.' in regularised_body
+        assert '<p>Nope<br> Not today thank you</p>' in regularised_body
+
+    def test_account_approved_email_body(self):
+        user1 = core_factories.User(name='user1', id='user1')
+        email_body = mailer.compose_account_approved_email_body(user1)
+        regularised_body = regularise_html(email_body)
+
+        assert 'Your request for a RIDL user account has been approved by an administrator.' in regularised_body
+
+    def test_get_user_account_request_access_email_recipients(self):
+        users = [
+            core_factories.User(),
+            core_factories.User(),
+            core_factories.User(),
+            core_factories.User(),
+        ]
+        containers = [
+            factories.DataContainer(
+                users=[
+                    {'name': users[0]['name'], 'capacity': 'admin'},
+                    {'name': users[1]['name'], 'capacity': 'admin'},
+                    {'name': users[2]['name'], 'capacity': 'editor'},
+                ]
+            ),
+            factories.DataContainer(
+                users=[
+                    {'name': users[0]['name'], 'capacity': 'admin'},
+                    {'name': users[2]['name'], 'capacity': 'editor'},
+                ]
+            ),
+            factories.DataContainer(
+                users=[
+                    {'name': users[0]['name'], 'capacity': 'admin'},
+                ]
+            ),
+            factories.DataContainer(
+                users=[
+                    {'name': users[3]['name'], 'capacity': 'admin'},
+                ]
+            ),
+        ]
+        recipients = mailer.get_user_account_request_access_email_recipients([
+            containers[0]['id'], containers[1]['id'], containers[2]['id']
+        ])
+
+        recipient_ids = [r['id'] for r in recipients]
+
+        assert len(recipient_ids) == 3
+
+        # no duplicates
+        assert len(recipient_ids) == len(list(set(recipient_ids)))
+
+        # users[0] and users[1] are admins of >=1 container
+        assert users[0]['id'] in recipient_ids
+        assert users[1]['id'] in recipient_ids
+
+        # users[2] isn't an admin of any container
+        assert users[2]['id'] not in recipient_ids
+
+        # users[3] isn't an admin of any container we specified
+        assert users[2]['id'] not in recipient_ids
+
+        # we should always mail sysadmin
+        assert self.sysadmin['id'] in recipient_ids
+
+
+class TestInfectedFileMailer(base.FunctionalTestBase):
+
+    def test_email_body(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        email_body = mailer.compose_infected_file_email_body(
+            sysadmin,
+            'infected resource',
+            'package-id',
+            'resource-id',
+            '/tmp/tmpmmy4xf83: Win.Test.EICAR_HDB-1 FOUND\n\n----------- SCAN SUMMARY -----------\nKnown viruses: 8945582\nEngine version: 0.102.4\nScanned directories: 0\nScanned files: 1\nInfected files: 1\nData scanned: 0.00 MB\nData read: 0.00 MB (ratio 0.00:1)\nTime: 27.025 sec (0 m 27 s)\n',
+        )
+        regularised_body = regularise_html(email_body)
+
+        resource_link = toolkit.url_for(
+            controller='package',
+            action='resource_read',
+            id='package-id',
+            resource_id='resource-id',
+            qualified=True
+        )
+        assert '<a href="{}">infected resource</a>'.format(resource_link) in regularised_body
+        assert 'scanned and found to be infected.' in regularised_body
+        assert 'Win.Test.EICAR_HDB-1 FOUND' in regularised_body

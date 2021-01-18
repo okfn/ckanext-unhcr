@@ -6,15 +6,15 @@ from nose.plugins.attrib import attr
 
 from ckan import model
 import ckan.plugins.toolkit as toolkit
-from ckanext.unhcr.tests import factories
+from ckanext.unhcr.tests import base, factories
 from ckan.tests import factories as core_factories
 from nose.tools import assert_raises, assert_equals
-from ckan.tests.helpers import call_action, call_auth, FunctionalTestBase
+from ckan.tests.helpers import call_action, call_auth
 
 
 # Tests
 
-class TestRequestDataContainer(FunctionalTestBase):
+class TestRequestDataContainer(base.FunctionalTestBase):
 
     @classmethod
     def setup_class(cls):
@@ -121,4 +121,5 @@ def _create_org_dict(user, groups=[]):
         'type': 'data-container',
         'tag_string': u'',
         'population': u'',
+        'visible_external': True
     }

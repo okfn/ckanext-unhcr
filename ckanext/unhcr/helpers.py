@@ -21,22 +21,96 @@ from ckanext.unhcr.models import AccessRequest
 
 log = logging.getLogger(__name__)
 
+# Core overrides
+
+@core_helpers.core_helper
+def new_activities(*args, **kwargs):
+    try:
+        return core_helpers.new_activities(*args, **kwargs)
+    except toolkit.NotAuthorized:
+        return 0
+
+
+@core_helpers.core_helper
+def dashboard_activity_stream(*args, **kwargs):
+    try:
+        return core_helpers.dashboard_activity_stream(*args, **kwargs)
+    except toolkit.NotAuthorized:
+        return []
+
+
+@core_helpers.core_helper
+def url_for(*args, **kw):
+    return core_helpers.url_for(*args, **kw)
+
 
 # General
 
-def get_data_container(id, context=None):
-    context = context or {'model': model}
+def get_data_container(id):
+    context = {'model': model, 'ignore_auth': True}
     return toolkit.get_action('organization_show')(context, {'id': id})
 
 
-def get_all_data_containers(exclude_ids=[], include_unknown=False):
+def get_all_data_containers(
+    exclude_ids=None,
+    include_ids=None,
+    include_unknown=False,
+    userobj=None,
+    dataset=None,
+):
+    if not exclude_ids:
+        exclude_ids = []
+    if not include_ids:
+        include_ids = []
+    include_ids = [id_ for id_ in include_ids if id_ and id_ != 'unknown']
+    if not userobj:
+        userobj = toolkit.c.userobj
+
     data_containers = []
     context = {'model': model, 'ignore_auth': True}
     orgs = toolkit.get_action('organization_list')(context,
-        {'type': 'data-container', 'all_fields': True})
+        {'type': 'data-container', 'all_fields': True, 'include_extras': True})
+
     for org in orgs:
-        if org['id'] not in exclude_ids:
+        if org['id'] in exclude_ids:
+            continue
+
+        if org['approval_status'] != u'approved':
+            continue
+
+        if org['id'] in include_ids:
             data_containers.append(org)
+            continue
+
+        if userobj.external and (
+            'visible_external' not in org or not org['visible_external']
+        ):
+            continue
+
+        if (
+            # we're editing an existing dataset, not creating a new one
+            dataset
+
+            # curators and sysadmins can always change the target to anything
+            and not user_is_curator(userobj)
+            and not userobj.sysadmin
+
+            # external users can always change the target of their own dataset to any visible_external container
+            and not userobj.external
+
+            # if I'm editing my own deposit, I can always change the target to anything
+            and 'creator_user_id' in dataset and dataset['creator_user_id'] != userobj.id
+        ):
+            user_orgs = toolkit.get_action('organization_list_for_user')(
+                context,
+                {'id': userobj.id, "permission": "admin"}
+            )
+            user_orgs_ids = [o['id'] for o in user_orgs]
+            if org['id'] not in user_orgs_ids:
+                continue
+
+        data_containers.append(org)
+
     if include_unknown:
         data_containers.insert(0, {
             'id': 'unknown',
@@ -109,15 +183,27 @@ def page_authorized():
         return True
 
     # TODO: remove request_reset and perform_reset when LDAP is integrated
+    allowed_controllers = [
+        'user',  # most actions are defined in the core 'user' blueprint
+        'unhcr_user',  # we override some actions in the 'unhcr_user' blueprint
+    ]
+    allowed_actions = [
+        'logged_in',
+        'logged_out',
+        'logged_out_page',
+        'logged_out_redirect',
+        'login',
+        'perform_reset',
+        'register',
+        'request_reset',
+    ]
     return (
-        toolkit.c.userobj or
-        (toolkit.c.controller == 'user' and
-            toolkit.c.action in [
-                'login', 'logged_in', 'request_reset', 'perform_reset',
-                'logged_out', 'logged_out_page', 'logged_out_redirect'
-                ]
-        ) or
-        toolkit.request.path == '/service/login'
+        toolkit.c.userobj
+        or (
+            toolkit.c.controller in allowed_controllers
+            and toolkit.c.action in allowed_actions
+        )
+        or toolkit.request.path == '/service/login'
     )
 
 
@@ -125,25 +211,28 @@ def get_came_from_param():
     return toolkit.request.environ.get('CKAN_CURRENT_URL', '')
 
 
-def user_is_curator():
-    user = toolkit.c.user
+def user_is_curator(userobj=None):
+    if not userobj:
+        userobj = toolkit.c.userobj
     group = get_data_deposit()
     try:
         users = toolkit.get_action('member_list')(
-            { 'user': user },
+            { 'ignore_auth': True },
             { 'id': group['id'] }
         )
     except toolkit.ObjectNotFound:
         return False
     user_ids = [u[0] for u in users]
-    user_id = toolkit.c.userobj.id
+    user_id = userobj.id
     return user_id in user_ids
 
 
-def user_is_container_admin():
+def user_is_container_admin(user=None):
+    if not user:
+        user = toolkit.c.user
     orgs = toolkit.get_action("organization_list_for_user")(
-        {"user": toolkit.c.user},
-        {"id": toolkit.c.user, "permission": "admin"}
+        {"user": user},
+        {"id": user, "permission": "admin"}
     )
     return len(orgs) > 0
 
@@ -242,12 +331,25 @@ def get_existing_access_request(user_id, object_id, status):
     ).all()
 
 
+def get_access_request_for_user(user_id):
+    return model.Session.query(AccessRequest).filter(
+        AccessRequest.object_id==user_id,
+        AccessRequest.object_type=='user',
+    ).one_or_none()
+
+
 # Deposited datasets
 
 cached_deposit = None
 def get_data_deposit():
-    """This function uses a cache so it's OK to call it multiple times
-    """
+    '''
+    Return the dict of the underlying organization for the data deposit
+
+    This function uses a cache so it's OK to call it multiple times
+
+    :returns: The data deposit organization dict
+    :rtype: dict
+    '''
 
     # Check cache
     deposit = None
@@ -270,8 +372,22 @@ def get_data_deposit():
     return deposit
 
 
-def get_data_curation_users(context=None):
-    context = context or {'model': model, 'user': toolkit.c.user}
+def get_data_curation_users(dataset):
+    '''
+    Return a list of users that are allowed to curate a particular dataset.
+    This includes:
+
+    * Sysadmins
+    * Curation team (Admins and Editors of the data-deposit org)
+    * Admins of the target data container
+
+    :param dataset: The dataset that needs to be curated
+    :type dataset: dict
+
+    :returns: A list of user dicts that can curate the dataset
+    :rtype: list
+    '''
+    context = {'model': model, 'ignore_auth': True}
     deposit = get_data_deposit()
 
     # Get depadmins
@@ -288,26 +404,66 @@ def get_data_curation_users(context=None):
         'object_type': 'user',
     })
 
+    container_admins = []
+    owner_org_dest = dataset.get('owner_org_dest')
+    if owner_org_dest and owner_org_dest != 'unknown':
+        container_admins = toolkit.get_action('member_list')(context, {
+            'id': owner_org_dest,
+            'capacity': 'admin',
+            'object_type': 'user',
+        })
+
     # Get users
     users = []
-    for item in depadmins + curators:
+    for item in depadmins + curators + container_admins:
         user = toolkit.get_action('user_show')(context, {'id': item[0]})
+        user.pop('default_containers', None)
         users.append(user)
 
+    users = [dict(tup) for tup in {tuple(u.items()) for u in users}]  # de-dupe
+
     # Sort users
-    users = list(sorted(users,
-        key=itemgetter('display_name')))
+    users = list(sorted(users, key=itemgetter('display_name', 'name')))
 
     return users
 
 
 def get_deposited_dataset_user_curation_status(dataset, user_id):
+    '''
+    Returns an object describing the status of a given dataset and user
+    in the context of the data deposit.
+
+    :param dataset: A deposited dataset dict
+    :type dataset: dict
+    :param user_id: The id of the relevant user
+    :type user_id: string
+
+    :returns: An object with the following keys:
+
+        * `state`: The curation state of the dataset (eg "review", "submitted",
+            "draft", etc)
+        * `active`: Whether the status of the dataset is "active"
+        * `final_review`: Whether the depositor requested a final review
+        * `error`: Validation errors of the deposited dataset
+        * `role`: Role that the provided user has on this particular dataset,
+            see :py:func:`~ckanext.unhcr.helpers.get_deposited_dataset_user_curation_role`
+        * `is_depositor`: Whether the provided user was the original depositor
+        * `is_curator`: Whether the provided user is the assigned curator to the dataset
+        * `actions`: List of allowed actions for the provided user,
+            see :py:func:`~ckanext.unhcr.helpers.get_deposited_dataset_user_curation_actions`
+        * `contacts`: An object with the following keys (
+            see :py:func:`~ckanext.unhcr.helpers.get_deposited_dataset_user_contact`
+            `depositor`: an object with the original depositor user details
+            `curator`: an object with the assigned curator user details
+    :rtype: dict
+    '''
     deposit = get_data_deposit()
+    context = {'user': user_id, 'model': model, 'session': model.Session}
 
     # General
     status = {}
-    status['error'] = get_dataset_validation_error_or_none(dataset)
-    status['role'] = get_deposited_dataset_user_curation_role(user_id)
+    status['error'] = get_dataset_validation_error_or_none(dataset, context)
+    status['role'] = get_deposited_dataset_user_curation_role(user_id, dataset)
     status['state'] = dataset['curation_state']
     status['final_review'] = dataset.get('curation_final_review')
     status['active'] = dataset['state'] == 'active'
@@ -328,26 +484,79 @@ def get_deposited_dataset_user_curation_status(dataset, user_id):
     return status
 
 
-def get_deposited_dataset_user_curation_role(user_id):
+def get_deposited_dataset_user_curation_role(user_id, dataset=None):
+    '''
+    Returns the role that the provided user has in the context of the
+    data deposit.
+
+    If a dataset dict is provided, the admins of the organization the
+    dataset belongs to are also considered when deciding the user role.
+
+    The available roles are:
+
+    * admin: Can manage members of the data deposit
+    * curator: Can edit and manage deposited datasets
+    * container admin: Can edit and manage deposited datasets (that are
+        targetted to one of the admins the user is admin of)
+    * depositor: Can create new deposited datasets
+    * user: No permissions available on the data deposit
+
+    :param user_id: The user that we want to know the role of in the data
+        deposit
+    :type user_id: string
+
+    :returns: The role the user has
+    :rtype: string
+    '''
     action = toolkit.get_action('organization_list_for_user')
     context = {'model': model, 'user': user_id}
     deposit = get_data_deposit()
 
-    # Admin
-    orgs = action(context, {'permission': 'admin'})
-    if deposit['id'] in [org['id'] for org in orgs]:
+    admin_orgs = action(context, {'permission': 'admin'})
+    admin_orgs_ids = [org['id'] for org in admin_orgs]
+
+    member_orgs = action(context, {'permission': 'create_dataset'})
+    member_org_ids = [org['id'] for org in member_orgs]
+
+
+    if deposit['id'] in admin_orgs_ids:
         return 'admin'
 
-    # Curator
-    orgs = action(context, {'permission': 'create_dataset'})
-    if deposit['id'] in [org['id'] for org in orgs]:
+    if deposit['id'] in member_org_ids:
         return 'curator'
 
-    # Depositor
-    return 'depositor'
+    if not dataset:
+        if len(admin_orgs_ids) > 0:
+            return 'container admin'
+        return 'depositor'
+
+    if (
+        dataset['owner_org_dest'] != 'unknown'
+        and dataset['owner_org_dest'] in admin_orgs_ids
+    ):
+        return 'container admin'
+
+    if dataset['creator_user_id'] == user_id:
+        return 'depositor'
+
+    return 'user'
 
 
 def get_deposited_dataset_user_curation_actions(status):
+    '''
+    Return a list of actions that the user is allowed to perform on a deposited
+    dataset
+
+    :param status: An object containing the following keys: "state", "is_depositor",
+        "active", "role", "error", "final_review"
+        (see :py:func:`~ckanext.unhcr.helpers.get_deposited_dataset_user_curation_status`
+        for details.
+    :type status: dict
+
+    :returns: A list of allowed actions. Possible values are: "edit", "submit", "withdraw",
+        "reject", "request_changes", "assign", "request_review", "approve"
+    :rtype: list
+    '''
     actions = []
 
     # Draft
@@ -359,7 +568,7 @@ def get_deposited_dataset_user_curation_actions(status):
 
     # Submitted
     if status['state'] == 'submitted':
-        if status['role'] in ['admin', 'curator']:
+        if status['role'] in ['admin', 'curator', 'container admin']:
             actions.extend(['edit', 'reject'])
             if status['role'] == 'admin':
                 actions.extend(['assign'])
@@ -382,31 +591,38 @@ def get_deposited_dataset_user_curation_actions(status):
 
 
 def get_deposited_dataset_user_contact(user_id=None):
+    '''
+    Returns selected attributes from the provided user id, or None if not found
+
+    :param user_id: The provided user id
+    :type user_id: string
+
+    :returns: A user dict with the following keys: "id", "name", "display_name",
+        "title" (same as "display_name"), "email", "external"
+    :rtype: dict
+    '''
 
     # Return none (no id)
     if not user_id:
         return None
 
     # Return none (no user)
-    try:
-        user = toolkit.get_action('user_show')(
-            {'ignore_auth': True, 'keep_email': True}, {'id': user_id})
-    except toolkit.ObjectNotFound:
+    userobj = model.User.get(user_id)
+    if not userobj:
         return None
 
     # Return contact
     return {
-        'id': user.get('id'),
-        'title': user.get('display_name'),
-        'display_name': user.get('display_name'),
-        'name': user.get('name'),
-        'email': user.get('email'),
+        'id': getattr(userobj, 'id'),
+        'title': getattr(userobj, 'display_name'),
+        'display_name': getattr(userobj, 'display_name'),
+        'name': getattr(userobj, 'name'),
+        'email': getattr(userobj, 'email'),
+        'external': getattr(userobj, 'external'),
     }
 
 
-def get_dataset_validation_error_or_none(pkg_dict, context=None):
-    context = context or {'model': model, 'session': model.Session, 'user': toolkit.c.user}
-
+def get_dataset_validation_error_or_none(pkg_dict, context):
     # Convert dataset
     if pkg_dict.get('type') == 'deposited-dataset':
         pkg_dict = convert_deposited_dataset_to_regular_dataset(pkg_dict)
@@ -474,6 +690,14 @@ def get_user_deposited_drafts():
     datasets = toolkit.get_action('package_search')(context, data_dict)['results']
 
     return datasets
+
+
+def get_default_container_for_user():
+    context = {'model': model, 'user': toolkit.c.user}
+    user = toolkit.get_action('user_show')(context, {'id': toolkit.c.user})
+    if len(user['default_containers']) > 0:
+        return user['default_containers'][0]
+    return 'unknown'
 
 
 # Internal activity
@@ -728,7 +952,7 @@ def current_path(action=None):
     path = toolkit.request.path
     if action == '/dataset/new':
         path = '/dataset/new'
-    if path.startswith('/dataset/copy'):
+    if path.startswith('/dataset/copy') or path.startswith('/deposited-dataset/copy'):
         path = '/dataset/new'
     return path
 

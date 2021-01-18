@@ -4,18 +4,21 @@ import json
 import logging
 
 from ckan.common import config
+import ckan.lib.helpers as core_helpers
+from ckan.model import User
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan.lib.plugins import DefaultTranslation
 from ckan.lib.plugins import DefaultPermissionLabels
 
 # 🙈
+import ckan.authz as authz
 from ckan.lib.activity_streams import (
     activity_stream_string_functions,
     activity_stream_string_icons,
 )
 
-from ckanext.unhcr import actions, auth, blueprints, helpers, jobs, validators
+from ckanext.unhcr import actions, auth, blueprints, helpers, jobs, utils, validators
 
 from ckanext.scheming.helpers import scheming_get_dataset_schema
 from ckanext.hierarchy.helpers import group_tree_section
@@ -23,6 +26,63 @@ from ckanext.hierarchy.helpers import group_tree_section
 log = logging.getLogger(__name__)
 
 _ = toolkit._
+
+
+ALLOWED_ACTIONS = [
+    'format_autocomplete',
+    'group_list_authz',
+    'group_show',
+    'organization_list_for_user',
+    'organization_show',
+    'package_create',
+    'package_delete',
+    'package_patch',
+    'package_resource_reorder',
+    'package_search',
+    'package_show',
+    'package_update',
+    'resource_create',
+    'resource_delete',
+    'resource_download',
+    'resource_patch',
+    'resource_show',
+    'resource_update',
+    'resource_view_list',
+    'site_read',
+    'tag_autocomplete',
+    'tag_list',
+    'user_show',
+    'user_update',
+    'user_generate_apikey',
+]
+
+
+def restrict_external(func):
+    '''
+    Decorator function to restrict external users to a small number of allowed_actions
+    '''
+    def wrapper(action, context, data_dict=None):
+        user = User.by_name(context.get('user'))
+        if not user:
+            return func(action, context, data_dict)
+        if user.sysadmin:
+            return func(action, context, data_dict)
+        if context.get('ignore_auth'):
+            return func(action, context, data_dict)
+        if user.external and action not in ALLOWED_ACTIONS:
+            return {'success': False, 'msg': 'Not allowed to perform this action'}
+        return func(action, context, data_dict)
+    return wrapper
+
+
+_url_for = core_helpers.url_for
+
+def url_for(*args, **kw):
+    url = _url_for(*args, **kw)
+
+    if getattr(toolkit.c.userobj, 'external', None) and '/dataset/' in url:
+        url = url.replace('/dataset/', '/deposited-dataset/')
+    return url
 
 
 class UnhcrPlugin(
@@ -53,6 +113,10 @@ class UnhcrPlugin(
         activity_stream_string_functions['changed package'] = helpers.custom_activity_renderer
         activity_stream_string_functions['download resource'] = helpers.download_resource_renderer
         activity_stream_string_icons['download resource'] = 'download'
+
+        User.external = property(utils.user_is_external)
+        authz.is_authorized = restrict_external(authz.is_authorized)
+        core_helpers.url_for = url_for
 
     def update_config_schema(self, schema):
         schema.update({
@@ -123,13 +187,37 @@ class UnhcrPlugin(
         _map.connect('/dataset/{id}/request_access', controller=controller, action='request_access', conditions={'method': ['POST']})
         _map.connect('dataset_internal_activity', '/dataset/internal_activity/{dataset_id}', controller=controller, action='activity')
         _map.connect('deposited-dataset_internal_activity', '/deposited-dataset/internal_activity/{dataset_id}', controller=controller, action='activity')
-        if 'cloudstorage' not in config['ckan.plugins']:
-            _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
-            _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
+
+        # additional aliases to map /deposited-dataset/stuff routes
+        # these are needed because register_package_plugins() only maps a
+        # subset of /dataset routes for custom package types
+        _map.connect('/deposited-dataset/resources/{id}', controller=controller, action='resources')
+        _map.connect('/deposited-dataset/{id}/resource_copy/{resource_id}', controller=controller, action='resource_copy')
+        _map.connect('/deposited-dataset/{id}/resource_delete/{resource_id}', controller=controller, action='resource_delete')
+        _map.connect('/deposited-dataset/{id}/resource_edit/{resource_id}', controller=controller, action='resource_edit')
+        _map.connect('/deposited-dataset/{id}/resource/{resource_id}', controller=controller, action='resource_read')
+        _map.connect('/deposited-dataset/{id}/resource/{resource_id}/view/{view_id}', controller=controller, action='resource_view')
+        _map.connect('/deposited-dataset/new_resource/{id}', controller=controller, action='new_resource')
+        _map.connect('/deposited-dataset/publish/{id}', controller=controller, action='publish')
+        _map.connect('/deposited-dataset/activity/{dataset_id}', controller=controller, action='activity')
+        _map.connect('/deposited-dataset/activity/{dataset_id}/{offset}', controller=controller, action='activity')
+        _map.connect('/deposited-dataset/copy/{id}', controller=controller, action='copy')
+        _map.connect('/deposited-dataset/{id}/resource_data/{resource_id}', controller='ckanext.datapusher.plugin:ResourceDataController', action='resource_data')
+
+        # resource download routes
+        download_routes = [
+            '/dataset/{id}/resource/{resource_id}/download',
+            '/dataset/{id}/resource/{resource_id}/download/{filename}',
+            '/deposited-dataset/{id}/resource/{resource_id}/download',
+            '/deposited-dataset/{id}/resource/{resource_id}/download/{filename}',
+        ]
+        if not plugins.plugin_loaded('cloudstorage'):
+            for route in download_routes:
+                _map.connect(route, controller=controller, action='resource_download')
         else:
             controller='ckanext.unhcr.controllers.extended_storage:ExtendedStorageController'
-            _map.connect('/dataset/{id}/resource/{resource_id}/download', controller=controller, action='resource_download')
-            _map.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', controller=controller, action='resource_download')
+            for route in download_routes:
+                _map.connect(route, controller=controller, action='resource_download')
 
 
         # organization
@@ -188,6 +276,9 @@ class UnhcrPlugin(
 
     def get_helpers(self):
         return {
+            # Core overrides
+            'new_activities': helpers.new_activities,
+            'dashboard_activity_stream': helpers.dashboard_activity_stream,
             # General
             'get_data_container': helpers.get_data_container,
             'get_all_data_containers': helpers.get_all_data_containers,
@@ -206,6 +297,7 @@ class UnhcrPlugin(
             # Access requests
             'get_pending_requests_total': helpers.get_pending_requests_total,
             'get_existing_access_request': helpers.get_existing_access_request,
+            'get_access_request_for_user': helpers.get_access_request_for_user,
             # Deposited datasets
             'get_data_deposit': helpers.get_data_deposit,
             'get_data_curation_users': helpers.get_data_curation_users,
@@ -213,6 +305,7 @@ class UnhcrPlugin(
             'get_deposited_dataset_user_curation_role': helpers.get_deposited_dataset_user_curation_role,
             'get_dataset_validation_report': helpers.get_dataset_validation_report,
             'get_user_deposited_drafts': helpers.get_user_deposited_drafts,
+            'get_default_container_for_user': helpers.get_default_container_for_user,
             # Microdata
             'get_microdata_collections': helpers.get_microdata_collections,
             # Misc
@@ -393,27 +486,34 @@ class UnhcrPlugin(
         functions['unhcr_datastore_search_sql'] = auth.unhcr_datastore_search_sql
         functions['datasets_validation_report'] = auth.datasets_validation_report
         functions['organization_create'] = auth.organization_create
+        functions['organization_show'] = auth.organization_show
+        functions['group_list_authz'] = auth.group_list_authz
         functions['package_activity_list'] = auth.package_activity_list
         functions['package_create'] = auth.package_create
         functions['package_update'] = auth.package_update
         functions['dataset_collaborator_create'] = auth.dataset_collaborator_create
+        functions['scan_hook'] = auth.scan_hook
+        functions['scan_submit'] = auth.scan_submit
         functions['access_request_list_for_user'] = auth.access_request_list_for_user
         functions['access_request_create'] = auth.access_request_create
         functions['access_request_update'] = auth.access_request_update
         functions['user_update_sysadmin'] = auth.user_update_sysadmin
+        functions['external_user_update_state'] = auth.external_user_update_state
         functions['search_index_rebuild'] = auth.search_index_rebuild
+        functions['user_show'] = auth.user_show
         return functions
 
     # IActions
 
     def get_actions(self):
-        return {
+        functions = {
             'access_request_list_for_user': actions.access_request_list_for_user,
             'access_request_update': actions.access_request_update,
             'access_request_create': actions.access_request_create,
             'package_update': actions.package_update,
             'package_publish_microdata': actions.package_publish_microdata,
             'package_get_microdata_collections': actions.package_get_microdata_collections,
+            'dataset_collaborator_create': actions.dataset_collaborator_create,
             'organization_create': actions.organization_create,
             'organization_member_create': actions.organization_member_create,
             'organization_member_delete': actions.organization_member_delete,
@@ -431,9 +531,21 @@ class UnhcrPlugin(
             'organization_activity_list_html': actions.organization_activity_list_html,
             'recently_changed_packages_activity_list_html': actions.recently_changed_packages_activity_list_html,
             'datasets_validation_report': actions.datasets_validation_report,
+            'scan_hook': actions.scan_hook,
+            'scan_submit': actions.scan_submit,
+            'resource_create': actions.resource_create,
+            'resource_update': actions.resource_update,
             'user_update_sysadmin': actions.user_update_sysadmin,
+            'external_user_update_state': actions.external_user_update_state,
             'search_index_rebuild': actions.search_index_rebuild,
+            'user_autocomplete': actions.user_autocomplete,
+            'user_list': actions.user_list,
+            'user_show': actions.user_show,
+            'user_create': actions.user_create,
         }
+        if plugins.plugin_loaded('cloudstorage'):
+            functions['cloudstorage_finish_multipart'] = actions.cloudstorage_finish_multipart
+        return functions
 
     # IValidators
 
@@ -462,10 +574,21 @@ class UnhcrPlugin(
 
         # For deposited datasets
         if dataset_obj.type == 'deposited-dataset':
+            context = {'ignore_auth': True}
+            dataset = toolkit.get_action('package_show')(
+                context,
+                {'id': dataset_obj.id}
+            )
+            deposit = helpers.get_data_deposit()
+
             labels = [
                 'deposited-dataset',
                 'creator-%s' % dataset_obj.creator_user_id,
             ]
+            if dataset['owner_org_dest'] not in [deposit['id'], 'unknown']:
+                labels.append(
+                    'deposited-dataset-{}'.format(dataset['owner_org_dest'])
+                )
 
         # For normal datasets
         else:
@@ -483,12 +606,21 @@ class UnhcrPlugin(
         # For curating users
         # Adding "deposited-dataset" label for data curators
         if user_obj:
+
+            if user_obj.external:
+                return ['creator-%s' % user_obj.id]
+
             context = {u'user': user_obj.id}
             deposit = helpers.get_data_deposit()
             orgs = toolkit.get_action('organization_list_for_user')(context, {})
             for org in orgs:
                 if deposit['id'] == org['id']:
-                    labels.extend(['deposited-dataset'])
+                    labels.append('deposited-dataset')
+                    continue
+                if org['capacity'] == 'admin':
+                    labels.append(
+                        'deposited-dataset-{}'.format(org['id'])
+                    )
 
         return labels
 

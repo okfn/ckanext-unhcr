@@ -1,0 +1,18 @@
+{% ckan_extends %}
+
+{% block users_list %}
+<table class="table table-header table-hover table-bordered">
+  <tr>
+    <th>Username</th>
+    <th>Organisation</th>
+    <th>State</th>
+  </tr>
+  {% for user in page.items %}
+    <tr>
+      <td>{{ h.linked_user(user['name'], maxlength=20) }}</td>
+      <td>{% if user.User.external %}Partner{% else %}UNHCR{% endif %}</td>
+      <td>{{ user.User.state.capitalize() }}</td>
+    </tr>
+  {% endfor %}
+</table>
+{% endblock %}

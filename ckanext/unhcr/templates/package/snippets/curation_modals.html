@@ -72,7 +72,7 @@
           <div class="control-group control-select">
             <div class="controls ">
               <select id="curator_id" name="curator_id">
-                {% set curators = h.get_data_curation_users() %}
+                {% set curators = h.get_data_curation_users(pkg) %}
                 {% set selected = pkg.curator_id not in curators|map(attribute='id') %}
                 <option value="" {% if selected %}selected{% endif %}>
                   Not Assigned {% if selected %}(current){% endif %}

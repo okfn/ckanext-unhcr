@@ -1,9 +1,16 @@
+import copy
+import datetime
+import json
 import logging
 import requests
+from urlparse import urljoin
+from dateutil.parser import parse as parse_date
 from sqlalchemy import and_, desc, or_, select
+from sqlalchemy.dialects.postgresql import array
 from ckan import model
 from ckan.authz import has_user_permission_for_group_or_org
 from ckan.plugins import toolkit
+from ckan.lib import mailer as core_mailer
 from ckan.lib.mailer import MailerException
 import ckan.lib.plugins as lib_plugins
 from ckan.lib.search import index_for, commit
@@ -15,7 +22,8 @@ import ckan.logic.action.update as update_core
 import ckan.logic.action.patch as patch_core
 import ckan.lib.activity_streams as activity_streams
 import ckan.lib.dictization.model_dictize as model_dictize
-from ckanext.unhcr import helpers, mailer
+from ckanext.collaborators.logic import action as collaborators_action
+from ckanext.unhcr import helpers, mailer, utils
 from ckanext.unhcr.models import AccessRequest
 from ckanext.scheming.helpers import scheming_get_dataset_schema
 
@@ -157,6 +165,22 @@ def package_get_microdata_collections(context, data_dict):
     return collections
 
 
+@toolkit.chained_action
+def dataset_collaborator_create(up_func, context, data_dict):
+
+    m = context.get('model', model)
+    user_id = toolkit.get_or_bust(data_dict, 'user_id')
+    user = m.User.get(user_id)
+    if not user:
+        raise toolkit.ObjectNotFound("User not found")
+
+    if user.external:
+        message = 'Partner users can not be a dataset collaborator'
+        raise toolkit.ValidationError({'message': message}, error_summary=message)
+
+    return up_func(context, data_dict)
+
+
 # Organization
 
 def organization_create(context, data_dict):
@@ -199,6 +223,16 @@ def organization_create(context, data_dict):
 
 
 def organization_member_create(context, data_dict):
+
+    m = context.get('model', model)
+    username = toolkit.get_or_bust(data_dict, 'username')
+    user = m.User.get(username)
+    if not user:
+        raise toolkit.ObjectNotFound("User not found")
+
+    if user.external:
+        message = 'Partner users can not be an organisation member'
+        raise toolkit.ValidationError({'message': message}, error_summary=message)
 
     if not data_dict.get('not_notify'):
 
@@ -495,6 +529,236 @@ def datasets_validation_report(context, data_dict):
     return out
 
 
+def _fail_task(context, task, error):
+    task['error'] = json.dumps(error)
+    task['state'] = 'error'
+    task['last_updated'] = str(datetime.datetime.utcnow())
+    return toolkit.get_action('task_status_update')(context, task)
+
+
+def _task_is_stale(task):
+    assume_task_stale_after = datetime.timedelta(seconds=3600)
+    updated = datetime.datetime.strptime(task['last_updated'], '%Y-%m-%dT%H:%M:%S.%f')
+    time_since_last_updated = datetime.datetime.utcnow() - updated
+    return time_since_last_updated > assume_task_stale_after
+
+
+def _should_resubmit(context, task, metadata):
+    if task['state'] != 'complete':
+        return False
+
+    try:
+        resource_show = toolkit.get_action('resource_show')
+        resource_dict = resource_show(context, {'id': task['entity_id']})
+    except toolkit.ObjectNotFound:
+        return False
+
+    if resource_dict.get('last_modified') and metadata.get('task_created'):
+        try:
+            last_modified_datetime = parse_date(resource_dict['last_modified'])
+            task_created_datetime = parse_date(metadata['task_created'])
+            if last_modified_datetime > task_created_datetime:
+                log.debug('Uploaded file more recent: {0} > {1}'.format(
+                        last_modified_datetime,
+                        task_created_datetime,
+                    )
+                )
+                return True
+        except ValueError:
+            pass
+    elif (
+        resource_dict.get('url')
+        and metadata.get('original_url')
+        and resource_dict['url'] != metadata['original_url']
+    ):
+        log.debug('URLs are different: {0} != {1}'.format(
+                resource_dict['url'],
+                metadata['original_url'],
+            )
+        )
+        return True
+
+    return False
+
+
+def scan_submit(context, data_dict):
+    resource_id = toolkit.get_or_bust(data_dict, "id")
+    toolkit.check_access('scan_submit', context, data_dict)
+
+    clamav_service_base_url = toolkit.config.get('ckanext.unhcr.clamav_url')
+    site_url = toolkit.config.get('ckan.site_url')
+    callback_url = toolkit.url_for('/api/3/action/scan_hook', qualified=True)
+    site_user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
+
+    try:
+        resource_dict = toolkit.get_action('resource_show')(context, {'id': resource_id})
+    except toolkit.ObjectNotFound:
+        return False
+
+    task = {
+        'entity_id': resource_id,
+        'entity_type': 'resource',
+        'task_type': 'clamav',
+        'last_updated': str(datetime.datetime.utcnow()),
+        'state': 'submitting',
+        'key': 'clamav',
+        'value': '{}',
+        'error': 'null',
+    }
+
+    payload = json.dumps({
+        'api_key': site_user['apikey'],
+        'job_type': 'scan',
+        'result_url': callback_url,
+        'metadata': {
+            'ckan_url': site_url,
+            'resource_id': resource_id,
+            'task_created': task['last_updated'],
+            'original_url': resource_dict.get('url'),
+        }
+    })
+
+    try:
+        existing_task = toolkit.get_action('task_status_show')(context, {
+            'entity_id': resource_id,
+            'task_type': 'clamav',
+            'key': 'clamav'
+        })
+        if (
+            existing_task.get('state') == 'pending'
+            and not _task_is_stale(existing_task)
+        ):
+            log.info(
+                'A pending task was found {} for this resource, so '
+                'skipping this duplicate task'.format(existing_task['id'])
+            )
+            return False
+    except toolkit.ObjectNotFound:
+        pass
+
+    context['ignore_auth'] = True
+    toolkit.get_action('task_status_update')(context, task)
+
+    if not clamav_service_base_url:
+        error = {'message': 'Could not submit to Clam AV Service.'}
+        _fail_task(context, task, error)
+        return False
+
+    try:
+        r = requests.post(
+            urljoin(clamav_service_base_url, 'job'),
+            headers={'Content-Type': 'application/json'},
+            data=payload,
+        )
+        r.raise_for_status()
+    except requests.exceptions.ConnectionError as e:
+        error = {'message': 'Could not connect to Clam AV Service.', 'details': str(e)}
+        _fail_task(context, task, error)
+        raise toolkit.ValidationError(error)
+    except requests.exceptions.HTTPError as e:
+        m = 'An Error occurred while sending the job: {0}'.format(e.message)
+        try:
+            body = e.response.json()
+        except ValueError:
+            body = e.response.text
+        error = {'message': m, 'details': body, 'status_code': r.status_code}
+        _fail_task(context, task, error)
+        raise toolkit.ValidationError(error)
+
+    task['value'] = r.text
+    task['state'] = 'pending'
+    task['last_updated'] = str(datetime.datetime.utcnow()),
+    toolkit.get_action('task_status_update')(context, task)
+
+    return True
+
+
+def scan_hook(context, data_dict):
+    metadata, status = toolkit.get_or_bust(data_dict, ['metadata', 'status'])
+    resource_id = toolkit.get_or_bust(metadata, 'resource_id')
+
+    toolkit.check_access('scan_hook', context, {'id': resource_id})
+
+    task = toolkit.get_action('task_status_show')(context, {
+        'entity_id': resource_id,
+        'task_type': 'clamav',
+        'key': 'clamav'
+    })
+
+    task['state'] = status
+    task['last_updated'] = str(datetime.datetime.utcnow())
+    task['value'] = json.dumps(data_dict)
+    task['error'] = json.dumps(data_dict.get('error'))
+
+    task = toolkit.get_action('task_status_update')({'ignore_auth': True}, task)
+    context['session'].refresh(context['task_status'])
+
+    if task['state'] == 'error':
+        recipients = toolkit.aslist(toolkit.config.get('ckanext.unhcr.error_emails', []))
+        for address in recipients:
+            subj = '[UNHCR RIDL] Error performing Clam AV Scan'
+            core_mailer.mail_recipient(
+                'admin',
+                address,
+                subj,
+                json.dumps(data_dict, indent=4)
+            )
+    elif task['state'] == 'complete' and task['value'] and data_dict.get('data'):
+        scan_status = data_dict.get('data').get('status_code')
+        if scan_status == 1:
+            # file is infected
+            resource = toolkit.get_action('resource_show')(context, {'id': resource_id})
+            resource_name = resource['name'] or "Unnamed resource"
+            recipients = mailer.get_infected_file_email_recipients()
+            scan_report = data_dict.get('data').get('description', '')
+            for recipient in recipients:
+                subj = mailer.compose_infected_file_email_subj()
+                body = mailer.compose_infected_file_email_body(
+                    recipient,
+                    resource_name,
+                    resource['package_id'],
+                    resource['id'],
+                    scan_report
+                )
+                mailer.mail_user_by_id(recipient['id'], subj, body)
+
+    if _should_resubmit(context, task, metadata):
+        log.debug(
+            'Resource {} has been modified, resubmitting to Clam AV'.format(resource_id)
+        )
+        toolkit.get_action('scan_submit')(context, {'id': resource_id})
+
+    return data_dict
+
+
+@toolkit.chained_action
+def cloudstorage_finish_multipart(up_func, context, data_dict):
+    toolkit.check_access('cloudstorage_finish_multipart', context, data_dict)
+    result = up_func(context, data_dict)
+    toolkit.get_action('scan_submit')(context, {'id': data_dict['id']})
+    return result
+
+
+@toolkit.chained_action
+def resource_create(up_func, context, data_dict):
+    toolkit.check_access('resource_create', context, data_dict)
+    has_upload = data_dict.get('upload') is not None
+    resource = up_func(context, data_dict)
+    if has_upload:
+        toolkit.get_action('scan_submit')(context, {'id': resource['id']})
+    return resource
+
+
+@toolkit.chained_action
+def resource_update(up_func, context, data_dict):
+    toolkit.check_access('resource_update', context, data_dict)
+    has_upload = data_dict.get('upload') is not None
+    resource = up_func(context, data_dict)
+    if has_upload:
+        toolkit.get_action('scan_submit')(context, {'id': resource['id']})
+    return resource
+
+
 # Access Requests
 
 def extract_keys_by_prefix(dct, prefix):
@@ -585,6 +849,10 @@ def access_request_list_for_user(context, data_dict):
                 AccessRequest.object_type == "organization",
                 AccessRequest.object_id.in_(containers),
             ),
+            and_(
+                AccessRequest.object_type == "user",
+                AccessRequest.data["containers"].has_any(array(containers)),
+            )
         )
     )
 
@@ -602,10 +870,15 @@ def _validate_role(role):
         raise toolkit.ValidationError("'role' must be one of {}".format(str(valid)))
 
 def _validate_object_type(object_type):
-    valid = ['organization', 'package']
+    valid = ['organization', 'package', 'user']
     if object_type not in valid:
         raise toolkit.ValidationError("'object_type' must be one of {}".format(str(valid)))
 
+def _validate_data(data):
+    try:
+        json.dumps(data)
+    except TypeError:
+        raise toolkit.ValidationError("'data' must be JSON-serializable")
 
 def access_request_update(context, data_dict):
     """
@@ -616,6 +889,7 @@ def access_request_update(context, data_dict):
     :param status: new status value ('approved', 'rejected')
     :type status: string
     """
+    m = context.get('model', model)
     request_id = toolkit.get_or_bust(data_dict, "id")
     status = toolkit.get_or_bust(data_dict, "status")
     _validate_status(status)
@@ -626,29 +900,42 @@ def access_request_update(context, data_dict):
     toolkit.check_access('access_request_update', context, data_dict)
 
     if request.object_type == 'package':
-        data_dict = {
+        _data_dict = {
             'id': request.object_id,
             'user_id': request.user_id,
             'capacity': request.role,
         }
         if status == 'approved':
             toolkit.get_action('dataset_collaborator_create')(
-                context, data_dict
+                context, _data_dict
             )
     elif request.object_type == 'organization':
-        data_dict = {
+        _data_dict = {
             'id': request.object_id,
             'username': request.user_id,
             'role': request.role,
         }
         if status == 'approved':
             toolkit.get_action('organization_member_create')(
-                context, data_dict
+                context, _data_dict
             )
+    elif request.object_type == 'user':
+        state = {'approved':  m.State.ACTIVE, 'rejected': m.State.DELETED}[status]
+        _data_dict = {'id': request.object_id, 'state': state}
+        user = toolkit.get_action('external_user_update_state')(
+            context, _data_dict
+        )
+
+        if status == 'approved':
+            # Notify the user
+            subj = mailer.compose_account_approved_email_subj()
+            body = mailer.compose_account_approved_email_body(user)
+            mailer.mail_user_by_id(user['id'], subj, body)
     else:
         raise toolkit.Invalid("Unknown Object Type")
 
     request.status = status
+    request.actioned_by = model.User.by_name(context['user']).id
     model.Session.commit()
     model.Session.refresh(request)
 
@@ -664,12 +951,16 @@ def access_request_create(context, data_dict):
 
     :param object_id: uuid of the container or dataset we are requesting access to
     :type object_id: string
-    :param object_type: type of object we are requesting access to ('organization', 'package')
+    :param object_type: type of object we are requesting access to
+        ('organization', 'package', 'user')
     :type object_type: string
     :param message: user's message to the admin who will review the request
     :type message: string
     :param role: requested level of access ('member', 'editor', 'admin')
     :type role: string
+    :param data: Optional dict containing any extra info to store about the request
+        The dict must be JSON-serializable
+    :type data: dict
     """
     m = context.get('model', model)
     user_id = toolkit.get_or_bust(context, "user")
@@ -681,11 +972,13 @@ def access_request_create(context, data_dict):
         data_dict,
         ['object_id', 'object_type', 'message', 'role'],
     )
+    data = data_dict.get('data', {})
 
     if not message:
-        raise toolkit.ValidationError("'message' is required")
+        raise toolkit.ValidationError({'message': ["'message' is required"]})
     _validate_role(role)
     _validate_object_type(object_type)
+    _validate_data(data)
 
     toolkit.check_access('access_request_create', context, data_dict)
 
@@ -705,15 +998,51 @@ def access_request_create(context, data_dict):
         object_type=object_type,
         message=message,
         role=role,
+        data=data,
     )
     model.Session.add(request)
-    model.Session.commit()
-    model.Session.refresh(request)
+    if not context.get('defer_commit'):
+        model.Session.commit()
+        model.Session.refresh(request)
+    else:
+        model.Session.flush()
 
     return {
         col.name: getattr(request, col.name)
         for col in request.__table__.columns
     }
+
+
+def external_user_update_state(context, data_dict):
+    """
+    Change the status of an external user
+    Any internal user with container admin privileges or higher
+    can change the status of another user when:
+    - The target user is external
+    - The target user's current status is 'pending'
+    Additionally, a sysadmin may change the status of another user at any time.
+
+    :param id: The id or name of the target user
+    :type id: string
+    :param state: The new value of User.state
+    :type state: string
+    """
+    m = context.get('model', model)
+    user_id, state = toolkit.get_or_bust(data_dict, ['id', 'state'])
+
+    toolkit.check_access('external_user_update_state', context, data_dict)
+
+    if state not in m.State.all:
+        raise toolkit.ValidationError('Invalid state {}'.format(state))
+
+    user_obj = m.User.get(user_id)
+    if not user_obj:
+        raise toolkit.ObjectNotFound("User not found")
+    user_obj.state = state
+    m.Session.commit()
+    m.Session.refresh(user_obj)
+
+    return model_dictize.user_dictize(user_obj, context)
 
 
 # Admin
@@ -771,3 +1100,158 @@ def search_index_rebuild(context, data_dict):
 
     commit()
     return errors
+
+
+# Autocomplete
+
+@core_logic.schema.validator_args
+def unhcr_autocomplete_schema(
+        not_missing,
+        unicode_safe,
+        ignore_missing,
+        natural_number_validator,
+        boolean_validator
+    ):
+    return {
+        'q': [not_missing, unicode_safe],
+        'ignore_self': [ignore_missing],
+        'limit': [ignore_missing, natural_number_validator],
+        'include_external': [ignore_missing, boolean_validator],
+    }
+
+
+@core_logic.validate(unhcr_autocomplete_schema)
+def user_autocomplete(context, data_dict):
+    '''Return a list of user names that contain a string.
+
+    :param q: the string to search for
+    :type q: string
+    :param limit: the maximum number of user names to return (optional,
+        default: ``20``)
+    :type limit: int
+    :param include_external: include external users in the output (optional,
+        default: ``False``)
+    :type include_external: bool
+
+    :rtype: a list of user dictionaries each with keys ``'name'``,
+        ``'fullname'``, and ``'id'``
+    '''
+    m = context.get('model', model)
+    user = toolkit.get_or_bust(context, "user")
+    include_external_users = data_dict.get('include_external', False)
+
+    toolkit.check_access('user_autocomplete', context, data_dict)
+
+    q = data_dict['q']
+    limit = data_dict.get('limit', 20)
+
+    query = model.User.search(q)
+    query = query.filter(model.User.state != model.State.DELETED)
+    if not include_external_users:
+        conditions = [
+            model.User.email.ilike('%@{}'.format(domain))
+            for domain in utils.get_internal_domains()
+        ]
+        query = query.filter(or_(*conditions))
+    query = query.limit(limit)
+
+    user_list = []
+    for user in query.all():
+        result_dict = {}
+        for k in ['id', 'name', 'fullname']:
+            result_dict[k] = getattr(user, k)
+
+        user_list.append(result_dict)
+
+    return user_list
+
+
+@toolkit.chained_action
+def user_list(up_func, context, data_dict):
+    users = up_func(context, data_dict)
+    m = context.get('model', model)
+
+    if type(users[0]) == dict:
+        users_db = (
+            m.Session.query(m.User)
+            .filter(m.User.id.in_([u['id'] for u in users]))
+            .all()
+        )
+        id_to_external = {u.id: u.external for u in users_db}
+        for user in users:
+            user['external'] = id_to_external[user['id']]
+
+    return users
+
+
+@toolkit.chained_action
+def user_show(up_func, context, data_dict):
+    user = up_func(context, data_dict)
+    user['external'] = context['user_obj'].external
+
+    extras = _init_plugin_extras(context['user_obj'].plugin_extras)
+    extras = _validate_plugin_extras(extras['unhcr'])
+
+    user['focal_point'] = extras['focal_point']
+    user['expiry_date'] = extras['expiry_date']
+    user['default_containers'] = extras['default_containers']
+
+    return user
+
+
+@toolkit.chained_action
+def user_create(up_func, context, data_dict):
+    user = up_func(context, data_dict)
+
+    if not context['user_obj'].external:
+        return user
+
+    if not data_dict.get('focal_point'):
+        raise toolkit.ValidationError({'focal_point': ["A focal point must be specified"]})
+
+    if not isinstance(data_dict.get('default_containers'), list):
+        raise toolkit.ValidationError({'default_containers': ["Specify one or more containers"]})
+
+    plugin_extras = _init_plugin_extras(context['user_obj'].plugin_extras)
+    expiry_date = datetime.date.today() + datetime.timedelta(
+        days=toolkit.config.get(
+            'ckanext.unhcr.external_accounts_expiry_delta',
+            180  # six months-ish
+        )
+    )
+    plugin_extras['unhcr']['expiry_date'] = expiry_date.isoformat()
+    plugin_extras['unhcr']['focal_point'] = data_dict['focal_point']
+    plugin_extras['unhcr']['default_containers'] = data_dict['default_containers']
+    context['user_obj'].plugin_extras = plugin_extras
+
+    if not context.get('defer_commit'):
+        m = context.get('model', model)
+        model.Session.commit()
+
+    user['expiry_date'] = plugin_extras['unhcr']['expiry_date']
+    user['focal_point'] = plugin_extras['unhcr']['focal_point']
+    user['default_containers'] = plugin_extras['unhcr']['default_containers']
+    return user
+
+
+def _init_plugin_extras(plugin_extras):
+    out_dict = copy.deepcopy(plugin_extras)
+    if not out_dict:
+        out_dict = {}
+    if 'unhcr' not in out_dict:
+        out_dict['unhcr'] = {}
+    return out_dict
+
+
+def _validate_plugin_extras(extras):
+    CUSTOM_FIELDS = [
+        {'name': 'focal_point', 'default': ''},
+        {'name': 'expiry_date', 'default': None},
+        {'name': 'default_containers',  'default': []},
+    ]
+    if not extras:
+        extras = {}
+    out_dict = {}
+    for field in CUSTOM_FIELDS:
+        out_dict[field['name']] = extras.get(field['name'], field['default'])
+    return out_dict

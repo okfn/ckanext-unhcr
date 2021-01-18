@@ -8,9 +8,13 @@ Dear <b>{{ recipient.fullname or recipient.name }}</b>,
 {% endcall %}
 
   {% call email.paragraph() %}
-    Your request to access
-    <strong>{{ object.title or object.name }}</strong>
-    has been rejected.
+    {% if object_type == 'user' %}
+      Your request for a RIDL user account has been rejected.
+    {% else %}
+      Your request to access
+      <strong>{{ object.title or object.name }}</strong>
+      has been rejected.
+    {% endif %}
   {% endcall %}
 
   {% call email.paragraph() %}

@@ -5,6 +5,7 @@ from ckan.controllers.package import PackageController
 from ckanext.scheming.helpers import scheming_get_dataset_schema
 from ckanext.unhcr import mailer
 from ckanext.unhcr.activity import log_download_activity
+from ckanext.unhcr.utils import resource_is_blocked
 log = logging.getLogger(__name__)
 
 
@@ -120,6 +121,9 @@ class ExtendedPackageController(PackageController):
         except toolkit.NotAuthorized:
             return toolkit.abort(403, toolkit._(u'Not Authorized to download the resource'))
 
+        if resource_is_blocked(context, resource_id):
+            return toolkit.abort(404, toolkit._(u'Resource not found'))
+
         resp = super(ExtendedPackageController, self).resource_download(
             id, resource_id, filename=filename
         )
@@ -219,7 +223,7 @@ class ExtendedPackageController(PackageController):
             if e.error_dict and 'message' in e.error_dict:
                 return toolkit.abort(
                     400,
-                    e.error_dict['message'].replace('package', 'dataset')
+                    e.error_dict['message'][0].replace('package', 'dataset')
                 )
             return toolkit.abort(400, 'Bad Request')
 
@@ -233,7 +237,7 @@ class ExtendedPackageController(PackageController):
                 toolkit.c.userobj,
                 message,
             )
-            mailer.mail_user_by_id(recipient['name'], subj, body)
+            toolkit.enqueue_job(mailer.mail_user_by_id, [recipient['name'], subj, body])
 
         toolkit.h.flash_success(
             'Requested access to download resources from {}'.format(

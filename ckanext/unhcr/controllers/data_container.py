@@ -71,6 +71,7 @@ class DataContainerController(toolkit.BaseController):
         # Get users
         users = toolkit.get_action('user_list')(
             context, {'order_by': 'display_name'})
+        users = [u for u in users if not u['external']]
 
         # Get user
         user = None

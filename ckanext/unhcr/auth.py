@@ -8,6 +8,7 @@ import ckanext.datastore.logic.auth as auth_datastore_core
 from ckan.logic.auth import get as core_get, get_resource_object
 from ckanext.unhcr import helpers
 from ckanext.unhcr.models import AccessRequest
+from ckanext.unhcr.utils import get_module_functions
 log = logging.getLogger(__name__)
 
 
@@ -24,7 +25,7 @@ def restrict_access_to_get_auth_functions():
     False).
     '''
 
-    core_auth_functions = {}
+    core_auth_functions = get_module_functions('ckan.logic.auth.get')
     skip_actions = [
         'help_show',  # Let's not overreact
         'site_read',  # Because of madness in the API controller
@@ -35,17 +36,7 @@ def restrict_access_to_get_auth_functions():
         'user_delete',  # saml2
         'request_reset',  # saml2
     ]
-    module_path = 'ckan.logic.auth.get'
-    module = __import__(module_path)
 
-    for part in module_path.split('.')[1:]:
-        module = getattr(module, part)
-
-    for key, value in module.__dict__.items():
-        if not key.startswith('_') and (
-            hasattr(value, '__call__')
-                and (value.__module__ == module_path)):
-            core_auth_functions[key] = value
     overriden_auth_functions = {}
     for key, value in core_auth_functions.items():
 
@@ -71,8 +62,16 @@ def site_read(context, data_dict):
     elif toolkit.request.path == '/service/login':
         # Allow local logins
         return {'success': True}
-    if not context.get('user'):
+
+    userobj = context.get('auth_user_obj')
+    if not userobj:
         return {'success': False}
+
+    # we've granted external users site_read for the home page, but we
+    # want to deny site_read for all other pages that only need site_read
+    if userobj.external and toolkit.request.path != '/':
+        return {'success': False}
+
     return {'success': True}
 
 
@@ -84,6 +83,20 @@ def organization_list_for_user(context, data_dict):
         return {'success': False}
     else:
         return core_get.organization_list_for_user(context, data_dict)
+
+
+@toolkit.chained_auth_function
+def organization_show(next_auth, context, data_dict):
+    user = context.get('auth_user_obj')
+    if not user:
+        return next_auth(context, data_dict)
+    if user.external:
+        deposit = helpers.get_data_deposit()
+        if data_dict.get('id') in [deposit['name'], deposit['id']]:
+            return {'success': True}
+        else:
+            return {'success': False}
+    return next_auth(context, data_dict)
 
 
 def organization_create(context, data_dict):
@@ -120,21 +133,34 @@ def organization_create(context, data_dict):
     return {'success': False, 'msg': 'Not allowed to create a data container'}
 
 
+def group_list_authz(context, data_dict):
+    return {'success': True}
+
+
 # Package
 
 def package_create(context, data_dict):
-
     # Data deposit
     if not data_dict:
-        # All users can deposit datasets
-        if toolkit.request.path == '/deposited-dataset/new':
-            return {'success': True}
+        try:
+            # All users can deposit datasets
+            if (
+                toolkit.request.path == '/deposited-dataset/new' or
+                toolkit.request.path.startswith('/deposited-dataset/edit/')
+            ):
+                return {'success': True}
+        except TypeError:
+            return {
+                'success': False,
+                'msg': 'package_create requires either a web request or a data_dict'
+            }
     else:
         deposit = helpers.get_data_deposit()
         if deposit['id'] == data_dict.get('owner_org'):
             return {'success': True}
 
     # Data container
+    context['model'] = context.get('model') or model
     return auth_create_core.package_create(context, data_dict)
 
 
@@ -152,7 +178,7 @@ def package_update(next_auth, context, data_dict):
     # Deposited dataset
     if dataset['type'] == 'deposited-dataset':
         curation = helpers.get_deposited_dataset_user_curation_status(
-            dataset, toolkit.c.userobj.id)
+            dataset, getattr(context.get('auth_user_obj'), 'id', None))
         if 'edit' in curation['actions']:
             return {'success': True}
         return {'success': False, 'msg': 'Not authorized to edit deposited dataset'}
@@ -199,10 +225,17 @@ def resource_download(context, data_dict):
     visibility = dataset.get('visibility')
 
     # Use default check
-    is_depositor = (
-        dataset.get('type') == 'deposited-dataset' and
-        dataset.get('creator_user_id') == getattr(context.get('auth_user_obj'), 'id', None))
-    if not user or is_depositor or not visibility or visibility != 'restricted':
+    user_id = getattr(context.get('auth_user_obj'), 'id', None)
+    is_deposit = dataset.get('type') == 'deposited-dataset'
+    if is_deposit:
+        is_depositor = dataset.get('creator_user_id') == user_id
+        curators = [u['id'] for u in helpers.get_data_curation_users(dataset)]
+        is_curator = user_id in curators
+    else:
+        is_depositor = False
+        is_curator = False
+
+    if not user or is_depositor or is_curator or not visibility or visibility != 'restricted':
         try:
             toolkit.check_access('resource_show', context, data_dict)
             return {'success': True}
@@ -258,6 +291,22 @@ def datasets_validation_report(context, data_dict):
     return {'success': False}
 
 
+def scan_submit(context, data_dict):
+    try:
+        toolkit.check_access('resource_update', context, data_dict)
+        return {'success': True}
+    except toolkit.NotAuthorized:
+        return {'success': False}
+
+
+def scan_hook(context, data_dict):
+    try:
+        toolkit.check_access('resource_update', context, data_dict)
+        return {'success': True}
+    except toolkit.NotAuthorized:
+        return {'success': False}
+
+
 @toolkit.chained_auth_function
 def dataset_collaborator_create(next_auth, context, data_dict):
     dataset = toolkit.get_action('package_show')(
@@ -292,20 +341,67 @@ def access_request_update(context, data_dict):
             context, {'id': request.object_id}
         )
         org_id = package['owner_org']
+        return {
+            'success': has_user_permission_for_group_or_org(
+                org_id, user, 'admin'
+            )
+        }
     elif request.object_type == 'organization':
         org_id = request.object_id
-    else:
-        raise toolkit.Invalid("Unknown Object Type")
+        return {
+            'success': has_user_permission_for_group_or_org(
+                org_id, user, 'admin'
+            )
+        }
+    elif request.object_type == 'user':
+        return external_user_update_state(context, {'id': request.object_id})
 
-    return {
-        'success': has_user_permission_for_group_or_org(
-            org_id, user, 'admin'
-        )
-    }
+    raise toolkit.Invalid("Unknown Object Type")
 
 
 def access_request_create(context, data_dict):
     return {'success': bool(context.get('user'))}
+
+
+def external_user_update_state(context, data_dict):
+    m = context.get('model', model)
+    request_userobj = context.get('auth_user_obj')
+    if not request_userobj:
+        return {'success': False}
+
+    target_user_id = toolkit.get_or_bust(data_dict, "id")
+    target_userobj = m.User.get(target_user_id)
+    if not target_userobj:
+        raise toolkit.ObjectNotFound("User not found")
+
+    # request_userobj is the user who is trying to perform the action
+    # target_userobj is the user we're trying to modify
+
+    if not target_userobj.external:
+        return {'success': False, 'msg': "Can only perform this action on an external user"}
+    if target_userobj.state != m.State.PENDING:
+        return {'success': False, 'msg': "Can only change state of a 'pending' user"}
+
+    access_requests = model.Session.query(AccessRequest).filter(
+        AccessRequest.user_id==target_userobj.id,
+        AccessRequest.object_id==target_userobj.id,
+        AccessRequest.status=='requested',
+        AccessRequest.object_type=='user',
+    ).all()
+
+    if not access_requests or len(access_requests) > 1:
+        return {
+            'success': False,
+            'msg': "User must be associated with exactly one pending access request"
+        }
+
+    for container in access_requests[0].data['containers']:
+        if has_user_permission_for_group_or_org(
+            container, request_userobj.id, 'admin'
+        ):
+            return {'success': True}
+
+    return {'success': False}
 
 
 # Admin
@@ -316,3 +412,15 @@ def user_update_sysadmin(context, data_dict):
 
 def search_index_rebuild(context, data_dict):
     return {'success': False}
+
+
+@toolkit.chained_auth_function
+def user_show(next_auth, context, data_dict):
+    auth_user_obj = context.get('auth_user_obj')
+    if not auth_user_obj:
+        return {'success': False}
+    if auth_user_obj.external:
+        if context['user'] == data_dict['id'] or auth_user_obj.id == data_dict['id']:
+            return next_auth(context, data_dict)
+        return {'success': False}
+    return next_auth(context, data_dict)

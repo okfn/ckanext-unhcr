@@ -6,49 +6,34 @@ from ckan.plugins import toolkit
 from paste.registry import Registry
 from nose.plugins.attrib import attr
 from ckan.tests import factories as core_factories
-from nose.tools import assert_raises, assert_equals
-from ckan.tests.helpers import call_action, FunctionalTestBase
+from nose.tools import assert_raises, assert_equals, assert_in
+from ckan.tests.helpers import call_action
 from ckanext.unhcr.helpers import get_linked_datasets_for_form, get_linked_datasets_for_display
 from ckanext.unhcr.models import AccessRequest
-from ckanext.unhcr.tests import factories
+from ckanext.unhcr.tests import base, factories
 from ckanext.unhcr import helpers
 
 
-class TestHelpers(FunctionalTestBase):
-
-    # Setup
-
-    @classmethod
-    def setup_class(cls):
-
-        # Hack because the hierarchy extension uses c in some methods
-        # that are called outside the context of a web request
-        c = pylons.util.AttribSafeContextObj()
-        registry = Registry()
-        registry.prepare()
-        registry.register(pylons.c, c)
-
-        super(TestHelpers, cls).setup_class()
+class TestHelpers(base.FunctionalTestBase):
 
     # General
 
     def test_get_data_container(self):
-        user = core_factories.User()
-        context = {'model': model, 'user': user['name']}
         container = factories.DataContainer(title='container1')
-        result = helpers.get_data_container(container['id'], context=context)
+        result = helpers.get_data_container(container['id'])
         assert_equals(result['title'], container['title'])
 
     def test_get_data_container_not_found(self):
-        user = core_factories.User()
-        context = {'model': model, 'user': user['name']}
         assert_raises(toolkit.ObjectNotFound,
-            helpers.get_data_container, 'bad-id', context=context)
+            helpers.get_data_container, 'bad-id')
 
     def test_get_all_data_containers(self):
         container1 = factories.DataContainer(title='container1')
         container2 = factories.DataContainer(title='container2')
-        result = helpers.get_all_data_containers()
+        user = core_factories.User()
+        result = helpers.get_all_data_containers(
+            userobj=model.User.get(user['id'])
+        )
         assert_equals(len(result), 2)
         assert_equals(result[0]['title'], container1['title'])
         assert_equals(result[1]['title'], container2['title'])
@@ -56,9 +41,135 @@ class TestHelpers(FunctionalTestBase):
     def test_get_all_data_containers_exclude(self):
         container1 = factories.DataContainer(title='container1')
         container2 = factories.DataContainer(title='container2')
-        result = helpers.get_all_data_containers(exclude_ids=[container2['id']])
+        user = core_factories.User()
+        result = helpers.get_all_data_containers(
+            exclude_ids=[container2['id']],
+            userobj=model.User.get(user['id']),
+        )
         assert_equals(len(result), 1)
         assert_equals(result[0]['title'], 'container1')
+
+    def test_get_all_data_containers_external_user(self):
+        container1 = factories.DataContainer(title='container1', visible_external=True)
+        container2 = factories.DataContainer(title='container2', visible_external=False)
+        internal_user = core_factories.User()
+        external_user = factories.ExternalUser()
+
+        # internal_user can see all the containers
+        assert_equals(
+            2,
+            len(
+                helpers.get_all_data_containers(
+                    userobj=model.User.get(internal_user['id']),
+                )
+            ),
+        )
+
+        # external_user can only see the container with visible_external by default
+        assert_equals(
+            1,
+            len(
+                helpers.get_all_data_containers(
+                    userobj=model.User.get(external_user['id']),
+                )
+            ),
+        )
+
+        # ..but if we explicitly include the other container, we can see that too
+        assert_equals(
+            2,
+            len(
+                helpers.get_all_data_containers(
+                    userobj=model.User.get(external_user['id']),
+                    include_ids=[container2['id']],
+                )
+            ),
+        )
+
+    def test_get_all_data_containers_with_dataset(self):
+        depadmin = core_factories.User()
+        deposit = factories.DataContainer(
+            id='data-deposit',
+            users=[
+                {'name': depadmin['name'], 'capacity': 'admin'},
+            ]
+        )
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+
+        container_admin = core_factories.User()
+        container1 = factories.DataContainer(title='container1', visible_external=False)
+        container2 = factories.DataContainer(title='container2', visible_external=False)
+        container3 = factories.DataContainer(title='container3', visible_external=False,
+            users=[{'name': container_admin['name'], 'capacity': 'admin'}]
+        )
+        container4 = factories.DataContainer(title='container4', visible_external=False,
+            users=[{'name': container_admin['name'], 'capacity': 'admin'}]
+        )
+        container5 = factories.DataContainer(title='container5', visible_external=False,
+            users=[{'name': container_admin['name'], 'capacity': 'editor'}]
+        )
+
+        # if I'm creating a new dataset, I can see all the containers
+        assert_equals(
+            5,
+            len(
+                helpers.get_all_data_containers(
+                    userobj=model.User.get(container_admin['id']),
+                    exclude_ids=[deposit['id']],
+                    dataset=None,
+                )
+            ),
+        )
+
+        # if I'm editing my own dataset, I can still see all the containers
+        assert_equals(
+            5,
+            len(
+                helpers.get_all_data_containers(
+                    userobj=model.User.get(container_admin['id']),
+                    exclude_ids=[deposit['id']],
+                    dataset={'creator_user_id': container_admin['id']}
+                )
+            ),
+        )
+
+        # but if I'm editing someone else's dataset, I can only see containers I'm an admin of
+        assert_equals(
+            2,
+            len(
+                helpers.get_all_data_containers(
+                    userobj=model.User.get(container_admin['id']),
+                    exclude_ids=[deposit['id']],
+                    dataset={'creator_user_id': 'someone else'}
+                )
+            ),
+        )
+
+        # ..unless we explicitly say to include others (which takes precedence)
+        assert_equals(
+            3,
+            len(
+                helpers.get_all_data_containers(
+                    userobj=model.User.get(container_admin['id']),
+                    exclude_ids=[deposit['id']],
+                    dataset={'creator_user_id': 'someone else'},
+                    include_ids=[container2['id']],
+                )
+            ),
+        )
+
+        # ..or we're a more priveledged user, in which case we can see all of them
+        for user in [depadmin, sysadmin]:
+            assert_equals(
+                5,
+                len(
+                    helpers.get_all_data_containers(
+                        userobj=model.User.get(user['id']),
+                        exclude_ids=[deposit['id']],
+                        dataset={'creator_user_id': 'anyone'},
+                    )
+                ),
+            )
 
     # Linked Datasets
 
@@ -205,28 +316,6 @@ class TestHelpers(FunctionalTestBase):
         result = helpers.get_data_deposit()
         assert_equals(result, {'id': 'data-deposit', 'name': 'data-deposit'})
 
-    def test_get_data_curation_users(self):
-        depadmin = core_factories.User(name='depadmin')
-        curator1 = core_factories.User(name='curator1')
-        curator2 = core_factories.User(name='curator2')
-        deposit = factories.DataContainer(
-            name='data-deposit',
-            users=[
-                {'name': 'depadmin', 'capacity': 'admin'},
-                {'name': 'curator1', 'capacity': 'editor'},
-                {'name': 'curator2', 'capacity': 'editor'},
-            ],
-        )
-        curators = helpers.get_data_curation_users(context={'user': 'depadmin'})
-        curator_names = sorted([curator['name']
-            for curator in curators
-            # Added to org by ckan
-            if not curator['sysadmin']])
-        assert_equals(len(curator_names), 3)
-        assert_equals(curator_names[0], 'curator1')
-        assert_equals(curator_names[1], 'curator2')
-        assert_equals(curator_names[2], 'depadmin')
-
     def test_get_dataset_validation_error_or_none(self):
         deposit = factories.DataContainer(id='data-deposit')
         target = factories.DataContainer(id='data-target')
@@ -249,7 +338,8 @@ class TestHelpers(FunctionalTestBase):
 
     def test_get_dataset_validation_error_or_none_valid(self):
         dataset = factories.Dataset(name='name', title='title')
-        error = helpers.get_dataset_validation_error_or_none(dataset)
+        context = {'model': model, 'session': model.Session, 'ignore_auth': True ,'user': None}
+        error = helpers.get_dataset_validation_error_or_none(dataset, context)
         assert_equals(error, None)
 
     def test_convert_deposited_dataset_to_regular_dataset(self):
@@ -395,3 +485,320 @@ class TestHelpers(FunctionalTestBase):
                 },
             },
         })
+
+
+class TestDepositedDatasetHelpers(base.FunctionalTestBase):
+
+    def setup(self):
+        super(TestDepositedDatasetHelpers, self).setup()
+
+        self.depadmin = core_factories.User()
+        self.curator = core_factories.User()
+        self.target_container_admin = core_factories.User()
+        self.target_container_member = core_factories.User()
+        self.other_container_admin = core_factories.User()
+        self.depositor = core_factories.User()
+
+        deposit = factories.DataContainer(
+            id='data-deposit',
+            users=[
+                {'name': self.depadmin['name'], 'capacity': 'admin'},
+                {'name': self.curator['name'], 'capacity': 'editor'},
+            ]
+        )
+        target = factories.DataContainer(
+            users=[
+                {'name': self.target_container_admin['name'], 'capacity': 'admin'},
+                {'name': self.target_container_member['name'], 'capacity': 'member'},
+            ]
+        )
+        container = factories.DataContainer(
+            users=[
+                {'name': self.other_container_admin['name'], 'capacity': 'admin'},
+            ]
+        )
+
+        self.draft_dataset = factories.DepositedDataset(
+            owner_org=deposit['id'],
+            owner_org_dest=target['id'],
+            creator_user_id=self.depositor['id'],
+            user=self.depositor,
+            curation_state='draft',
+        )
+        self.submitted_dataset = factories.DepositedDataset(
+            owner_org=deposit['id'],
+            owner_org_dest=target['id'],
+            creator_user_id=self.depositor['id'],
+            user=self.depositor,
+            curation_state='submitted',
+        )
+        self.review_dataset = factories.DepositedDataset(
+            owner_org=deposit['id'],
+            owner_org_dest=target['id'],
+            creator_user_id=self.depositor['id'],
+            user=self.depositor,
+            curation_state='review',
+        )
+
+    def test_get_deposited_dataset_user_curation_role_with_dataset_admin(self):
+        assert_equals(
+            'admin',
+            helpers.get_deposited_dataset_user_curation_role(
+                self.depadmin['id'],
+                self.draft_dataset,
+            )
+        )
+
+    def test_get_deposited_dataset_user_curation_role_with_dataset_curator(self):
+        assert_equals(
+            'curator',
+            helpers.get_deposited_dataset_user_curation_role(
+                self.curator['id'],
+                self.draft_dataset,
+            )
+        )
+
+    def test_get_deposited_dataset_user_curation_role_with_dataset_container_admin(self):
+        assert_equals(
+            'container admin',
+            helpers.get_deposited_dataset_user_curation_role(
+                self.target_container_admin['id'],
+                self.draft_dataset,
+            )
+        )
+
+    def test_get_deposited_dataset_user_curation_role_with_dataset_depositor(self):
+        assert_equals(
+            'depositor',
+            helpers.get_deposited_dataset_user_curation_role(
+                self.depositor['id'],
+                self.draft_dataset,
+            )
+        )
+
+    def test_get_deposited_dataset_user_curation_role_with_dataset_user(self):
+        for user in [self.target_container_member, self.other_container_admin]:
+            assert_equals(
+                'user',
+                helpers.get_deposited_dataset_user_curation_role(
+                    user['id'],
+                    self.draft_dataset,
+                )
+            )
+
+    def test_get_deposited_dataset_user_curation_role_without_dataset_admin(self):
+        assert_equals(
+            'admin',
+            helpers.get_deposited_dataset_user_curation_role(self.depadmin['id'])
+        )
+
+    def test_get_deposited_dataset_user_curation_role_without_dataset_curator(self):
+        assert_equals(
+            'curator',
+            helpers.get_deposited_dataset_user_curation_role(self.curator['id'])
+        )
+
+    def test_get_deposited_dataset_user_curation_role_without_dataset_container_admin(self):
+        for user in [self.target_container_admin, self.other_container_admin]:
+            assert_equals(
+                'container admin',
+                helpers.get_deposited_dataset_user_curation_role(user['id'])
+            )
+
+    def test_get_deposited_dataset_user_curation_role_without_dataset_depositor(self):
+        for user in [self.target_container_member, self.depositor]:
+            assert_equals(
+                'depositor',
+                helpers.get_deposited_dataset_user_curation_role(user['id'])
+            )
+
+    def test_get_deposited_dataset_user_curation_status_admin_draft(self):
+        status = helpers.get_deposited_dataset_user_curation_status(
+            self.draft_dataset,
+            self.depadmin['id'],
+        )
+
+        assert_equals(False, status['is_depositor'])
+        assert_equals([], status['actions'])
+        assert_equals('draft', status['state'])
+        assert_equals('admin', status['role'])
+
+    def test_get_deposited_dataset_user_curation_status_admin_submitted(self):
+        status = helpers.get_deposited_dataset_user_curation_status(
+            self.submitted_dataset,
+            self.depadmin['id'],
+        )
+
+        assert_equals(False, status['is_depositor'])
+        assert_equals(['edit', 'reject', 'assign', 'request_changes'], status['actions'])
+        assert_equals('submitted', status['state'])
+        assert_equals('admin', status['role'])
+
+    def test_get_deposited_dataset_user_curation_status_admin_review(self):
+        status = helpers.get_deposited_dataset_user_curation_status(
+            self.review_dataset,
+            self.depadmin['id'],
+        )
+
+        assert_equals(False, status['is_depositor'])
+        assert_equals([], status['actions'])
+        assert_equals('review', status['state'])
+        assert_equals('admin', status['role'])
+
+    def test_get_deposited_dataset_user_curation_status_curator_draft(self):
+        status = helpers.get_deposited_dataset_user_curation_status(
+            self.draft_dataset,
+            self.curator['id'],
+        )
+
+        assert_equals(False, status['is_depositor'])
+        assert_equals([], status['actions'])
+        assert_equals('draft', status['state'])
+        assert_equals('curator', status['role'])
+
+    def test_get_deposited_dataset_user_curation_status_curator_submitted(self):
+        status = helpers.get_deposited_dataset_user_curation_status(
+            self.submitted_dataset,
+            self.curator['id'],
+        )
+
+        assert_equals(False, status['is_depositor'])
+        assert_equals(['edit', 'reject', 'request_changes'], status['actions'])
+        assert_equals('submitted', status['state'])
+        assert_equals('curator', status['role'])
+
+    def test_get_deposited_dataset_user_curation_status_curator_review(self):
+        status = helpers.get_deposited_dataset_user_curation_status(
+            self.review_dataset,
+            self.curator['id'],
+        )
+
+        assert_equals(False, status['is_depositor'])
+        assert_equals([], status['actions'])
+        assert_equals('review', status['state'])
+        assert_equals('curator', status['role'])
+
+    def test_get_deposited_dataset_user_curation_status_container_admin_draft(self):
+        status = helpers.get_deposited_dataset_user_curation_status(
+            self.draft_dataset,
+            self.target_container_admin['id'],
+        )
+
+        assert_equals(False, status['is_depositor'])
+        assert_equals([], status['actions'])
+        assert_equals('draft', status['state'])
+        assert_equals('container admin', status['role'])
+
+    def test_get_deposited_dataset_user_curation_status_container_admin_submitted(self):
+        status = helpers.get_deposited_dataset_user_curation_status(
+            self.submitted_dataset,
+            self.target_container_admin['id'],
+        )
+
+        assert_equals(False, status['is_depositor'])
+        assert_equals(['edit', 'reject', 'request_changes'], status['actions'])
+        assert_equals('submitted', status['state'])
+        assert_equals('container admin', status['role'])
+
+    def test_get_deposited_dataset_user_curation_status_container_admin_review(self):
+        status = helpers.get_deposited_dataset_user_curation_status(
+            self.review_dataset,
+            self.target_container_admin['id'],
+        )
+
+        assert_equals(False, status['is_depositor'])
+        assert_equals([], status['actions'])
+        assert_equals('review', status['state'])
+        assert_equals('container admin', status['role'])
+
+    def test_get_deposited_dataset_user_curation_status_depositor_draft(self):
+        status = helpers.get_deposited_dataset_user_curation_status(
+            self.draft_dataset,
+            self.depositor['id'],
+        )
+
+        assert_equals(True, status['is_depositor'])
+        assert_equals(['edit', 'submit', 'withdraw'], status['actions'])
+        assert_equals('draft', status['state'])
+        assert_equals('depositor', status['role'])
+
+    def test_get_deposited_dataset_user_curation_status_depositor_submitted(self):
+        status = helpers.get_deposited_dataset_user_curation_status(
+            self.submitted_dataset,
+            self.depositor['id'],
+        )
+
+        assert_equals(True, status['is_depositor'])
+        assert_equals([], status['actions'])
+        assert_equals('submitted', status['state'])
+        assert_equals('depositor', status['role'])
+
+    def test_get_deposited_dataset_user_curation_status_depositor_review(self):
+        status = helpers.get_deposited_dataset_user_curation_status(
+            self.review_dataset,
+            self.depositor['id'],
+        )
+
+        assert_equals(True, status['is_depositor'])
+        assert_equals(['request_changes'], status['actions'])
+        assert_equals('review', status['state'])
+        assert_equals('depositor', status['role'])
+
+    def test_get_deposited_dataset_user_curation_status_user_draft(self):
+        for user in [self.target_container_member, self.other_container_admin]:
+            status = helpers.get_deposited_dataset_user_curation_status(
+                self.draft_dataset,
+                user['id'],
+            )
+
+            assert_equals(False, status['is_depositor'])
+            assert_equals([], status['actions'])
+            assert_equals('draft', status['state'])
+            assert_equals('user', status['role'])
+
+    def test_get_deposited_dataset_user_curation_status_user_submitted(self):
+        for user in [self.target_container_member, self.other_container_admin]:
+            status = helpers.get_deposited_dataset_user_curation_status(
+                self.submitted_dataset,
+                user['id'],
+            )
+
+            assert_equals(False, status['is_depositor'])
+            assert_equals([], status['actions'])
+            assert_equals('submitted', status['state'])
+            assert_equals('user', status['role'])
+
+    def test_get_deposited_dataset_user_curation_status_user_review(self):
+        for user in [self.target_container_member, self.other_container_admin]:
+            status = helpers.get_deposited_dataset_user_curation_status(
+                self.review_dataset,
+                user['id'],
+            )
+
+            assert_equals(False, status['is_depositor'])
+            assert_equals([], status['actions'])
+            assert_equals('review', status['state'])
+            assert_equals('user', status['role'])
+
+    def test_get_data_curation_users_no_container_admin(self):
+        curators = helpers.get_data_curation_users({})
+        curator_names = [
+            curator['name'] for curator in curators
+            # Added to org by ckan
+            if not curator['sysadmin']
+        ]
+        assert_equals(len(curator_names), 2)
+        assert_in(self.depadmin['name'], curator_names)
+        assert_in(self.curator['name'], curator_names)
+
+    def test_get_data_curation_users_with_container_admin(self):
+        curators = helpers.get_data_curation_users(self.draft_dataset)
+        curator_names = [
+            curator['name'] for curator in curators
+            # Added to org by ckan
+            if not curator['sysadmin']
+        ]
+        assert_equals(len(curator_names), 3)
+        assert_in(self.depadmin['name'], curator_names)
+        assert_in(self.curator['name'], curator_names)
+        assert_in(self.target_container_admin['name'], curator_names)

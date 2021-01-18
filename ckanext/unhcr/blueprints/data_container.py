@@ -59,7 +59,7 @@ def request_access(container_id):
         if e.error_dict and 'message' in e.error_dict:
             return toolkit.abort(
                 400,
-                e.error_dict['message'].replace('organization', 'container')
+                e.error_dict['message'][0].replace('organization', 'container')
             )
         return toolkit.abort(400, 'Bad Request')
 
@@ -73,7 +73,7 @@ def request_access(container_id):
             toolkit.c.userobj,
             message
         )
-        mailer.mail_user_by_id(recipient['name'], subj, body)
+        toolkit.enqueue_job(mailer.mail_user_by_id, [recipient['name'], subj, body])
 
     toolkit.h.flash_success(
         'Requested access to container {}'.format(

@@ -4,7 +4,26 @@
     <img src="/base/images/ckan-logo.png" alt="{{ g.site_title }}" title="{{ g.site_title }}" width="210" />
     {% endif %}
     <h2>{% trans %}You must be logged in to access the RIDL site.{% endtrans %}</h2>
-    <a class="btn btn-inverse btn-lg" href="{{ h.url_for('user.login', came_from=h.get_came_from_param()) }}">Log in</a>
+    <p>
+      <a class="btn btn-inverse btn-lg"
+        href="{{ h.url_for('user.login', came_from=h.get_came_from_param()) }}"
+        title="Log in using your UNHCR Active Directory account">
+        Log in as UNHCR staff
+      </a>
+    </p>
+    <hr />
+    <p>
+      <a class="btn btn-inverse btn-lg"
+        href="/service/login"
+        title="Log in using a partner user accout. If you don't have one, you can request one following the link below">
+        Log in with a Partner account
+      </a>
+    </p>
+    <p>
+      <a class="request" href="{{ h.url_for('user.register') }}">
+        Request a Partner account
+      </a>
+    </p>
   </div>
 
   <div class="info">

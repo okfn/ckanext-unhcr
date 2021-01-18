@@ -1168,7 +1168,14 @@
             "label": "Tags",
             "preset": "tag_string_autocomplete",
             "form_snippet": "tags.html"
+        },
+        {
+            "field_name": "visible_external",
+            "label": "Visible to Partner users",
+            "required": true,
+            "validators": "boolean_validator",
+            "output_validators": "boolean_validator",
+            "form_snippet": "visible_external.html"
         }
     ]
 }
-
