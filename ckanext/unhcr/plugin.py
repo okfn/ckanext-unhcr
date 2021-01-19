@@ -29,6 +29,12 @@ _ = toolkit._
 
 
 ALLOWED_ACTIONS = [
+    'cloudstorage_initiate_multipart',
+    'cloudstorage_upload_multipart',
+    'cloudstorage_finish_multipart',
+    'cloudstorage_abort_multipart',
+    'cloudstorage_check_multipart',
+    'cloudstorage_clean_multipart',
     'format_autocomplete',
     'group_list_authz',
     'group_show',
