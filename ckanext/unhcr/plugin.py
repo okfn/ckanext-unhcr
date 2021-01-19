@@ -29,6 +29,12 @@ _ = toolkit._
 
 
 ALLOWED_ACTIONS = [
+    'cloudstorage_initiate_multipart',
+    'cloudstorage_upload_multipart',
+    'cloudstorage_finish_multipart',
+    'cloudstorage_abort_multipart',
+    'cloudstorage_check_multipart',
+    'cloudstorage_clean_multipart',
     'format_autocomplete',
     'group_list_authz',
     'group_show',
@@ -48,9 +54,11 @@ ALLOWED_ACTIONS = [
     'resource_show',
     'resource_update',
     'resource_view_list',
+    'scan_submit',
     'site_read',
     'tag_autocomplete',
     'tag_list',
+    'task_status_show',
     'user_show',
     'user_update',
     'user_generate_apikey',
