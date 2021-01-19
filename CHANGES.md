@@ -1,5 +1,10 @@
 # RIDL Changelog
 
+## v2.0.1 - 2021-01-20
+
+Fixes:
+* Grant external users permissions required to submit jobs to Clam AV
+
 ## v2.0.0 - 2021-01-20
 
 Features:
