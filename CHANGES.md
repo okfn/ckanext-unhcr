@@ -1,5 +1,10 @@
 # RIDL Changelog
 
+## v2.0.2 - 2021-01-20
+
+Fixes:
+* Grant external users permissions required for datapusher/resource previews
+
 ## v2.0.1 - 2021-01-20
 
 Fixes:
