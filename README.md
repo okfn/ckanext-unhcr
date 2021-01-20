@@ -171,6 +171,7 @@ It will create all initial data containers and data deposit. For local developme
 ```
 $ python scripts/initial_data_containers.py url api_key
 $ python scripts/create_data_deposit.py url api_key
+$ python scripts/update_container_visibility.py url api_key
 ```
 
 ## Create development users
