@@ -53,6 +53,8 @@ ALLOWED_ACTIONS = [
     'resource_patch',
     'resource_show',
     'resource_update',
+    'resource_view',
+    'resource_view_show',
     'resource_view_list',
     'scan_submit',
     'site_read',
