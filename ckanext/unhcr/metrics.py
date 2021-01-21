@@ -175,6 +175,7 @@ def get_keywords(context):
 
 def get_users_by_datasets(context):
     all_users = toolkit.get_action('user_list')(context, {})
+    default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
 
     package_table = model.meta.metadata.tables['package']
     user_table = model.meta.metadata.tables['user']
@@ -190,6 +191,7 @@ def get_users_by_datasets(context):
         and_(
             model.Package.state == 'active',
             model.Package.type != 'deposited-dataset',
+            model.User.name != default_user['name'],
         )
     ).group_by(
         model.User.id
@@ -219,6 +221,7 @@ def get_users_by_datasets(context):
     }
 
 def get_users_by_downloads(context):
+    default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
     activity_table = model.meta.metadata.tables['activity']
     package_table = model.meta.metadata.tables['package']
     user_table = model.meta.metadata.tables['user']
@@ -237,6 +240,7 @@ def get_users_by_downloads(context):
             model.Package.state == 'active',
             model.Package.type != 'deposited-dataset',
             model.Activity.activity_type == 'download resource',
+            model.User.name != default_user['name'],
         )
     ).group_by(
         model.User.id
