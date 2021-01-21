@@ -52,6 +52,14 @@
 {% endblock %}
 
 
+{% block header_account_notlogged %}
+  <li>{% link_for _('Log in'), named_route='/' %}</li>
+  {% if h.check_access('user_create') %}
+    <li>{% link_for _('Register'), named_route='user.register', class_='sub' %}</li>
+  {% endif %}
+{% endblock %}
+
+
 {% block header_logo %}
   <a class="logo" href="{{ h.url_for('home.index') }}">
     <img src="/base/images/ckan-logo.png" alt="{{ g.site_title }}" title="{{ g.site_title }}" />
