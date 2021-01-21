@@ -9,7 +9,7 @@ git clone https://github.com/okfn/ckanext-hierarchy
 (cd ckanext-hierarchy && python setup.py develop)
 
 git clone https://github.com/okfn/ckanext-collaborators
-(cd ckanext-collaborators && git checkout 0.0.5 && python setup.py develop)
+(cd ckanext-collaborators && python setup.py develop)
 
 git clone https://github.com/okfn/ckanext-cloudstorage
 (cd ckanext-cloudstorage && python setup.py develop)
