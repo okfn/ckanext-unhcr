@@ -1,5 +1,15 @@
 # RIDL Changelog
 
+## v2.1.0 - 2021-01-21
+
+Fixes:
+- Exclude site user from metrics tables
+- Don't allow a draft dataset with zero resources to be published
+- Fix 404 and search index corruption when organization slug is changed
+- Remove confusing text from membership delete email
+- Fix large file uploads via the API
+- Resolve failures sending emails when granting access requests to some containers/datasets
+
 ## v2.0.2 - 2021-01-20
 
 Fixes:
