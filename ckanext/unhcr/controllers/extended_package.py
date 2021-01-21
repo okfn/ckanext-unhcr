@@ -24,6 +24,9 @@ class ExtendedPackageController(PackageController):
 
     def publish(self, id):
         context = {'model': model, 'user': toolkit.c.user}
+        dataset = toolkit.get_action('package_show')(context, {'id': id})
+        if len(dataset['resources']) == 0:
+            return toolkit.abort(400, 'Dataset must have one or more resources to publish')
         dataset = toolkit.get_action('package_patch')(context, {'id': id, 'state': 'active'})
         toolkit.h.flash_success('Dataset "%s" has been published' % dataset['title'])
         toolkit.redirect_to('dataset_read', id=dataset['name'])
