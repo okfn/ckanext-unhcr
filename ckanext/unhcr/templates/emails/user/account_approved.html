@@ -8,7 +8,8 @@ Dear <b>{{ recipient.fullname or recipient.name }}</b>,
 {% endcall %}
 
   {% call email.paragraph() %}
-      Your request for a RIDL user account has been approved by an administrator.
+    Your request for a RIDL user account has been approved by an administrator.
+    You can now log in with the username <strong>{{ recipient.name }}</strong>.
   {% endcall %}
 
   {% call email.action(login_url) %}
