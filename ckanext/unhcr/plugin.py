@@ -434,10 +434,11 @@ class UnhcrPlugin(
 
     # Always include sub-containers to container_read search
     def before_search(self, search_params):
-        if toolkit.c.controller in (
+        controllers = (
             'organization',
-            'ckanext.unhcr.controllers.extended_organization:ExtendedOrganizationController'
-        ):
+            'ckanext.unhcr.controllers.extended_organization:ExtendedOrganizationController',
+        )
+        if toolkit.c.controller in controllers and toolkit.c.action != 'edit':
             toolkit.c.include_children_selected = True
 
             # helper function
