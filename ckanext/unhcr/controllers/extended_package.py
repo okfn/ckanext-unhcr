@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 from ckan import model
 import ckan.plugins.toolkit as toolkit
@@ -200,7 +202,7 @@ class ExtendedPackageController(PackageController):
 
         if toolkit.h.can_download(dataset):
             toolkit.h.flash_notice(
-                'You already have access to download resources from {}'.format(
+                u'You already have access to download resources from {}'.format(
                     dataset['title']
                 )
             )
@@ -240,7 +242,7 @@ class ExtendedPackageController(PackageController):
             toolkit.enqueue_job(mailer.mail_user_by_id, [recipient['name'], subj, body])
 
         toolkit.h.flash_success(
-            'Requested access to download resources from {}'.format(
+            u'Requested access to download resources from {}'.format(
                 dataset['title']
             )
         )
