@@ -1,17 +1,17 @@
-from nose.plugins.attrib import attr
-from nose.tools import assert_equals, assert_raises
+# -*- coding: utf-8 -*-
 
-from ckan.plugins.toolkit import ValidationError
-from ckan.tests import factories as core_factories
-from ckan.tests.helpers import call_action, FunctionalTestBase
+import pytest
+from ckan.plugins import toolkit
+from ckan.tests.helpers import call_action
+from ckantoolkit.tests import factories as core_factories
+from ckanext.unhcr.tests import factories
 
-from ckanext.unhcr.tests import base, factories
 
-
-class TestResourceFields(base.FunctionalTestBase):
-
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+)
+class TestResourceFields(object):
     def setup(self):
-        super(TestResourceFields, self).setup()
         self.sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
 
     def test_file_ment_fields(self):
@@ -37,13 +37,11 @@ class TestResourceFields(base.FunctionalTestBase):
         )
 
         for field in [k for k in resource.keys() if k != 'url']:
-            assert_equals(
-                updated_dataset['resources'][0][field], resource[field])
-        assert_equals(
-            updated_dataset['resources'][0]['url'].split('/')[-1],
-            resource['url'].split('/')[-1]
+            assert updated_dataset['resources'][0][field] == resource[field]
+        assert (
+            updated_dataset['resources'][0]['url'].split('/')[-1]
+            == resource['url'].split('/')[-1]
         )
-
         assert 'date_range_start' not in updated_dataset['resources'][0]
 
     def test_data_file_fields(self):
@@ -61,16 +59,16 @@ class TestResourceFields(base.FunctionalTestBase):
 
         dataset['resources'] = [resource]
 
-        with assert_raises(ValidationError) as e:
+        with pytest.raises(toolkit.ValidationError) as e:
             call_action('package_update', {'user': self.sysadmin['name']}, **dataset)
 
-        errors = e.exception.error_dict['resources'][0]
+        errors = e.value.error_dict['resources'][0]
 
         for field in ['identifiability', 'date_range_end',
                       'version', 'date_range_start', 'process_status']:
             error = errors[field]
 
-            assert_equals(error, ['Missing value'])
+            assert error == ['Missing value']
 
     def test_both_types_data_fields_missing(self):
 
@@ -95,14 +93,13 @@ class TestResourceFields(base.FunctionalTestBase):
 
         dataset['resources'] = [resource1, resource2]
 
-        with assert_raises(ValidationError) as e:
+        with pytest.raises(toolkit.ValidationError) as e:
             call_action('package_update', {'user': self.sysadmin['name']}, **dataset)
 
-        errors = e.exception.error_dict['resources'][1]
+        errors = e.value.error_dict['resources'][1]
 
         for field in ['identifiability', 'date_range_end',
                       'version', 'date_range_start', 'process_status']:
             error = errors[field]
 
-            assert_equals(error, ['Missing value'])
-
+            assert error == ['Missing value']
