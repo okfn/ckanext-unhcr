@@ -1,5 +1,5 @@
 import factory
-from ckan.tests import factories
+from ckantoolkit.tests import factories
 
 
 def _generate_email(user):
