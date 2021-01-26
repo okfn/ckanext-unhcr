@@ -1,0 +1,5 @@
+responses==0.12.1
+ckantoolkit>=0.0.3
+pytest
+pytest-ckan
+pytest-cov
