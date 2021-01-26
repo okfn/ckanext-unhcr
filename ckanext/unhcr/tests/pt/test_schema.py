@@ -3,6 +3,7 @@
 import pytest
 from ckan.plugins import toolkit
 from ckan.tests.helpers import call_action
+from ckan import model
 from ckantoolkit.tests import factories as core_factories
 from ckanext.unhcr.tests import factories
 
@@ -61,6 +62,9 @@ class TestResourceFields(object):
 
         with pytest.raises(toolkit.ValidationError) as e:
             call_action('package_update', {'user': self.sysadmin['name']}, **dataset)
+        # workaround for DetachedInstanceError
+        # TODO: remove this when we upgrade to CKAN 2.9
+        model.Session.refresh(model.Session.revision)
 
         errors = e.value.error_dict['resources'][0]
 
@@ -95,6 +99,9 @@ class TestResourceFields(object):
 
         with pytest.raises(toolkit.ValidationError) as e:
             call_action('package_update', {'user': self.sysadmin['name']}, **dataset)
+        # workaround for DetachedInstanceError
+        # TODO: remove this when we upgrade to CKAN 2.9
+        model.Session.refresh(model.Session.revision)
 
         errors = e.value.error_dict['resources'][1]
 
