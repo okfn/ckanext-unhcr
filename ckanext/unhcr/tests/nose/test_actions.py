@@ -489,7 +489,11 @@ class TestResourceUpload(base.FunctionalTestBase):
         )
 
         resource['name'] = 'updated'
-        updated_resource = core_helpers.call_action('resource_update', {}, **resource)
+        updated_resource = core_helpers.call_action(
+            'resource_update',
+            {'ignore_auth': True},
+            **resource
+        )
 
         assert_equals(updated_resource['name'], 'updated')
 
