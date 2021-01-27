@@ -442,7 +442,12 @@ class UnhcrPlugin(
             'organization',
             'ckanext.unhcr.controllers.extended_organization:ExtendedOrganizationController',
         )
-        if toolkit.c.controller in controllers and toolkit.c.action != 'edit':
+        if (
+            getattr(toolkit.c, "controller", None)
+            and getattr(toolkit.c, "action", None)
+            and toolkit.c.controller in controllers
+            and toolkit.c.action != 'edit'
+        ):
             toolkit.c.include_children_selected = True
 
             # helper function
