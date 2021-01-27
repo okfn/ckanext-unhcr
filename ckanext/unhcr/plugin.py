@@ -544,6 +544,7 @@ class UnhcrPlugin(
         functions['datasets_validation_report'] = auth.datasets_validation_report
         functions['organization_create'] = auth.organization_create
         functions['organization_show'] = auth.organization_show
+        functions['organization_list_all_fields'] = auth.organization_list_all_fields
         functions['group_list_authz'] = auth.group_list_authz
         functions['package_activity_list'] = auth.package_activity_list
         functions['package_create'] = auth.package_create
@@ -574,6 +575,7 @@ class UnhcrPlugin(
             'organization_create': actions.organization_create,
             'organization_member_create': actions.organization_member_create,
             'organization_member_delete': actions.organization_member_delete,
+            'organization_list_all_fields': actions.organization_list_all_fields,
             'container_request_list': actions.container_request_list,
             'package_activity_list': actions.package_activity_list,
             'dashboard_activity_list': actions.dashboard_activity_list,

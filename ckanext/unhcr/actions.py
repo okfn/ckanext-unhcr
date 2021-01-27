@@ -7,6 +7,7 @@ from urlparse import urljoin
 from dateutil.parser import parse as parse_date
 from sqlalchemy import and_, desc, or_, select
 from sqlalchemy.dialects.postgresql import array
+from sqlalchemy.orm import aliased
 from ckan import model
 from ckan.authz import has_user_permission_for_group_or_org
 from ckan.plugins import toolkit
@@ -273,6 +274,82 @@ def organization_member_delete(context, data_dict):
         mailer.mail_user_by_id(user['id'], subj, body)
 
     return delete_core.organization_member_delete(context, data_dict)
+
+
+def organization_list_all_fields(context, data_dict):
+    """
+    Customized organization_list action.
+    This action is many times more efficient than calling organization_list
+    https://docs.ckan.org/en/2.8/api/index.html#ckan.logic.action.get.organization_list
+    with {'all_fields': True, 'include_extras': True}
+    but it only allows a much more constrained list of params.
+
+    :param type: group type (optional, default: ``'data-container'``)
+    :type type: string
+    :param order_by: the field to sort the list by (optional, default: ``'title'``)
+    :type order_by: string
+    """
+    toolkit.check_access('organization_list_all_fields', context, data_dict)
+    m = context.get('model', model)
+    session = context.get('session', m.Session)
+    group_type = data_dict.get('type', 'data-container')
+    order_by = data_dict.get('order_by', 'title')
+
+    extra_cols = [rec[0] for rec in session.query(m.GroupExtra.key).distinct()]
+    group_table = m.meta.metadata.tables['group']
+    group_extra_table = m.meta.metadata.tables['group_extra']
+    allowed_cols = [col.key for col in group_table.columns] + extra_cols
+    if order_by not in allowed_cols:
+        raise toolkit.Invalid("'order_by' must be one of {}".format(allowed_cols))
+
+    join_obj = group_table
+    select_cols = [col for col in group_table.columns]
+    for col in extra_cols:
+        extras_alias = aliased(group_extra_table, name='extras_{}'.format(col))
+        select_cols.append(extras_alias.c.value.label(col))
+        join_obj = join_obj.join(
+            extras_alias,
+            and_(
+                group_table.c.id==extras_alias.c.group_id,
+                extras_alias.c.key==col,
+                extras_alias.c.state=='active',
+            ), isouter=True,
+        )
+
+    sql = select(
+        select_cols
+    ).select_from(
+        join_obj
+    ).where(
+        and_(
+            group_table.c.type==group_type,
+            group_table.c.state=='active',
+            group_table.c.is_organization==True,
+        )
+    ).order_by(
+        order_by
+    )
+    result = session.execute(sql).fetchall()
+
+    organization_plugin = lib_plugins.lookup_group_plugin(group_type)
+    schema = organization_plugin.form_to_db_schema()
+
+    out_list = []
+    for row in result:
+        raw_dict = {k:v for k,v in row.items()}
+        validated_dict, errors = lib_plugins.plugin_validate(
+            organization_plugin,
+            context,
+            raw_dict,
+            schema,
+            'organization_show'
+        )
+        if errors:
+            raise toolkit.ValidationError(errors)
+        validated_dict['display_name'] = validated_dict['title'] or validated_dict['name']
+        out_list.append(validated_dict)
+
+    return out_list
 
 
 # Pending requests

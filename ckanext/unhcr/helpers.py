@@ -68,8 +68,7 @@ def get_all_data_containers(
 
     data_containers = []
     context = {'model': model, 'ignore_auth': True}
-    orgs = toolkit.get_action('organization_list')(context,
-        {'type': 'data-container', 'all_fields': True, 'include_extras': True})
+    orgs = toolkit.get_action('organization_list_all_fields')(context, {})
 
     for org in orgs:
         if org['id'] in exclude_ids:

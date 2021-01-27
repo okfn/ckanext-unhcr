@@ -99,6 +99,14 @@ def organization_show(next_auth, context, data_dict):
     return next_auth(context, data_dict)
 
 
+def organization_list_all_fields(next_auth, context, data_dict):
+    try:
+        toolkit.check_access('organization_list', context, data_dict)
+        return {'success': True}
+    except toolkit.NotAuthorized:
+        return {'success': False}
+
+
 def organization_create(context, data_dict):
     user_orgs = toolkit.get_action('organization_list_for_user')(context, {})
 

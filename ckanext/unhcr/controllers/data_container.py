@@ -89,9 +89,7 @@ class DataContainerController(toolkit.BaseController):
         # Containers
         containers = []
         if user:
-            action = 'organization_list'
-            data_dict = {'type': 'data-container', 'order_by': 'title', 'all_fields': True}
-            containers = toolkit.get_action(action)(context, data_dict)
+            containers = toolkit.get_action('organization_list_all_fields')(context, {})
             containers = filter(lambda cont: cont['name'] != deposit['name'], containers)
 
         # Roles
