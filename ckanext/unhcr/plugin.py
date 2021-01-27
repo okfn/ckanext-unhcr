@@ -95,7 +95,11 @@ _url_for = core_helpers.url_for
 def url_for(*args, **kw):
     url = _url_for(*args, **kw)
 
-    if getattr(toolkit.c.userobj, 'external', None) and '/dataset/' in url:
+    if (
+        getattr(toolkit.c, "userobj", None)
+        and getattr(toolkit.c.userobj, "external", None)
+        and "/dataset/" in url
+    ):
         url = url.replace('/dataset/', '/deposited-dataset/')
     return url
 

@@ -30,20 +30,31 @@ from ckanext.scheming.helpers import scheming_get_dataset_schema
 log = logging.getLogger(__name__)
 
 
+def _get_user_obj(context):
+    if 'user_obj' in context:
+        return context['user_obj']
+    user = context.get('user')
+    m = context.get('model', model)
+    user_obj = m.User.get(user)
+    if not user_obj:
+        raise toolkit.ObjectNotFound("User not found")
+    return user_obj
+
+
 # Package
 
 def package_update(context, data_dict):
-    userobj = toolkit.c.userobj
-
-    # Decide if we need notification
-    # - deposited-datset AND
-    # - not a test env AND
-    # - just published
     notify = False
-    if data_dict.get('type') == 'deposited-dataset' and hasattr(userobj, 'id'):
-        dataset = toolkit.get_action('package_show')(context, {'id': data_dict['id']})
-        if dataset.get('state') == 'draft' and data_dict.get('state') == 'active':
-            notify = True
+    if not context.get('ignore_auth'):
+        user_obj = _get_user_obj(context)
+        # Decide if we need notification
+        # - deposited-datset AND
+        # - not a test env AND
+        # - just published
+        if data_dict.get('type') == 'deposited-dataset' and hasattr(user_obj, 'id'):
+            dataset = toolkit.get_action('package_show')(context, {'id': data_dict['id']})
+            if dataset.get('state') == 'draft' and data_dict.get('state') == 'active':
+                notify = True
 
     # Update dataset
     dataset = update_core.package_update(context, data_dict)
@@ -51,11 +62,11 @@ def package_update(context, data_dict):
     # Send notification if needed
     if notify:
         dataset['url'] = toolkit.url_for('dataset_read', id=dataset.get('name'), qualified=True)
-        curation = helpers.get_deposited_dataset_user_curation_status(dataset, userobj.id)
+        curation = helpers.get_deposited_dataset_user_curation_status(dataset, user_obj.id)
         subj = mailer.compose_curation_email_subj(dataset)
         body = mailer.compose_curation_email_body(
-            dataset, curation, userobj.display_name, 'deposit')
-        mailer.mail_user_by_id(userobj.id, subj, body)
+            dataset, curation, user_obj.display_name, 'deposit')
+        mailer.mail_user_by_id(user_obj.id, subj, body)
 
     return dataset
 
@@ -212,7 +223,7 @@ def organization_create(context, data_dict):
                     body = mailer.compose_request_container_email_body(
                         org_dict,
                         user,
-                        toolkit.c.userobj,
+                        _get_user_obj(context),
                     )
                     mailer.mail_user(user, subj, body)
         except MailerException:
@@ -516,7 +527,6 @@ def datasets_validation_report(context, data_dict):
     # get the schema
     package_plugin = lib_plugins.lookup_package_plugin('dataset')
     schema = package_plugin.update_package_schema()
-    context = {'model': model, 'session': model.Session, 'user': toolkit.c.user}
     for dataset in datasets:
         data, errors = package_plugin.validate(context, dataset, schema, 'package_update')
         if errors:
@@ -1188,9 +1198,10 @@ def user_list(up_func, context, data_dict):
 @toolkit.chained_action
 def user_show(up_func, context, data_dict):
     user = up_func(context, data_dict)
-    user['external'] = context['user_obj'].external
+    user_obj = _get_user_obj(context)
+    user['external'] = user_obj.external
 
-    extras = _init_plugin_extras(context['user_obj'].plugin_extras)
+    extras = _init_plugin_extras(user_obj.plugin_extras)
     extras = _validate_plugin_extras(extras['unhcr'])
 
     user['focal_point'] = extras['focal_point']
@@ -1203,8 +1214,9 @@ def user_show(up_func, context, data_dict):
 @toolkit.chained_action
 def user_create(up_func, context, data_dict):
     user = up_func(context, data_dict)
+    user_obj = _get_user_obj(context)
 
-    if not context['user_obj'].external:
+    if not user_obj.external:
         return user
 
     if not data_dict.get('focal_point'):
@@ -1213,7 +1225,7 @@ def user_create(up_func, context, data_dict):
     if not isinstance(data_dict.get('default_containers'), list):
         raise toolkit.ValidationError({'default_containers': ["Specify one or more containers"]})
 
-    plugin_extras = _init_plugin_extras(context['user_obj'].plugin_extras)
+    plugin_extras = _init_plugin_extras(user_obj.plugin_extras)
     expiry_date = datetime.date.today() + datetime.timedelta(
         days=toolkit.config.get(
             'ckanext.unhcr.external_accounts_expiry_delta',
@@ -1223,7 +1235,7 @@ def user_create(up_func, context, data_dict):
     plugin_extras['unhcr']['expiry_date'] = expiry_date.isoformat()
     plugin_extras['unhcr']['focal_point'] = data_dict['focal_point']
     plugin_extras['unhcr']['default_containers'] = data_dict['default_containers']
-    context['user_obj'].plugin_extras = plugin_extras
+    user_obj.plugin_extras = plugin_extras
 
     if not context.get('defer_commit'):
         m = context.get('model', model)

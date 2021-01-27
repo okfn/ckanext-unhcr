@@ -460,6 +460,7 @@ class TestAuthUnit(base.FunctionalTestBase):
         })
         deposited_dataset = helpers.call_action(
             'package_update',
+            {'ignore_auth': True},
             **tmp
         )
 
