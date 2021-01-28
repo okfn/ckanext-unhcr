@@ -155,6 +155,7 @@
             "label": "Topic classifications",
             "preset": "multiple_select",
             "required": true,
+            "select_size": 10,
             "choices": [
                 {
                     "label": "Health and Nutrition",
@@ -398,6 +399,7 @@
             "help_text": "Unit of measurement / observation for the dataset. Multiple values are allowed.",
             "label": "Sampling Procedure",
             "preset": "multiple_select",
+            "select_size": 10,
             "choices": [
                 {
                     "label": "Total universe/Complete enumeration",
