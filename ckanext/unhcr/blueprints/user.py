@@ -49,10 +49,7 @@ class RegisterView(BaseRegisterView):
 
     def _get_container_list(self):
         context = {'model': model, 'ignore_auth': True}
-        orgs = toolkit.get_action('organization_list')(
-            context,
-            {'type': 'data-container', 'all_fields': True, 'include_extras': True}
-        )
+        orgs = toolkit.get_action('organization_list_all_fields')(context, {})
         deposit = get_data_deposit()
         containers = sorted(
             [
