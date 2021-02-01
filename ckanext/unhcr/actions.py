@@ -337,8 +337,7 @@ def organization_list_all_fields(context, data_dict):
     out_list = []
     for row in result:
         raw_dict = {k:v for k,v in row.items()}
-        validated_dict, errors = lib_plugins.plugin_validate(
-            organization_plugin,
+        validated_dict, errors = organization_plugin.validate(
             context,
             raw_dict,
             schema,
