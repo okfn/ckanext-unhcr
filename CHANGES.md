@@ -1,5 +1,13 @@
 # RIDL Changelog
 
+## v2.1.1 - 2021-02-01
+
+Fixes:
+- Improve load times on:
+  - External User Signup page,
+  - Data Deposit page and
+  - Manage Container Membership page
+
 ## v2.1.0 - 2021-01-21
 
 Fixes:
