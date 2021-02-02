@@ -1600,7 +1600,7 @@ class TestAccessRequests(base.FunctionalTestBase):
             object_type="user",
             message="",
             role="member",
-            data={'containers': [self.container1["id"]]},
+            data={'default_containers': [self.container1["id"]]},
         )
         self.user_request_container2 = AccessRequest(
             user_id=self.pending_user["id"],
@@ -1608,7 +1608,7 @@ class TestAccessRequests(base.FunctionalTestBase):
             object_type="user",
             message="",
             role="member",
-            data={'containers': [self.container2["id"]]},
+            data={'default_containers': [self.container2["id"]]},
         )
         model.Session.add(self.container1_request)
         model.Session.add(self.container2_request)

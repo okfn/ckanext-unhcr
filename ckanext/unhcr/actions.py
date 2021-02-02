@@ -937,7 +937,7 @@ def access_request_list_for_user(context, data_dict):
             ),
             and_(
                 AccessRequest.object_type == "user",
-                AccessRequest.data["containers"].has_any(array(containers)),
+                AccessRequest.data["default_containers"].has_any(array(containers)),
             )
         )
     )
