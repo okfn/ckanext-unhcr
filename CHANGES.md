@@ -1,5 +1,10 @@
 # RIDL Changelog
 
+## v2.1.2 - 2021-02-02
+
+Fixes:
+- Fix access request dashboard display for contianer admins
+
 ## v2.1.1 - 2021-02-01
 
 Fixes:
