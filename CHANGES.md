@@ -1,5 +1,10 @@
 # RIDL Changelog
 
+## v2.1.3 - 2021-02-03
+
+Fixes:
+- Fix approving external user account requests for contianer admins
+
 ## v2.1.2 - 2021-02-02
 
 Fixes:
