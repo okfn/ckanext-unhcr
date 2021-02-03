@@ -403,7 +403,7 @@ def external_user_update_state(context, data_dict):
             'msg': "User must be associated with exactly one pending access request"
         }
 
-    for container in access_requests[0].data['containers']:
+    for container in access_requests[0].data['default_containers']:
         if has_user_permission_for_group_or_org(
             container, request_userobj.id, 'admin'
         ):

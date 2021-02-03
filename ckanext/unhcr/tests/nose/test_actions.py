@@ -806,7 +806,7 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
             object_type="user",
             message="",
             role="member",
-            data={'containers': [self.container1["id"]]},
+            data={'default_containers': [self.container1["id"]]},
         )
         model.Session.add(self.container_request)
         model.Session.add(self.dataset_request)
@@ -1167,7 +1167,7 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
             'object_type': 'user',
             'message': 'asdf',
             'role': 'member',
-            'data': {'containers': [self.container1['id']]}
+            'data': {'default_containers': [self.container1['id']]}
         }
         toolkit.get_action(u'access_request_create')(
             {'user': target_user['id'], 'ignore_auth': True},
@@ -1194,7 +1194,7 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
             'object_type': 'user',
             'message': 'asdf',
             'role': 'member',
-            'data': {'containers': [self.container1['id']]}
+            'data': {'default_containers': [self.container1['id']]}
         }
         toolkit.get_action(u'access_request_create')(
             {'user': target_user['id'], 'ignore_auth': True},
@@ -1226,7 +1226,7 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
             'object_type': 'user',
             'message': 'asdf',
             'role': 'member',
-            'data': {'containers': [self.container1['id']]}
+            'data': {'default_containers': [self.container1['id']]}
         }
         toolkit.get_action(u'access_request_create')(
             {'user': target_user['id'], 'ignore_auth': True},
@@ -1257,7 +1257,7 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
             'object_type': 'user',
             'message': 'asdf',
             'role': 'member',
-            'data': {'containers': [self.container1['id']]}
+            'data': {'default_containers': [self.container1['id']]}
         }
         toolkit.get_action(u'access_request_create')(
             {'user': target_user['id'], 'ignore_auth': True},
