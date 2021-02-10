@@ -1,961 +1,962 @@
 {
-    "about": "CKAN dataset schema customized for the UN HCR RIDL project",
-    "scheming_version": 1,
-    "dataset_type": "deposited-dataset",
-    "about_url": "http://github.com/okfn/ckanext-unhcr",
+    "about": "CKAN dataset schema customized for the UN HCR RIDL project", 
+    "scheming_version": 1, 
+    "dataset_type": "deposited-dataset", 
+    "about_url": "http://github.com/okfn/ckanext-unhcr", 
     "dataset_fields": [
         {
-            "form_placeholder": "Make sure to include: 'Survey name/title', 'Location', 'Country', 'Year(s)' in the order indicated.",
-            "required": true,
-            "preset": "title",
-            "field_name": "title",
+            "form_placeholder": "Make sure to include: 'Survey name/title', 'Location', 'Country', 'Year(s)' in the order indicated.", 
+            "required": true, 
+            "preset": "title", 
+            "field_name": "title", 
             "label": "Title"
-        },
+        }, 
         {
-            "form_placeholder": "eg. my-dataset",
-            "required": false,
-            "preset": "dataset_slug",
-            "field_name": "name",
+            "form_placeholder": "eg. my-dataset", 
+            "required": false, 
+            "preset": "dataset_slug", 
+            "field_name": "name", 
             "label": "URL"
-        },
+        }, 
         {
-            "form_placeholder": "eg. Short title for the project",
-            "required": false,
-            "field_name": "short_title",
+            "form_placeholder": "eg. Short title for the project", 
+            "required": false, 
+            "field_name": "short_title", 
             "label": "Short title"
-        },
+        }, 
         {
-            "form_placeholder": "Some useful notes about the data. Please include the number of observations.",
-            "form_snippet": "markdown.html",
-            "required": false,
-            "field_name": "notes",
+            "form_placeholder": "Some useful notes about the data. Please include the number of observations.", 
+            "form_snippet": "markdown.html", 
+            "required": false, 
+            "field_name": "notes", 
             "label": "Description"
-        },
+        }, 
         {
-            "form_placeholder": "eg. economy, mental health, government",
-            "required": false,
-            "preset": "tag_string_autocomplete",
-            "field_name": "tag_string",
-            "label": "Tags",
-            "form_snippet": "tags.html"
-        },
+            "required": false, 
+            "form_snippet": "tags.html", 
+            "label": "Tags", 
+            "preset": "tag_string_autocomplete", 
+            "form_placeholder": "eg. economy, mental health, government", 
+            "field_name": "tag_string"
+        }, 
         {
-            "display_snippet": "link.html",
-            "required": false,
-            "label": "Project URL",
-            "help_text": "Website URL associated with this data project (if applicable)",
-            "form_placeholder": "http://example.com/dataset.json",
-            "field_name": "url",
+            "display_snippet": "link.html", 
+            "required": false, 
+            "label": "Project URL", 
+            "help_text": "Website URL associated with this data project (if applicable)", 
+            "form_placeholder": "http://example.com/dataset.json", 
+            "field_name": "url", 
             "display_property": "foaf:homepage"
-        },
+        }, 
         {
-            "display_snippet": null,
-            "required": true,
-            "form_snippet": null,
-            "label": "Organization",
-            "preset": "dataset_organization",
-            "validators": "deposited_dataset_owner_org",
+            "display_snippet": null, 
+            "required": true, 
+            "form_snippet": null, 
+            "label": "Organization", 
+            "preset": "dataset_organization", 
+            "validators": "deposited_dataset_owner_org", 
             "field_name": "owner_org"
-        },
+        }, 
         {
-            "form_snippet": "hidden.html",
-            "validators": "ignore_missing deposited_dataset_curator_id",
-            "field_name": "curator_id",
+            "form_snippet": "hidden.html", 
+            "validators": "ignore_missing deposited_dataset_curator_id", 
+            "field_name": "curator_id", 
             "display_snippet": null
-        },
+        }, 
         {
-            "form_snippet": "hidden.html",
-            "field_name": "curation_final_review",
+            "form_snippet": "hidden.html", 
+            "field_name": "curation_final_review", 
             "display_snippet": null
-        },
+        }, 
         {
-            "form_snippet": "hidden.html",
-            "required": true,
-            "validators": "deposited_dataset_curation_state",
-            "field_name": "curation_state",
+            "form_snippet": "hidden.html", 
+            "required": true, 
+            "validators": "deposited_dataset_curation_state", 
+            "field_name": "curation_state", 
             "display_snippet": null
-        },
+        }, 
         {
-            "display_snippet": "owner_org_dest.html",
-            "required": true,
-            "form_snippet": "owner_org_dest.html",
-            "label": "Data Container",
-            "validators": "deposited_dataset_owner_org_dest",
+            "display_snippet": "owner_org_dest.html", 
+            "required": true, 
+            "form_snippet": "owner_org_dest.html", 
+            "label": "Data Container", 
+            "validators": "deposited_dataset_owner_org_dest", 
             "field_name": "owner_org_dest"
-        },
+        }, 
         {
-            "display_snippet": null,
-            "required": false,
-            "form_snippet": null,
-            "label": "Visibility (Private/Public)",
-            "validators": "always_false_if_not_sysadmin",
+            "display_snippet": null, 
+            "required": false, 
+            "form_snippet": null, 
+            "label": "Visibility (Private/Public)", 
+            "validators": "always_false_if_not_sysadmin", 
             "field_name": "private"
-        },
+        }, 
         {
-            "display_snippet": null,
-            "required": true,
-            "label": "Internal Access Level",
-            "preset": "select",
-            "validators": "not_missing visibility_validator",
+            "display_snippet": null, 
+            "required": true, 
+            "label": "Internal Access Level", 
+            "preset": "select", 
+            "validators": "not_missing visibility_validator", 
             "choices": [
                 {
-                    "value": "restricted",
+                    "value": "restricted", 
                     "label": "Private"
-                },
+                }, 
                 {
-                    "value": "public",
+                    "value": "public", 
                     "label": "Internally Visible"
                 }
-            ],
+            ], 
             "field_name": "visibility"
-        },
+        }, 
         {
-            "display_snippet": null,
-            "required": false,
+            "display_snippet": null, 
+            "required": false, 
             "choices": [
                 {
-                    "value": "not_available",
+                    "value": "not_available", 
                     "label": "Not available"
-                },
+                }, 
                 {
-                    "value": "direct_access",
+                    "value": "direct_access", 
                     "label": "Direct access"
-                },
+                }, 
                 {
-                    "value": "public_use",
+                    "value": "public_use", 
                     "label": "Public use"
-                },
+                }, 
                 {
-                    "value": "licensed_use",
+                    "value": "licensed_use", 
                     "label": "Licensed use"
-                },
+                }, 
                 {
-                    "value": "data_enclave",
+                    "value": "data_enclave", 
                     "label": "Data enclave"
-                },
+                }, 
                 {
-                    "value": "open_access",
+                    "value": "open_access", 
                     "label": "Open access"
                 }
-            ],
-            "preset": "select",
-            "label": "External access level",
+            ], 
+            "preset": "select", 
+            "label": "External access level", 
             "field_name": "external_access_level"
-        },
+        }, 
         {
-            "required": false,
+            "required": false, 
             "choices": [
                 {
-                    "value": "yes",
+                    "value": "yes", 
                     "label": "Yes"
-                },
+                }, 
                 {
-                    "value": "no",
+                    "value": "no", 
                     "label": "No"
                 }
-            ],
-            "preset": "select",
-            "help_text": "Apply to both Anonymized and  Personally identifiable data",
-            "label": "Data sensitivity",
+            ], 
+            "preset": "select", 
+            "help_text": "Apply to both Anonymized and  Personally identifiable data", 
+            "label": "Data sensitivity", 
             "field_name": "data_sensitivity"
-        },
+        }, 
         {
-            "help_text": "If the dataset already has an ID from the source org, DDI, etc...",
-            "required": false,
-            "field_name": "original_id",
+            "help_text": "If the dataset already has an ID from the source org, DDI, etc...", 
+            "required": false, 
+            "field_name": "original_id", 
             "label": "Original ID"
-        },
+        }, 
         {
-            "display_snippet": "data_collector.html",
-            "required": false,
-            "form_snippet": "data_collector.html",
-            "label": "Data Collector",
-            "help_text": "Which organization owns / collected the data. Multiple values are allowed. It's possible to use values from the drop-down list or custom values. Use <enter> to finish typing a data collector's title",
+            "display_snippet": "data_collector.html", 
+            "required": false, 
+            "form_snippet": "data_collector.html", 
+            "label": "Data Collector", 
+            "help_text": "Which organization owns / collected the data. Multiple values are allowed. It's possible to use values from the drop-down list or custom values. Use <enter> to finish typing a data collector's title", 
             "field_name": "data_collector"
-        },
+        }, 
         {
-            "form_snippet": null,
-            "required": false,
-            "field_name": "date_range_start",
+            "form_snippet": null, 
+            "required": false, 
+            "field_name": "date_range_start", 
             "label": "Date collection first date"
-        },
+        }, 
         {
-            "form_snippet": null,
-            "required": false,
-            "field_name": "date_range_end",
+            "form_snippet": null, 
+            "required": false, 
+            "field_name": "date_range_end", 
             "label": "Date collection last date"
-        },
+        }, 
         {
-            "required": false,
+            "required": false, 
+            "label": "Topic classifications", 
+            "preset": "multiple_select", 
+            "help_text": "Tags useful for searching for the datasets. Multiple values are allowed.", 
             "choices": [
                 {
-                    "value": "1",
+                    "value": "1", 
                     "label": "Health and Nutrition"
-                },
+                }, 
                 {
-                    "value": "3",
+                    "value": "3", 
                     "label": "Health"
-                },
+                }, 
                 {
-                    "value": "4",
+                    "value": "4", 
                     "label": "Water Sanitation Hygiene"
-                },
+                }, 
                 {
-                    "value": "5",
+                    "value": "5", 
                     "label": "Protection"
-                },
+                }, 
                 {
-                    "value": "6",
+                    "value": "6", 
                     "label": "Food Security"
-                },
+                }, 
                 {
-                    "value": "7",
+                    "value": "7", 
                     "label": "Emergency Shelter and NFI"
-                },
+                }, 
                 {
-                    "value": "9",
+                    "value": "9", 
                     "label": "Community Services"
-                },
+                }, 
                 {
-                    "value": "10",
+                    "value": "10", 
                     "label": "Education"
-                },
+                }, 
                 {
-                    "value": "11",
+                    "value": "11", 
                     "label": "Environment"
-                },
+                }, 
                 {
-                    "value": "12",
+                    "value": "12", 
                     "label": "Livelihood & Social cohesion"
-                },
+                }, 
                 {
-                    "value": "13",
+                    "value": "13", 
                     "label": "Core Relief Items (CRIs)"
-                },
+                }, 
                 {
-                    "value": "14",
+                    "value": "14", 
                     "label": "Registration"
-                },
+                }, 
                 {
-                    "value": "15",
+                    "value": "15", 
                     "label": "Gender Based Violence"
-                },
+                }, 
                 {
-                    "value": "16",
+                    "value": "16", 
                     "label": "HIV/AIDS"
-                },
+                }, 
                 {
-                    "value": "17",
+                    "value": "17", 
                     "label": "Logistics"
-                },
+                }, 
                 {
-                    "value": "18",
+                    "value": "18", 
                     "label": "Child Protection"
-                },
+                }, 
                 {
-                    "value": "19",
+                    "value": "19", 
                     "label": "Agriculture"
-                },
+                }, 
                 {
-                    "value": "20",
+                    "value": "20", 
                     "label": "Telecom"
-                },
+                }, 
                 {
-                    "value": "21",
+                    "value": "21", 
                     "label": "Coordination"
-                },
+                }, 
                 {
-                    "value": "22",
+                    "value": "22", 
                     "label": "Transportation"
-                },
+                }, 
                 {
-                    "value": "23",
+                    "value": "23", 
                     "label": "Return"
-                },
+                }, 
                 {
-                    "value": "24",
+                    "value": "24", 
                     "label": "Reproductive Health"
-                },
+                }, 
                 {
-                    "value": "25",
+                    "value": "25", 
                     "label": "Mental Health and Psychosocial Support"
-                },
+                }, 
                 {
-                    "value": "26",
+                    "value": "26", 
                     "label": "Information Management"
-                },
+                }, 
                 {
-                    "value": "27",
+                    "value": "27", 
                     "label": "Cash Assistance"
-                },
+                }, 
                 {
-                    "value": "29",
+                    "value": "29", 
                     "label": "Mine Action"
-                },
+                }, 
                 {
-                    "value": "31",
+                    "value": "31", 
                     "label": "Disaster Risk Reduction"
-                },
+                }, 
                 {
-                    "value": "32",
+                    "value": "32", 
                     "label": "Camp Coordination and Camp Management (CCCM)"
-                },
+                }, 
                 {
-                    "value": "33",
+                    "value": "33", 
                     "label": "Governance"
-                },
+                }, 
                 {
-                    "value": "35",
+                    "value": "35", 
                     "label": "Peace Building / Conflict Prevention Sector"
-                },
+                }, 
                 {
-                    "value": "36",
+                    "value": "36", 
                     "label": "Early Recovery"
-                },
+                }, 
                 {
-                    "value": "37",
+                    "value": "37", 
                     "label": "Legal Assistance"
-                },
+                }, 
                 {
-                    "value": "38",
+                    "value": "38", 
                     "label": "Food Distribution"
-                },
+                }, 
                 {
-                    "value": "39",
+                    "value": "39", 
                     "label": "Mental Health"
-                },
+                }, 
                 {
-                    "value": "40",
+                    "value": "40", 
                     "label": "Malaria Prevention and Control"
-                },
+                }, 
                 {
-                    "value": "41",
+                    "value": "41", 
                     "label": "Emergency Telecommunications"
-                },
+                }, 
                 {
-                    "value": "42",
+                    "value": "42", 
                     "label": "Housing, Land and Property"
-                },
+                }, 
                 {
-                    "value": "43",
+                    "value": "43", 
                     "label": "Legal Assistance / Protection"
-                },
+                }, 
                 {
-                    "value": "44",
+                    "value": "44", 
                     "label": "Shelter / Other Infrastructure"
-                },
+                }, 
                 {
-                    "value": "45",
+                    "value": "45", 
                     "label": "Transport / Logistics"
-                },
+                }, 
                 {
-                    "value": "46",
+                    "value": "46", 
                     "label": "Health Care Referral Services"
-                },
+                }, 
                 {
-                    "value": "47",
+                    "value": "47", 
                     "label": "Domestic Needs / Household Support"
-                },
+                }, 
                 {
-                    "value": "48",
+                    "value": "48", 
                     "label": "Crop Production"
-                },
+                }, 
                 {
-                    "value": "49",
+                    "value": "49", 
                     "label": "Livestock / Animal Husbandry"
-                },
+                }, 
                 {
-                    "value": "50",
+                    "value": "50", 
                     "label": "Fisheries"
-                },
+                }, 
                 {
-                    "value": "51",
+                    "value": "51", 
                     "label": "Forestry"
-                },
+                }, 
                 {
-                    "value": "52",
+                    "value": "52", 
                     "label": "Income Generation"
-                },
+                }, 
                 {
-                    "value": "53",
+                    "value": "53", 
                     "label": "Agency Operational Support"
-                },
+                }, 
                 {
-                    "value": "54",
+                    "value": "54", 
                     "label": "Other"
-                },
+                }, 
                 {
-                    "value": "55",
+                    "value": "55", 
                     "label": "Outstanding Instalments"
-                },
+                }, 
                 {
-                    "value": "56",
+                    "value": "56", 
                     "label": "Settlement"
-                },
+                }, 
                 {
-                    "value": "57",
+                    "value": "57", 
                     "label": "Capacity Building / Training"
-                },
+                }, 
                 {
-                    "value": "58",
+                    "value": "58", 
                     "label": "Access to Energy"
-                },
+                }, 
                 {
-                    "value": "59",
+                    "value": "59", 
                     "label": "Elderly and Disabled"
-                },
+                }, 
                 {
-                    "value": "60",
+                    "value": "60", 
                     "label": "Connectivity"
-                },
+                }, 
                 {
-                    "value": "61",
+                    "value": "61", 
                     "label": "Solutions"
-                },
+                }, 
                 {
-                    "value": "62",
+                    "value": "62", 
                     "label": "Basic Needs"
                 }
-            ],
-            "preset": "multiple_select",
-            "help_text": "Tags useful for searching for the datasets. Multiple values are allowed.",
-            "label": "Topic classifications",
-            "field_name": "keywords"
-        },
+            ], 
+            "field_name": "keywords", 
+            "select_size": 10
+        }, 
         {
-            "help_text": "Unit of measurement / observation for the dataset",
-            "required": false,
-            "field_name": "unit_of_measurement",
+            "help_text": "Unit of measurement / observation for the dataset", 
+            "required": false, 
+            "field_name": "unit_of_measurement", 
             "label": "Unit of measurement"
-        },
+        }, 
         {
-            "required": false,
+            "required": false, 
             "choices": [
                 {
-                    "help_text": "All units (individuals, households, organizations, etc.) of a target population are included in the data collection.",
-                    "value": "total_universe_complete_enumeration",
+                    "help_text": "All units (individuals, households, organizations, etc.) of a target population are included in the data collection.", 
+                    "value": "total_universe_complete_enumeration", 
                     "label": "Total universe/Complete enumeration"
-                },
+                }, 
                 {
-                    "help_text": "All units of a target population have an equal probability of being included in the sample.",
-                    "value": "probability_simple_random",
+                    "help_text": "All units of a target population have an equal probability of being included in the sample.", 
+                    "value": "probability_simple_random", 
                     "label": "Probability: Simple random"
-                },
+                }, 
                 {
-                    "help_text": "A fixed selection interval is determined by dividing the population size by the desired sample size (Interval sampling).",
-                    "value": "probability_systematic_random",
+                    "help_text": "A fixed selection interval is determined by dividing the population size by the desired sample size (Interval sampling).", 
+                    "value": "probability_systematic_random", 
                     "label": "Probability: Systematic random"
-                },
+                }, 
                 {
-                    "help_text": "The target population is subdivided into separate and mutually exclusive segments (strata) that cover the entire population. Independent random samples are then drawn from each segment.",
-                    "value": "probability_stratified",
+                    "help_text": "The target population is subdivided into separate and mutually exclusive segments (strata) that cover the entire population. Independent random samples are then drawn from each segment.", 
+                    "value": "probability_stratified", 
                     "label": "Probability: Stratified"
-                },
+                }, 
                 {
-                    "help_text": "The target population is subdivided into separate and mutually exclusive segments (strata) that cover the entire population. In proportional stratified sampling the number of elements chosen from each stratum is proportional to the population size of the stratum when viewed against the entire population.",
-                    "value": "probability_stratified_proportional",
+                    "help_text": "The target population is subdivided into separate and mutually exclusive segments (strata) that cover the entire population. In proportional stratified sampling the number of elements chosen from each stratum is proportional to the population size of the stratum when viewed against the entire population.", 
+                    "value": "probability_stratified_proportional", 
                     "label": "Probability: Stratified: Proportional"
-                },
+                }, 
                 {
-                    "help_text": "The target population is subdivided into separate and mutually exclusive segments (strata) that cover the entire population. In disproportional sampling the number of units chosen from each stratum is not proportional to the population size of the stratum when viewed against the entire population. The number of sampled units from each stratum can be equal, optimal, or can reflect the purpose of the study, like oversampling of different subgroups of the population",
-                    "value": "probability_stratified_disproportional",
+                    "help_text": "The target population is subdivided into separate and mutually exclusive segments (strata) that cover the entire population. In disproportional sampling the number of units chosen from each stratum is not proportional to the population size of the stratum when viewed against the entire population. The number of sampled units from each stratum can be equal, optimal, or can reflect the purpose of the study, like oversampling of different subgroups of the population", 
+                    "value": "probability_stratified_disproportional", 
                     "label": "Probability: Stratified: Disproportional"
-                },
+                }, 
                 {
-                    "help_text": "The target population is divided into naturally occurring segments (clusters) and a probability sample of the clusters is selected. Data are then collected from all units within each selected cluster. Sampling is often clustered by geography, or time period. Use this broader term if a more specific type of cluster sampling is not known or is difficult to identify.",
-                    "value": "probability_cluster",
+                    "help_text": "The target population is divided into naturally occurring segments (clusters) and a probability sample of the clusters is selected. Data are then collected from all units within each selected cluster. Sampling is often clustered by geography, or time period. Use this broader term if a more specific type of cluster sampling is not known or is difficult to identify.", 
+                    "value": "probability_cluster", 
                     "label": "Probability: Cluster"
-                },
+                }, 
                 {
-                    "help_text": " The target population is divided into naturally occurring segments (clusters) and a simple random sample of the clusters is selected. Data are then collected from all units within each selected cluster. For example, for a sample of students in a city, a number of schools would be chosen using the random selection method, and then all of the students from every sampled school would be included.",
-                    "value": "probability_cluster_simple_random",
+                    "help_text": " The target population is divided into naturally occurring segments (clusters) and a simple random sample of the clusters is selected. Data are then collected from all units within each selected cluster. For example, for a sample of students in a city, a number of schools would be chosen using the random selection method, and then all of the students from every sampled school would be included.", 
+                    "value": "probability_cluster_simple_random", 
                     "label": "Probability: Cluster: Simple random "
-                },
+                }, 
                 {
-                    "help_text": "The target population is divided into naturally occurring segments (clusters); next, these are divided into mutually exclusive strata and a random sample of clusters is selected from each stratum. Data are then collected from all units within each selected cluster. For example, for a sample of students in a city, schools would be divided into two strata by school type (private vs. public); schools would be then randomly selected from each stratum, and all of the students from every sampled school would be included.",
-                    "value": "probability_cluster_stratified_random",
+                    "help_text": "The target population is divided into naturally occurring segments (clusters); next, these are divided into mutually exclusive strata and a random sample of clusters is selected from each stratum. Data are then collected from all units within each selected cluster. For example, for a sample of students in a city, schools would be divided into two strata by school type (private vs. public); schools would be then randomly selected from each stratum, and all of the students from every sampled school would be included.", 
+                    "value": "probability_cluster_stratified_random", 
                     "label": "Probability: Cluster: Stratified random"
-                },
+                }, 
                 {
-                    "help_text": "Sampling is carried out in stages using smaller and smaller units at each stage, and all stages involve a probability selection. The type of probability sampling procedure may be different at each stage. For example, for a sample of students in a city, schools are randomly selected in the first stage. A random sample of classes within each selected school is drawn in the second stage. Students are then randomly selected from each of these classes in the third stage.",
-                    "value": "probability_multistage",
+                    "help_text": "Sampling is carried out in stages using smaller and smaller units at each stage, and all stages involve a probability selection. The type of probability sampling procedure may be different at each stage. For example, for a sample of students in a city, schools are randomly selected in the first stage. A random sample of classes within each selected school is drawn in the second stage. Students are then randomly selected from each of these classes in the third stage.", 
+                    "value": "probability_multistage", 
                     "label": "Probability: Multistage"
-                },
+                }, 
                 {
-                    "help_text": "The selection of units (individuals, households, organizations, etc.) from the target population is not based on random selection. It is not possible to determine the probability of each element to be sampled. Use this broader term if the specific type of non-probability is not known, difficult to identify, or if multiple non-probability methods are being employed.",
-                    "value": "nonprobability",
+                    "help_text": "The selection of units (individuals, households, organizations, etc.) from the target population is not based on random selection. It is not possible to determine the probability of each element to be sampled. Use this broader term if the specific type of non-probability is not known, difficult to identify, or if multiple non-probability methods are being employed.", 
+                    "value": "nonprobability", 
                     "label": "Non-probability"
-                },
+                }, 
                 {
-                    "help_text": "The sample selection is based on the units' accessibility/relative ease of access. They may be easy to approach, or may themselves choose to participate in the study (self-selection). Researchers may have particular target groups in mind but they do not control the sample selection mechanism. For example, students leaving a particular building on campus may be approached, or individuals may volunteer to participate in response to invitations that do not target them specifically, but a larger group to which they may belong. Also called convenience or opportunity sampling.",
-                    "value": "nonprobability_availability",
+                    "help_text": "The sample selection is based on the units' accessibility/relative ease of access. They may be easy to approach, or may themselves choose to participate in the study (self-selection). Researchers may have particular target groups in mind but they do not control the sample selection mechanism. For example, students leaving a particular building on campus may be approached, or individuals may volunteer to participate in response to invitations that do not target them specifically, but a larger group to which they may belong. Also called convenience or opportunity sampling.", 
+                    "value": "nonprobability_availability", 
                     "label": "Non-probability: Availability"
-                },
+                }, 
                 {
-                    "help_text": "Sample units are specifically identified, selected and contacted for the information they can provide on the researched topic. Selection is based on different characteristics of the independent and/or dependent variables under study, and relies on the researchers' judgement. The study authors, or persons authorized by them have control over the sample selection mechanism and the universe is defined in terms of the selection criteria. Also called judgement sampling. For example, a medical researcher may intentionally select individuals who are similar in most respects, except on the outcome of the research topic, which can be a specific disease.  Some types of purposive sampling are typical/deviant case, homogeneous/maximum variation, expert, or critical case sampling. ",
-                    "value": "nonprobability_purposive",
+                    "help_text": "Sample units are specifically identified, selected and contacted for the information they can provide on the researched topic. Selection is based on different characteristics of the independent and/or dependent variables under study, and relies on the researchers' judgement. The study authors, or persons authorized by them have control over the sample selection mechanism and the universe is defined in terms of the selection criteria. Also called judgement sampling. For example, a medical researcher may intentionally select individuals who are similar in most respects, except on the outcome of the research topic, which can be a specific disease.  Some types of purposive sampling are typical/deviant case, homogeneous/maximum variation, expert, or critical case sampling. ", 
+                    "value": "nonprobability_purposive", 
                     "label": "Non-probability: Purposive"
-                },
+                }, 
                 {
-                    "help_text": "The target population is subdivided into separate and mutually exclusive segments according to some predefined quotation criteria. The distribution of the quotation criteria (gender/age/ethnicity ratio, or other characteristics, like religion, education, etc.) is intended to reflect the real structure of the target population or the structure of the desired study population. Non-probability samples are then drawn from each segment until a specific number of units has been reached. For example, if the target population consists of 45 percent females and 55 percent males, a proportional quota sample will have the same gender percentages, while in a non-proportional quota sample the percentages will be different, based on some study-related consideration (for instance, the need to oversample for certain under-represented segments of the population).",
-                    "value": "nonprobability_quota",
+                    "help_text": "The target population is subdivided into separate and mutually exclusive segments according to some predefined quotation criteria. The distribution of the quotation criteria (gender/age/ethnicity ratio, or other characteristics, like religion, education, etc.) is intended to reflect the real structure of the target population or the structure of the desired study population. Non-probability samples are then drawn from each segment until a specific number of units has been reached. For example, if the target population consists of 45 percent females and 55 percent males, a proportional quota sample will have the same gender percentages, while in a non-proportional quota sample the percentages will be different, based on some study-related consideration (for instance, the need to oversample for certain under-represented segments of the population).", 
+                    "value": "nonprobability_quota", 
                     "label": "Non-probability: Quota"
-                },
+                }, 
                 {
-                    "help_text": "Sample units are identified from a target population with the assistance of units already selected. A typical case is snowball sampling, in which the researcher identifies a group of units that matches a particular criterion of eligibility. The latter are asked to recruit other members of the same population that fulfil the same criterion of eligibility (sampling of specific populations like migrants, etc.).",
-                    "value": "nonprobability_respondentassisted",
+                    "help_text": "Sample units are identified from a target population with the assistance of units already selected. A typical case is snowball sampling, in which the researcher identifies a group of units that matches a particular criterion of eligibility. The latter are asked to recruit other members of the same population that fulfil the same criterion of eligibility (sampling of specific populations like migrants, etc.).", 
+                    "value": "nonprobability_respondentassisted", 
                     "label": "Non-probability: Respondent-assisted"
-                },
+                }, 
                 {
-                    "help_text": "Sample design that combines probability and non-probability sampling within the same sampling process. Different types of sampling may be used at different stages of creating the sample. For example, for a sample of minority students in a city, schools are randomly selected in the first stage. Then, a quota sample of students is selected within each school in the second stage. If separate samples are drawn from the same target population using different sampling methods, the type of sampling procedure used for each sample should be classified separately.",
-                    "value": "mixed_probability_nonprobability",
+                    "help_text": "Sample design that combines probability and non-probability sampling within the same sampling process. Different types of sampling may be used at different stages of creating the sample. For example, for a sample of minority students in a city, schools are randomly selected in the first stage. Then, a quota sample of students is selected within each school in the second stage. If separate samples are drawn from the same target population using different sampling methods, the type of sampling procedure used for each sample should be classified separately.", 
+                    "value": "mixed_probability_nonprobability", 
                     "label": "Mixed probability and non-probability"
-                },
+                }, 
                 {
-                    "value": "other_other",
+                    "value": "other_other", 
                     "label": "Use if the sampling procedure is known, but not found in the list.."
                 }
-            ],
-            "preset": "multiple_select",
-            "help_text": "Unit of measurement / observation for the dataset. Multiple values are allowed.",
-            "label": "Sampling Procedure",
-            "field_name": "sampling_procedure"
-        },
+            ], 
+            "preset": "multiple_select", 
+            "help_text": "Unit of measurement / observation for the dataset. Multiple values are allowed.", 
+            "label": "Sampling Procedure", 
+            "field_name": "sampling_procedure", 
+            "select_size": 10
+        }, 
         {
-            "required": false,
+            "required": false, 
             "choices": [
                 {
-                    "value": "participatory_assessments",
+                    "value": "participatory_assessments", 
                     "label": "Participatory assessments"
-                },
+                }, 
                 {
-                    "value": "baseline_household_survey",
+                    "value": "baseline_household_survey", 
                     "label": "Baseline Household Survey"
-                },
+                }, 
                 {
-                    "value": "rapid_needs_assessment",
+                    "value": "rapid_needs_assessment", 
                     "label": "Rapid Needs Assessment"
-                },
+                }, 
                 {
-                    "value": "protection_monitoring",
+                    "value": "protection_monitoring", 
                     "label": "Protection Monitoring"
-                },
+                }, 
                 {
-                    "value": "programme_monitoring",
+                    "value": "programme_monitoring", 
                     "label": "Programme monitoring"
-                },
+                }, 
                 {
-                    "value": "population_data",
+                    "value": "population_data", 
                     "label": "Population Data"
-                },
+                }, 
                 {
-                    "value": "cartography",
+                    "value": "cartography", 
                     "label": "Cartography, Infrastructure & GIS"
                 }
-            ],
-            "preset": "multiple_select",
-            "help_text": "Classification of the type of data contained in the file. Multiple values are allowed.",
-            "label": "Operational purpose of data",
+            ], 
+            "preset": "multiple_select", 
+            "help_text": "Classification of the type of data contained in the file. Multiple values are allowed.", 
+            "label": "Operational purpose of data", 
             "field_name": "operational_purpose_of_data"
-        },
+        }, 
         {
-            "help_text": "Indicates if the dataset has HXL hashtags",
-            "form_snippet": null,
-            "required": false,
-            "field_name": "hxl-ated",
+            "help_text": "Indicates if the dataset has HXL hashtags", 
+            "form_snippet": null, 
+            "required": false, 
+            "field_name": "hxl-ated", 
             "label": "HXL-ated"
-        },
+        }, 
         {
-            "display_snippet": "select.html",
-            "required": false,
-            "form_snippet": null,
+            "display_snippet": "select.html", 
+            "required": false, 
+            "form_snippet": null, 
             "choices": [
                 {
-                    "value": "raw",
+                    "value": "raw", 
                     "label": "Raw-Uncleaned"
-                },
+                }, 
                 {
-                    "value": "cleaned",
+                    "value": "cleaned", 
                     "label": "Cleaned Only"
-                },
+                }, 
                 {
-                    "value": "anonymized",
+                    "value": "anonymized", 
                     "label": "Cleaned & Anonymized"
                 }
-            ],
-            "help_text": "Indicates the processing stage of the data. 'Raw' means that the data has not been cleaned since collection. 'In process' means that it is being cleaned. 'Final' means that the dataset is final and ready for use in analytical products",
-            "label": "Dataset Process Status",
+            ], 
+            "help_text": "Indicates the processing stage of the data. 'Raw' means that the data has not been cleaned since collection. 'In process' means that it is being cleaned. 'Final' means that the dataset is final and ready for use in analytical products", 
+            "label": "Dataset Process Status", 
             "field_name": "process_status"
-        },
+        }, 
         {
-            "display_snippet": "select.html",
-            "required": false,
-            "form_snippet": null,
+            "display_snippet": "select.html", 
+            "required": false, 
+            "form_snippet": null, 
             "choices": [
                 {
-                    "value": "personally_identifiable",
+                    "value": "personally_identifiable", 
                     "label": "Personally identifiable"
-                },
+                }, 
                 {
-                    "value": "anonymized_enclave",
+                    "value": "anonymized_enclave", 
                     "label": "Anonymized 1st level: Data Enclave - only removed direct identifiers"
-                },
+                }, 
                 {
-                    "value": "anonymized_scientific",
+                    "value": "anonymized_scientific", 
                     "label": "Anonymized 2st level: Scientific Use File (SUF)"
-                },
+                }, 
                 {
-                    "value": "anonymized_public",
+                    "value": "anonymized_public", 
                     "label": "Anonymized 3rd level: Public Use File (PUF)"
                 }
-            ],
-            "help_text": "Indicates if personally identifiable data is contained in the dataset",
-            "label": "Identifiability",
+            ], 
+            "help_text": "Indicates if personally identifiable data is contained in the dataset", 
+            "label": "Identifiability", 
             "field_name": "identifiability"
-        },
+        }, 
         {
-            "form_placeholder": "eg. National coverage, or name of the area, etc.",
-            "required": false,
-            "field_name": "geog_coverage",
+            "form_placeholder": "eg. National coverage, or name of the area, etc.", 
+            "required": false, 
+            "field_name": "geog_coverage", 
             "label": "Geographic Coverage"
-        },
+        }, 
         {
-            "display_snippet": "select.html",
-            "required": false,
-            "form_snippet": "select.html",
-            "label": "Data collection technique",
-            "validators": "scheming_required unhcr_choices",
+            "display_snippet": "select.html", 
+            "required": false, 
+            "form_snippet": "select.html", 
+            "label": "Data collection technique", 
+            "validators": "scheming_required unhcr_choices", 
             "choices": [
                 {
-                    "value": "nf",
+                    "value": "nf", 
                     "label": "Not specified"
-                },
+                }, 
                 {
-                    "value": "f2f",
+                    "value": "f2f", 
                     "label": "Face-to-face interview"
-                },
+                }, 
                 {
-                    "value": "capi",
+                    "value": "capi", 
                     "label": "Face-to-face interview: Computerised"
-                },
+                }, 
                 {
-                    "value": "cami",
+                    "value": "cami", 
                     "label": "Face-to-face interview: Mobile"
-                },
+                }, 
                 {
-                    "value": "papi",
+                    "value": "papi", 
                     "label": "Face-to-face interview: Paper-and-pencil"
-                },
+                }, 
                 {
-                    "value": "tri",
+                    "value": "tri", 
                     "label": "Telephone interview"
-                },
+                }, 
                 {
-                    "value": "eri",
+                    "value": "eri", 
                     "label": "E-mail interview"
-                },
+                }, 
                 {
-                    "value": "wri",
+                    "value": "wri", 
                     "label": "Web-based interview: audio-visual technology enabling the interviewer(s) and interviewee(s) to communicate in real time"
-                },
+                }, 
                 {
-                    "value": "easi",
+                    "value": "easi", 
                     "label": "Self-administered questionnaire: E-mail"
-                },
+                }, 
                 {
-                    "value": "pasi",
+                    "value": "pasi", 
                     "label": "Self-administered questionnaire: Paper"
-                },
+                }, 
                 {
-                    "value": "sasi",
+                    "value": "sasi", 
                     "label": "Self-administered questionnaire: SMS/MMS"
-                },
+                }, 
                 {
-                    "value": "casi",
+                    "value": "casi", 
                     "label": "Self-administered questionnaire: Computer-assisted"
-                },
+                }, 
                 {
-                    "value": "cawi",
+                    "value": "cawi", 
                     "label": "Self-administered questionnaire: Web-based"
-                },
+                }, 
                 {
-                    "value": "foc",
+                    "value": "foc", 
                     "label": "Face-to-face focus group"
-                },
+                }, 
                 {
-                    "value": "tfoc",
+                    "value": "tfoc", 
                     "label": "Telephone focus group"
-                },
+                }, 
                 {
-                    "value": "obs",
+                    "value": "obs", 
                     "label": "Observation"
-                },
+                }, 
                 {
-                    "value": "oth",
+                    "value": "oth", 
                     "label": "Other"
                 }
-            ],
+            ], 
             "field_name": "data_collection_technique"
-        },
+        }, 
         {
-            "help_text": "Links to other RIDL datasets. It supports multiple selections",
-            "required": false,
-            "preset": "linked_datasets",
-            "field_name": "linked_datasets",
+            "help_text": "Links to other RIDL datasets. It supports multiple selections", 
+            "required": false, 
+            "preset": "linked_datasets", 
+            "field_name": "linked_datasets", 
             "label": "Linked Datasets"
-        },
+        }, 
         {
-            "required": false,
+            "required": false, 
             "choices": [
                 {
-                    "value": "False",
+                    "value": "False", 
                     "label": "No"
-                },
+                }, 
                 {
-                    "value": "True",
+                    "value": "True", 
                     "label": "Yes"
                 }
-            ],
-            "preset": "select",
-            "help_text": "Allows users to indicate if the dataset is archived or active",
-            "label": "Archived",
+            ], 
+            "preset": "select", 
+            "help_text": "Allows users to indicate if the dataset is archived or active", 
+            "label": "Archived", 
             "field_name": "archived"
-        },
+        }, 
         {
-            "form_placeholder": "Internal notes about how the dataset has been cleaned or transformed. These are stored but not indexed.",
-            "form_snippet": "markdown.html",
-            "required": false,
-            "field_name": "admin_notes",
+            "form_placeholder": "Internal notes about how the dataset has been cleaned or transformed. These are stored but not indexed.", 
+            "form_snippet": "markdown.html", 
+            "required": false, 
+            "field_name": "admin_notes", 
             "label": "Admin Notes - General"
-        },
+        }, 
         {
-            "form_placeholder": "Internal notes about how the Sampling Procedure has been defined. These are stored but not indexed.",
-            "form_snippet": "markdown.html",
-            "required": false,
-            "field_name": "sampling_procedure_notes",
+            "form_placeholder": "Internal notes about how the Sampling Procedure has been defined. These are stored but not indexed.", 
+            "form_snippet": "markdown.html", 
+            "required": false, 
+            "field_name": "sampling_procedure_notes", 
             "label": "Admin Notes - Sampling Procedure"
-        },
+        }, 
         {
-            "form_placeholder": "Internal notes about how the response rate for the survey. These are stored but not indexed.",
-            "form_snippet": "markdown.html",
-            "required": false,
-            "field_name": "response_rate_notes",
+            "form_placeholder": "Internal notes about how the response rate for the survey. These are stored but not indexed.", 
+            "form_snippet": "markdown.html", 
+            "required": false, 
+            "field_name": "response_rate_notes", 
             "label": "Admin Notes - Response Rate"
-        },
+        }, 
         {
-            "form_placeholder": "Internal notes about how the data Collection process and supervision. These are stored but not indexed.",
-            "form_snippet": "markdown.html",
-            "required": false,
-            "field_name": "data_collection_notes",
+            "form_placeholder": "Internal notes about how the data Collection process and supervision. These are stored but not indexed.", 
+            "form_snippet": "markdown.html", 
+            "required": false, 
+            "field_name": "data_collection_notes", 
             "label": "Admin Notes - Data Collection"
-        },
+        }, 
         {
-            "form_placeholder": "Internal notes on the Weighting. These are stored but not indexed.",
-            "form_snippet": "markdown.html",
-            "required": false,
-            "field_name": "weight_notes",
+            "form_placeholder": "Internal notes on the Weighting. These are stored but not indexed.", 
+            "form_snippet": "markdown.html", 
+            "required": false, 
+            "field_name": "weight_notes", 
             "label": "Admin Notes - Weighting"
-        },
+        }, 
         {
-            "form_placeholder": "Internal notes about how the dataset has been cleaned or transformed. These are stored but not indexed.",
-            "form_snippet": "markdown.html",
-            "required": false,
-            "field_name": "clean_ops_notes",
+            "form_placeholder": "Internal notes about how the dataset has been cleaned or transformed. These are stored but not indexed.", 
+            "form_snippet": "markdown.html", 
+            "required": false, 
+            "field_name": "clean_ops_notes", 
             "label": "Admin Notes - Cleaning"
-        },
+        }, 
         {
-            "form_placeholder": "Provide information about the restrictions to access the dataset. Indicate who is the data owner (with authority to provide access). Indicate who is the focal point (with knowledge to answer questions on the dataset).",
-            "form_snippet": "markdown.html",
-            "required": false,
-            "field_name": "data_accs_notes",
+            "form_placeholder": "Provide information about the restrictions to access the dataset. Indicate who is the data owner (with authority to provide access). Indicate who is the focal point (with knowledge to answer questions on the dataset).", 
+            "form_snippet": "markdown.html", 
+            "required": false, 
+            "field_name": "data_accs_notes", 
             "label": "Admin Notes - Access authority"
-        },
+        }, 
         {
-            "display_snippet": null,
-            "required": false,
-            "form_snippet": null,
-            "label": "DDI",
-            "help_text": "Determines if a dataset was imported from a DDI XML file",
+            "display_snippet": null, 
+            "required": false, 
+            "form_snippet": null, 
+            "label": "DDI", 
+            "help_text": "Determines if a dataset was imported from a DDI XML file", 
             "field_name": "ddi"
         }
-    ],
+    ], 
     "resource_fields": [
         {
-            "required": false,
-            "form_snippet": "resource_type.html",
+            "required": false, 
+            "form_snippet": "resource_type.html", 
             "choices": [
                 {
-                    "value": "data",
+                    "value": "data", 
                     "label": "Data file"
-                },
+                }, 
                 {
-                    "value": "attachment",
+                    "value": "attachment", 
                     "label": "Additional attachment"
                 }
-            ],
-            "preset": "select",
-            "label": "Resource type",
+            ], 
+            "preset": "select", 
+            "label": "Resource type", 
             "field_name": "type"
-        },
+        }, 
         {
-            "required": false,
-            "preset": "resource_url_upload",
-            "field_name": "url",
+            "validators": "upload_not_empty unicode remove_whitespace", 
+            "required": false, 
+            "preset": "resource_url_upload", 
+            "field_name": "url", 
             "label": "Upload"
-        },
+        }, 
         {
-            "form_placeholder": "eg. January 2011 Gold Prices",
-            "required": false,
-            "field_name": "name",
+            "form_placeholder": "eg. January 2011 Gold Prices", 
+            "required": false, 
+            "field_name": "name", 
             "label": "Name"
-        },
+        }, 
         {
-            "form_placeholder": "Some useful notes about the data",
-            "form_snippet": "markdown.html",
-            "required": false,
-            "field_name": "description",
+            "form_placeholder": "Some useful notes about the data", 
+            "form_snippet": "markdown.html", 
+            "required": false, 
+            "field_name": "description", 
             "label": "Description"
-        },
+        }, 
         {
-            "required": false,
-            "preset": "resource_format_autocomplete",
-            "field_name": "format",
-            "label": "File Format",
+            "required": false, 
+            "preset": "resource_format_autocomplete", 
+            "field_name": "format", 
             "form_attrs": {
-              "class": "",
-              "data-module": "autocomplete",
-              "data-module-source": "/api/2/util/resource/format_autocomplete?incomplete=?"
-            }
-        },
+                "data-module": "autocomplete", 
+                "class": "", 
+                "data-module-source": "/api/2/util/resource/format_autocomplete?incomplete=?"
+            }, 
+            "label": "File Format"
+        }, 
         {
-            "required": false,
-            "label": "File Type",
-            "preset": "select",
-            "validators": "file_type_validator scheming_required scheming_choices",
-            "help_text": "Indicates what is contained in the file",
+            "required": false, 
+            "label": "File Type", 
+            "preset": "select", 
+            "validators": "file_type_validator scheming_required scheming_choices", 
+            "help_text": "Indicates what is contained in the file", 
             "choices": [
                 {
-                    "value": "microdata",
+                    "value": "microdata", 
                     "label": "Microdata"
-                },
+                }, 
                 {
-                    "value": "questionnaire",
+                    "value": "questionnaire", 
                     "label": "Questionnaire"
-                },
+                }, 
                 {
-                    "value": "report",
+                    "value": "report", 
                     "label": "Report"
-                },
+                }, 
                 {
-                    "value": "sampling_methodology",
+                    "value": "sampling_methodology", 
                     "label": "Sampling strategy & methodology Description"
-                },
+                }, 
                 {
-                    "value": "infographics",
+                    "value": "infographics", 
                     "label": "Infographics & Dashboard"
-                },
+                }, 
                 {
-                    "label": "Script",
-                    "value": "script"
-                },
+                    "value": "script", 
+                    "label": "Script"
+                }, 
                 {
-                    "label": "Concept Note",
-                    "value": "concept note"
-                },
+                    "value": "concept note", 
+                    "label": "Concept Note"
+                }, 
                 {
-                    "value": "other",
+                    "value": "other", 
                     "label": "Other"
                 }
-            ],
+            ], 
             "field_name": "file_type"
-        },
+        }, 
         {
-            "required": false,
-            "label": "Date collection first date",
-            "preset": "date",
-            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date",
-            "help_text": "Expected format: mm/dd/yyyy",
-            "field_name": "date_range_start"
-        },
+            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date", 
+            "required": false, 
+            "preset": "date", 
+            "field_name": "date_range_start", 
+            "label": "Date collection first date"
+        }, 
         {
-            "required": false,
-            "label": "Date collection last date",
-            "preset": "date",
-            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date",
-            "help_text": "Expected format: mm/dd/yyyy",
-            "field_name": "date_range_end"
-        },
+            "validators": "ignore_if_attachment scheming_required isodate convert_to_json_if_date", 
+            "required": false, 
+            "preset": "date", 
+            "field_name": "date_range_end", 
+            "label": "Date collection last date"
+        }, 
         {
-            "form_placeholder": "0",
-            "required": false,
-            "validators": "ignore_if_attachment scheming_required",
-            "field_name": "version",
+            "form_placeholder": "0", 
+            "required": false, 
+            "validators": "ignore_if_attachment scheming_required", 
+            "field_name": "version", 
             "label": "Version"
-        },
+        }, 
         {
-            "required": false,
+            "required": false, 
             "choices": [
                 {
-                    "value": "False",
+                    "value": "False", 
                     "label": "No"
-                },
+                }, 
                 {
-                    "value": "True",
+                    "value": "True", 
                     "label": "Yes"
                 }
-            ],
-            "preset": "select",
-            "validators": "ignore_if_attachment scheming_required scheming_choices",
-            "help_text": "Indicates if the resource has HXL hashtags",
-            "label": "HXL-ated",
+            ], 
+            "preset": "select", 
+            "validators": "ignore_if_attachment scheming_required scheming_choices", 
+            "help_text": "Indicates if the resource has HXL hashtags", 
+            "label": "HXL-ated", 
             "field_name": "hxl-ated"
-        },
+        }, 
         {
-            "required": false,
-            "label": "File Process Status",
-            "preset": "select",
-            "validators": "ignore_if_attachment scheming_required scheming_choices",
-            "help_text": "Indicates the processing stage of the data. 'Raw' means that the data has not been cleaned since collection. 'In process' means that it is being cleaned. 'Final' means that the dataset is final and ready for use in analytical products",
+            "required": false, 
+            "label": "File Process Status", 
+            "preset": "select", 
+            "validators": "ignore_if_attachment scheming_required scheming_choices", 
+            "help_text": "Indicates the processing stage of the data. 'Raw' means that the data has not been cleaned since collection. 'In process' means that it is being cleaned. 'Final' means that the dataset is final and ready for use in analytical products", 
             "choices": [
                 {
-                    "value": "raw",
+                    "value": "raw", 
                     "label": "Raw-Uncleaned"
-                },
+                }, 
                 {
-                    "value": "cleaned",
+                    "value": "cleaned", 
                     "label": "Cleaned Only"
-                },
+                }, 
                 {
-                    "value": "anonymized",
+                    "value": "anonymized", 
                     "label": "Cleaned & Anonymized"
                 }
-            ],
+            ], 
             "field_name": "process_status"
-        },
+        }, 
         {
-            "required": false,
-            "label": "Identifiability",
-            "preset": "select",
-            "validators": "ignore_if_attachment scheming_required scheming_choices",
-            "help_text": "Indicates if personally identifiable data is contained in the dataset",
+            "required": false, 
+            "label": "Identifiability", 
+            "preset": "select", 
+            "validators": "ignore_if_attachment scheming_required scheming_choices", 
+            "help_text": "Indicates if personally identifiable data is contained in the dataset", 
             "choices": [
                 {
-                    "value": "personally_identifiable",
+                    "value": "personally_identifiable", 
                     "label": "Personally identifiable"
-                },
+                }, 
                 {
-                    "value": "anonymized_enclave",
+                    "value": "anonymized_enclave", 
                     "label": "Anonymized 1st level: Data Enclave - only removed direct identifiers"
-                },
+                }, 
                 {
-                    "value": "anonymized_scientific",
+                    "value": "anonymized_scientific", 
                     "label": "Anonymized 2st level: Scientific Use File (SUF)"
-                },
+                }, 
                 {
-                    "value": "anonymized_public",
+                    "value": "anonymized_public", 
                     "label": "Anonymized 3st level: Public Use File (PUF)"
                 }
-            ],
+            ], 
             "field_name": "identifiability"
         }
     ]
