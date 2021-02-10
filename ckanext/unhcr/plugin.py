@@ -562,6 +562,7 @@ class UnhcrPlugin(
         functions['access_request_update'] = auth.access_request_update
         functions['user_update_sysadmin'] = auth.user_update_sysadmin
         functions['external_user_update_state'] = auth.external_user_update_state
+        functions['external_user_delete'] = auth.external_user_delete
         functions['search_index_rebuild'] = auth.search_index_rebuild
         functions['user_show'] = auth.user_show
         return functions
@@ -601,6 +602,7 @@ class UnhcrPlugin(
             'resource_update': actions.resource_update,
             'user_update_sysadmin': actions.user_update_sysadmin,
             'external_user_update_state': actions.external_user_update_state,
+            'external_user_delete': actions.external_user_delete,
             'search_index_rebuild': actions.search_index_rebuild,
             'user_autocomplete': actions.user_autocomplete,
             'user_list': actions.user_list,

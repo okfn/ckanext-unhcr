@@ -1040,10 +1040,12 @@ class TestAccessRequestUpdate(base.FunctionalTestBase):
             {'id': self.user_request.id, 'status': 'rejected'}
         )
 
-        user = toolkit.get_action("user_show")(
-            {"ignore_auth": True}, {"id": self.pending_user["id"]}
+        assert_raises(
+            toolkit.ObjectNotFound,
+            toolkit.get_action("user_show"),
+            {"ignore_auth": True},
+            {"id": self.pending_user["id"]}
         )
-        assert_equals(model.State.DELETED, user['state'])
         assert_equals('rejected', self.user_request.status)
         assert_equals(
             self.container1_admin["id"],

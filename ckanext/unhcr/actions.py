@@ -1007,13 +1007,14 @@ def access_request_update(context, data_dict):
                 context, _data_dict
             )
     elif request.object_type == 'user':
-        state = {'approved':  m.State.ACTIVE, 'rejected': m.State.DELETED}[status]
-        _data_dict = {'id': request.object_id, 'state': state}
-        user = toolkit.get_action('external_user_update_state')(
-            context, _data_dict
-        )
-
+        if status == 'rejected':
+            toolkit.get_action('external_user_delete')(
+                context, {'id': request.object_id}
+            )
         if status == 'approved':
+            user = toolkit.get_action('external_user_update_state')(
+                context, {'id': request.object_id, 'state': m.State.ACTIVE}
+            )
             # Notify the user
             subj = mailer.compose_account_approved_email_subj()
             body = mailer.compose_account_approved_email_body(user)
@@ -1130,6 +1131,30 @@ def external_user_update_state(context, data_dict):
     m.Session.refresh(user_obj)
 
     return model_dictize.user_dictize(user_obj, context)
+
+
+def external_user_delete(context, data_dict):
+    """
+    Delete an external user
+    Any internal user with container admin privileges or higher
+    can delete another user when:
+    - The target user is external
+    - The target user's current status is 'pending'
+    Additionally, a sysadmin may delete another user at any time.
+
+    :param id: The id or name of the target user
+    :type id: string
+    """
+    m = context.get('model', model)
+    user_id = toolkit.get_or_bust(data_dict, ['id'])
+
+    toolkit.check_access('external_user_delete', context, data_dict)
+
+    user_obj = m.User.get(user_id)
+    if not user_obj:
+        raise toolkit.ObjectNotFound("User not found")
+    m.Session.delete(user_obj)
+    m.Session.commit()
 
 
 # Admin

@@ -412,6 +412,10 @@ def external_user_update_state(context, data_dict):
     return {'success': False}
 
 
+def external_user_delete(context, data_dict):
+    return external_user_update_state(context, data_dict)
+
+
 # Admin
 
 def user_update_sysadmin(context, data_dict):
