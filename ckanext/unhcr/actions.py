@@ -1289,6 +1289,17 @@ def user_show(up_func, context, data_dict):
 
 @toolkit.chained_action
 def user_create(up_func, context, data_dict):
+
+    m = context.get('model', model)
+    if len(m.Session.query(m.User).filter(m.User.email==data_dict['email']).all()) > 0:
+        raise toolkit.ValidationError({
+            'email': [
+                "The email address '{}' already belongs to a registered user.".format(
+                    data_dict['email']
+                )
+            ]
+        })
+
     user = up_func(context, data_dict)
     user_obj = _get_user_obj(context)
 
