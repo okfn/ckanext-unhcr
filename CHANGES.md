@@ -1,5 +1,11 @@
 # RIDL Changelog
 
+## v2.1.4 - 2021-02-10
+
+Fixes:
+- Update schemas for scheming 2
+- Don't allow multple users with the same email address
+
 ## v2.1.3 - 2021-02-03
 
 Fixes:
