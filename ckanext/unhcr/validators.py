@@ -276,9 +276,12 @@ def owner_org_validator(key, data, errors, context):
                 try:
                     return validators.owner_org_validator(key, data, errors, context)
                 except Invalid as e:
-                    if e.error == u'You cannot add a dataset to this organization':
+                    if e.error in (
+                        u'You cannot add a dataset to this organization',
+                        u'You cannot add a dataset to this data container',
+                    ):
                         return
                     raise e
-            raise Invalid('You cannot move this dataset to another organization')
+            raise Invalid('You cannot move this dataset to another data container')
 
     return validators.owner_org_validator(key, data, errors, context)
