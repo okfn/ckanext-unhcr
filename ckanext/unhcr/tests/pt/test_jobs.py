@@ -1,33 +1,13 @@
-import os
-import pylons
-from ckan import model
-from ckan.plugins import toolkit
-from paste.registry import Registry
-from nose.plugins.attrib import attr
-from ckan.tests import factories as core_factories
-from nose.tools import assert_raises, assert_equals
-from ckan.tests.helpers import call_action, FunctionalTestBase
-from ckanext.unhcr.tests import factories
-from ckanext.unhcr import validators
+# -*- coding: utf-8 -*-
+
+import pytest
 from ckanext.unhcr.jobs import _modify_package
 
 
-class TestJobs(FunctionalTestBase):
-
-    # Config
-
-    @classmethod
-    def setup_class(cls):
-
-        # Hack because the hierarchy extension uses c in some methods
-        # that are called outside the context of a web request
-        c = pylons.util.AttribSafeContextObj()
-        registry = Registry()
-        registry.prepare()
-        registry.register(pylons.c, c)
-
-        super(TestJobs, cls).setup_class()
-
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+)
+class TestJobs(object):
 
     # date_range
 
@@ -40,8 +20,8 @@ class TestJobs(FunctionalTestBase):
                 {'date_range_start': '2017-03-01', 'date_range_end': '2017-09-01'},
             ]
         })
-        assert_equals(package['date_range_start'], '2017-01-01')
-        assert_equals(package['date_range_end'], '2017-09-01')
+        assert package['date_range_start'] == '2017-01-01'
+        assert package['date_range_end'] == '2017-09-01'
 
 
     def test_modify_package_date_range_after_resource_deletion(self):
@@ -52,8 +32,8 @@ class TestJobs(FunctionalTestBase):
                 {'date_range_start': '2017-01-01', 'date_range_end': '2017-06-01'},
             ]
         })
-        assert_equals(package['date_range_start'], '2017-01-01')
-        assert_equals(package['date_range_end'], '2017-06-01')
+        assert package['date_range_start'] == '2017-01-01'
+        assert package['date_range_end'] == '2017-06-01'
 
 
     def test_modify_package_date_range_no_resources(self):
@@ -62,8 +42,8 @@ class TestJobs(FunctionalTestBase):
             'date_range_end': None,
             'resources': [],
         })
-        assert_equals(package['date_range_start'], None)
-        assert_equals(package['date_range_end'], None)
+        assert package['date_range_start'] is None
+        assert package['date_range_end'] is None
 
 
     # process_status
@@ -76,7 +56,7 @@ class TestJobs(FunctionalTestBase):
                 {'process_status': 'anonymized'},
             ]
         })
-        assert_equals(package['process_status'], 'cleaned')
+        assert package['process_status'] == 'cleaned'
 
 
     def test_modify_package_process_status_resource_deletion(self):
@@ -86,7 +66,7 @@ class TestJobs(FunctionalTestBase):
                 {'process_status': 'anonymized'},
             ]
         })
-        assert_equals(package['process_status'], 'anonymized')
+        assert package['process_status'] == 'anonymized'
 
 
     def test_modify_package_process_status_none(self):
@@ -97,7 +77,7 @@ class TestJobs(FunctionalTestBase):
                 {'process_status': 'anonymized'},
             ]
         })
-        assert_equals(package['process_status'], 'cleaned')
+        assert package['process_status'] == 'cleaned'
 
 
     def test_modify_package_process_status_no_resources(self):
@@ -105,7 +85,7 @@ class TestJobs(FunctionalTestBase):
             'process_status': 'anonymized',
             'resources': [],
         })
-        assert_equals(package['process_status'], None)
+        assert package['process_status'] is None
 
 
     def test_modify_package_process_status_default(self):
@@ -113,7 +93,7 @@ class TestJobs(FunctionalTestBase):
             'process_status': None,
             'resources': [],
         })
-        assert_equals(package['process_status'], None)
+        assert package['process_status'] is None
 
     # privacy
 
@@ -125,8 +105,8 @@ class TestJobs(FunctionalTestBase):
                 {'identifiability': 'anonymized_public'},
             ]
         })
-        assert_equals(package['identifiability'], 'anonymized_public')
-        assert_equals(package['visibility'], 'public')
+        assert package['identifiability'] == 'anonymized_public'
+        assert package['visibility'] == 'public'
 
 
     def test_modify_package_privacy_private_false(self):
@@ -137,8 +117,8 @@ class TestJobs(FunctionalTestBase):
                 {'identifiability': 'anonymized_public'},
             ]
         })
-        assert_equals(package['identifiability'], 'anonymized_public')
-        assert_equals(package['visibility'], 'public')
+        assert package['identifiability'] == 'anonymized_public'
+        assert package['visibility'] == 'public'
 
 
     def test_modify_package_privacy_resource_addition(self):
@@ -150,8 +130,8 @@ class TestJobs(FunctionalTestBase):
                 {'identifiability': 'personally_identifiable'},
             ]
         })
-        assert_equals(package['identifiability'], 'personally_identifiable')
-        assert_equals(package['visibility'], 'restricted')
+        assert package['identifiability'] == 'personally_identifiable'
+        assert package['visibility'] == 'restricted'
 
 
     def test_modify_package_privacy_package_none(self):
@@ -162,8 +142,8 @@ class TestJobs(FunctionalTestBase):
                 {'identifiability': 'personally_identifiable'},
             ]
         })
-        assert_equals(package['identifiability'], 'personally_identifiable')
-        assert_equals(package['visibility'], 'restricted')
+        assert package['identifiability'] == 'personally_identifiable'
+        assert package['visibility'] == 'restricted'
 
 
     def test_modify_package_privacy_default(self):
@@ -172,5 +152,5 @@ class TestJobs(FunctionalTestBase):
             'visibility': 'public',
             'resources': []
         })
-        assert_equals(package['identifiability'], None)
-        assert_equals(package['visibility'], 'public')
+        assert package['identifiability'] is None
+        assert package['visibility'] == 'public'
