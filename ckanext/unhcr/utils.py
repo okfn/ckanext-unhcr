@@ -40,14 +40,13 @@ def user_is_external(user):
     '''
     Returns True if user email is not in the managed internal domains.
     '''
+    if user.sysadmin:
+        return False
+
     try:
         domain = user.email.split('@')[1]
     except AttributeError:
-         # Internal sysadmin user does not have email
-        if user.sysadmin:
-            return False
-        else:
-            return True
+        return True
 
     return domain not in get_internal_domains()
 
