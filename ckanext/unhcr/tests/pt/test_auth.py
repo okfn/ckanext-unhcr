@@ -596,6 +596,89 @@ class TestPackageCreateAuth(object):
         )
         assert not result['success']
 
+    def test_unit_no_data_dict(self):
+        creator = core_factories.User(name='creator')
+        result = auth.package_create({'user': 'creator'}, None)
+        assert not result['success']
+
+    @helpers.change_config('ckan.auth.create_unowned_dataset', False)
+    def test_integration_new_deposit(self, app):
+        # everyone can create datasets in the data-deposit
+        external_user = factories.ExternalUser()
+        resp = app.get(
+            url='/deposited-dataset/new',
+            extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
+            status=200,
+        )
+
+        internal_user = core_factories.User()
+        resp = app.get(
+            url='/deposited-dataset/new',
+            extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
+            status=200,
+        )
+
+    @helpers.change_config('ckan.auth.create_unowned_dataset', False)
+    def test_integration_new_dataset(self, app):
+        external_user = factories.ExternalUser()
+        # external_user can't create a new dataset
+        resp = app.get(
+            url='/dataset/new',
+            extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
+            status=403,
+        )
+
+        internal_user = core_factories.User()
+        # internal_user can't create a dataset
+        # because they aren't an admin of any containers
+        resp = app.get(
+            url='/dataset/new',
+            extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
+            status=403,
+        )
+
+        factories.DataContainer(
+            users=[{'name': internal_user['name'], 'capacity': 'admin'}]
+        )
+        # now that internal_user is a container admin
+        # they can create a dataset
+        resp = app.get(
+            url='/dataset/new',
+            extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
+            status=200,
+        )
+
+    @helpers.change_config('ckan.auth.create_unowned_dataset', False)
+    def test_integration_edit_deposit(self, app):
+        # everyone can edit their own draft deposited datasets
+        external_user = factories.ExternalUser()
+        external_deposit = factories.DepositedDataset(
+            name='dataset1',
+            owner_org='data-deposit',
+            owner_org_dest='data-target',
+            user=external_user,
+            state='draft',
+        )
+        resp = app.get(
+            url='/deposited-dataset/edit/{}'.format(external_deposit['id']),
+            extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
+            status=200,
+        )
+
+        internal_user = core_factories.User()
+        internal_deposit = factories.DepositedDataset(
+            name='dataset2',
+            owner_org='data-deposit',
+            owner_org_dest='data-target',
+            user=internal_user,
+            state='draft',
+        )
+        resp = app.get(
+            url='/deposited-dataset/edit/{}'.format(internal_deposit['id']),
+            extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
+            status=200,
+        )
+
 
 @pytest.mark.usefixtures(
     'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
