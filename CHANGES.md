@@ -1,5 +1,10 @@
 # RIDL Changelog
 
+## v2.1.5 - 2021-02-25
+
+Fixes:
+- Wrap long dataset titles instead of truncating them
+
 ## v2.1.4 - 2021-02-10
 
 Fixes:
