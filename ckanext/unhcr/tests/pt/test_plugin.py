@@ -3,8 +3,8 @@ import pytest
 
 from ckan import model
 import ckan.plugins.toolkit as toolkit
-from ckan.tests import factories as core_factories
 from ckan.tests.helpers import call_action, call_auth
+from ckantoolkit.tests import factories as core_factories
 from ckanext.unhcr.tests import factories
 
 
