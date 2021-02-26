@@ -1,21 +1,22 @@
+import pytest
 from datetime import datetime, timedelta
 import ckan.model as model
 from ckan.lib.jinja_extensions import regularise_html
 import ckan.lib.search as search
 from ckan.plugins import toolkit
-from ckan.tests import factories as core_factories
-from ckanext.unhcr.tests import base, factories
+from ckantoolkit.tests import factories as core_factories
+from ckanext.unhcr.tests import factories
 from ckanext.unhcr import mailer
 
 
-class TestSummaryMailer(base.FunctionalTestBase):
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+)
+class TestSummaryMailer(object):
 
     # General
 
     def setup(self):
-        super(TestSummaryMailer, self).setup()
-
-        # Users
         self.sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
 
     def test_email_body(self):
@@ -217,14 +218,14 @@ class TestSummaryMailer(base.FunctionalTestBase):
         assert user1['name'] not in recipient_ids
 
 
-class TestAccessRequestMailer(base.FunctionalTestBase):
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+)
+class TestAccessRequestMailer(object):
 
     # General
 
     def setup(self):
-        super(TestAccessRequestMailer, self).setup()
-
-        # Users
         self.sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
 
     def test_dataset_request_access_body(self):
@@ -430,7 +431,10 @@ class TestAccessRequestMailer(base.FunctionalTestBase):
         assert self.sysadmin['id'] in recipient_ids
 
 
-class TestInfectedFileMailer(base.FunctionalTestBase):
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+)
+class TestInfectedFileMailer(object):
 
     def test_email_body(self):
         sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
