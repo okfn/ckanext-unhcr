@@ -3,8 +3,8 @@
 import pytest
 import ckan.plugins as plugins
 from ckan.plugins import toolkit
-from ckan.tests import factories as core_factories
 from ckan.tests import helpers
+from ckantoolkit.tests import factories as core_factories
 from ckanext.unhcr import auth
 from ckanext.unhcr.helpers import convert_deposited_dataset_to_regular_dataset
 from ckanext.unhcr.plugin import ALLOWED_ACTIONS
