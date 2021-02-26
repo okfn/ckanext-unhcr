@@ -601,7 +601,7 @@ class TestPackageCreateAuth(object):
         result = auth.package_create({'user': 'creator'}, None)
         assert not result['success']
 
-    @helpers.change_config('ckan.auth.create_unowned_dataset', False)
+    @pytest.mark.ckan_config('ckan.auth.create_unowned_dataset', False)
     def test_integration_new_deposit(self, app):
         # everyone can create datasets in the data-deposit
         external_user = factories.ExternalUser()
@@ -618,7 +618,7 @@ class TestPackageCreateAuth(object):
             status=200,
         )
 
-    @helpers.change_config('ckan.auth.create_unowned_dataset', False)
+    @pytest.mark.ckan_config('ckan.auth.create_unowned_dataset', False)
     def test_integration_new_dataset(self, app):
         external_user = factories.ExternalUser()
         # external_user can't create a new dataset
@@ -648,7 +648,7 @@ class TestPackageCreateAuth(object):
             status=200,
         )
 
-    @helpers.change_config('ckan.auth.create_unowned_dataset', False)
+    @pytest.mark.ckan_config('ckan.auth.create_unowned_dataset', False)
     def test_integration_edit_deposit(self, app):
         # everyone can edit their own draft deposited datasets
         external_user = factories.ExternalUser()
