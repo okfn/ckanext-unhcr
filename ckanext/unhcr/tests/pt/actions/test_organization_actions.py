@@ -3,6 +3,7 @@
 import pytest
 from ckan.plugins import toolkit
 from ckan.tests.helpers import call_action
+from ckantoolkit.tests import factories as core_factories
 from ckanext.unhcr.tests import factories
 
 
@@ -44,4 +45,47 @@ class TestOrganizationActions(object):
                 'organization_list_all_fields',
                 {'ignore_auth': True},
                 **{'order_by': 'foobar'}
+            )
+
+
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+)
+class TestOrganizationMemberCreate(object):
+
+    def test_internal_user(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        internal_user = core_factories.User()
+        container = factories.DataContainer()
+
+        toolkit.get_action("organization_member_create")(
+            {'user': sysadmin['name']},
+            {
+                'id': container['id'],
+                'username': internal_user['name'],
+                'role': 'member',
+            }
+        )
+
+        org_list = toolkit.get_action("organization_list_for_user")(
+            {'user': sysadmin['name']},
+            {'id': internal_user['id']}
+        )
+        assert container['id'] == org_list[0]['id']
+        assert 'member' == org_list[0]['capacity']
+
+    def test_external_user(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        external_user = factories.ExternalUser()
+        container = factories.DataContainer()
+
+        action = toolkit.get_action("organization_member_create")
+        with pytest.raises(toolkit.ValidationError):
+            action(
+                {'user': sysadmin['name']},
+                {
+                    'id': container['id'],
+                    'username': external_user['name'],
+                    'role': 'member',
+                }
             )
