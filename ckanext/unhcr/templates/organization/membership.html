@@ -121,7 +121,12 @@
                   <a class="btn btn-sm" href="/data-container/member_new/{{ container.name }}?user={{ membership.user.name }}" title="{{ _('Edit') }}">
                     <i class="fa fa-wrench"></i>
                   </a>
-                  <a class="btn btn-danger btn-sm" href="{% url_for controller='ckanext.unhcr.controllers.data_container:DataContainerController', action='membership_remove', username=membership.user.name, contname=container.name %}" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to remove the user from this container?') }}" title="{{ _('Remove') }}">
+                  <a
+                    class="btn btn-danger btn-sm"
+                    href="{{ h.url_for('unhcr_data_container.membership_remove', username=membership.user.name, contname=container.name) }}"
+                    data-module="confirm-action"
+                    data-module-content="{{ _('Are you sure you want to remove the user from this container?') }}"
+                    title="{{ _('Remove') }}">
                     <i class="fa fa-times"></i>
                   </a>
                 </div>
