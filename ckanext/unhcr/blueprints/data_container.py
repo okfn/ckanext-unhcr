@@ -31,27 +31,27 @@ def _parse_form(form):
     )
 
 
-def _raise_not_authz_or_not_pending(id):
+def _raise_not_authz_or_not_pending(container_id):
 
     # check auth with toolkit.check_access
     toolkit.check_access('sysadmin', {'model': model})
 
     # check org exists and it's pending with organization_show
-    org_dict = toolkit.get_action('organization_show')({}, {'id': id})
+    org_dict = toolkit.get_action('organization_show')({}, {'id': container_id})
     if org_dict.get('state') != 'approval_needed':
-        raise toolkit.ObjectNotFound('Data container "{}" not found'.format(id))
+        raise toolkit.ObjectNotFound('Data container "{}" not found'.format(container_id))
 
 
-def approve(id):
+def approve(container_id):
     if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
         return toolkit.abort(403, "Forbidden")
     context = {'model': model, 'user': toolkit.c.user}
 
     # check access and state
-    _raise_not_authz_or_not_pending(id)
+    _raise_not_authz_or_not_pending(container_id)
 
     # organization_patch state=active
-    org_dict = patch_core.organization_patch({}, {'id': id, 'state': 'active'})
+    org_dict = patch_core.organization_patch({}, {'id': container_id, 'state': 'active'})
 
     # send approve email
     for member in get_core.member_list(context, {'id': org_dict['id']}):
@@ -63,19 +63,19 @@ def approve(id):
 
     # show flash message and redirect
     toolkit.h.flash_success(u'Data container "{}" approved'.format(org_dict['title']))
-    return toolkit.redirect_to('data-container_read', id=id)
+    return toolkit.redirect_to('data-container_read', id=container_id)
 
 
-def reject(id):
+def reject(container_id):
     if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
         return toolkit.abort(403, "Forbidden")
     context = {'model': model, 'user': toolkit.c.user}
 
     # check access and state
-    _raise_not_authz_or_not_pending(id)
+    _raise_not_authz_or_not_pending(container_id)
 
     # send rejection email
-    org_dict = get_core.organization_show({'model': model}, {'id': id})
+    org_dict = get_core.organization_show({'model': model}, {'id': container_id})
     for member in get_core.member_list(context, {'id': org_dict['id']}):
         user = model.User.get(member[0])
         if user and user.email:
@@ -84,7 +84,7 @@ def reject(id):
             mailer.mail_user(user, subj, body)
 
     # call organization_purge
-    delete_core.organization_purge({'model': model}, {'id': id})
+    delete_core.organization_purge({'model': model}, {'id': container_id})
 
     # show flash message and redirect
     toolkit.h.flash_error(u'Data container "{}" rejected'.format(org_dict['title']))
@@ -307,12 +307,12 @@ def request_access(container_id):
 
 
 unhcr_data_container_blueprint.add_url_rule(
-    rule=u'/<id>/approve',
+    rule=u'/<container_id>/approve',
     view_func=approve,
     methods=['GET',],
 )
 unhcr_data_container_blueprint.add_url_rule(
-    rule=u'/<id>/reject',
+    rule=u'/<container_id>/reject',
     view_func=reject,
     methods=['GET',],
 )
