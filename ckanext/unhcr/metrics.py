@@ -79,19 +79,23 @@ def get_datasets_by_downloads(context):
     join_obj = activity_table.join(
         package_table, package_table.c.id==activity_table.c.object_id
     )
+    select_cols = (
+        [c for c in package_table.columns] +
+        [func.count(package_table.c.id).label('count')]
+    )
 
-    sql = select([
-        model.Package, func.count(model.Package.id).label('count')
-    ]).select_from(
+    sql = select(
+        select_cols
+    ).select_from(
         join_obj
     ).where(
         and_(
-            model.Package.state == 'active',
-            model.Package.type != 'deposited-dataset',
-            model.Activity.activity_type == 'download resource',
+            package_table.c.state == 'active',
+            package_table.c.type != 'deposited-dataset',
+            activity_table.c.activity_type == 'download resource',
         )
     ).group_by(
-        model.Package.id
+        package_table.c.id
     ).order_by(
         desc('count')
     ).limit(10)
@@ -182,19 +186,23 @@ def get_users_by_datasets(context):
     join_obj = user_table.join(
         package_table, package_table.c.creator_user_id == user_table.c.id
     )
+    select_cols = (
+        [c for c in user_table.columns] +
+        [func.count(package_table.c.id).label('number_created_packages')]
+    )
 
-    sql = select([
-        model.User, func.count(model.Package.id).label('number_created_packages')
-    ]).select_from(
+    sql = select(
+        select_cols
+    ).select_from(
         join_obj
     ).where(
         and_(
-            model.Package.state == 'active',
-            model.Package.type != 'deposited-dataset',
-            model.User.name != default_user['name'],
+            package_table.c.state == 'active',
+            package_table.c.type != 'deposited-dataset',
+            user_table.c.name != default_user['name'],
         )
     ).group_by(
-        model.User.id
+        user_table.c.id
     ).order_by(
         desc('number_created_packages')
     ).limit(10)
@@ -230,20 +238,24 @@ def get_users_by_downloads(context):
     ).join(
         user_table, user_table.c.id==activity_table.c.user_id
     )
+    select_cols = (
+        [c for c in user_table.columns] +
+        [func.count(user_table.c.id).label('count')]
+    )
 
-    sql = select([
-        model.User, func.count(model.User.id).label('count')
-    ]).select_from(
+    sql = select(
+        select_cols
+    ).select_from(
         join_obj
     ).where(
         and_(
-            model.Package.state == 'active',
-            model.Package.type != 'deposited-dataset',
-            model.Activity.activity_type == 'download resource',
-            model.User.name != default_user['name'],
+            package_table.c.state == 'active',
+            package_table.c.type != 'deposited-dataset',
+            activity_table.c.activity_type == 'download resource',
+            user_table.c.name != default_user['name'],
         )
     ).group_by(
-        model.User.id
+        user_table.c.id
     ).order_by(
         desc('count')
     ).limit(10)
