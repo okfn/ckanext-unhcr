@@ -93,9 +93,13 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
             'package_update', {'user': 'sysadmin'}, **dataset)
 
     def make_request(self, action, dataset_id=None, user=None, **kwargs):
-        url = '/deposited-dataset/%s/%s' % (dataset_id or self.dataset['id'], action)
+        url = '/deposited-dataset/%s/%s' % (
+            dataset_id or self.dataset['id'].encode('ascii'),
+            action
+        )
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
-        resp = self.app.get(url=url, extra_environ=env, **kwargs)
+        data = kwargs.pop('data', {})
+        resp = self.app.post(url, data, extra_environ=env, **kwargs)
         if not dataset_id:
             try:
                 self.dataset = core_helpers.call_action(
@@ -320,7 +324,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Request changes
         params = {'curator_id': self.curator['id']}
-        resp = self.make_request('assign', user=user, params=params, status=status)
+        resp = self.make_request('assign', user=user, data=params, status=status)
         if error:
             assert_in(error, resp.body)
 
@@ -340,7 +344,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Assign curator
         params = {'curator_id': self.curator['id']}
-        self.make_request('assign', user=user, params=params, status=302)
+        self.make_request('assign', user=user, data=params, status=302)
         assert_equals(self.dataset['curator_id'], self.curator['id'])
         self.assert_mail(mail,
             users=['curator'],
@@ -363,7 +367,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Assign curator
         params = {'curator_id': ''}
-        self.make_request('assign', user=user, params=params, status=302)
+        self.make_request('assign', user=user, data=params, status=302)
         assert_equals(self.dataset.get('curator_id'), None)
         self.assert_mail(mail,
             users=['curator'],
@@ -385,7 +389,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Assign curator
         params = {'curator_id': ''}
-        self.make_request('assign', user=user, params=params, status=302)
+        self.make_request('assign', user=user, data=params, status=302)
         assert_equals(self.dataset.get('curator_id'), None)
         mail.assert_not_called()
 
@@ -403,7 +407,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Assign curator
         params = {'curator_id': self.depositor['id']}
-        self.make_request('assign', user=user, params=params, status=403)
+        self.make_request('assign', user=user, data=params, status=403)
 
     def test_assign_submitted_not_granted(self):
         for user in ['curator', 'creator']:
@@ -420,7 +424,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Assign curator
         params = {'curator_id': self.curator['id']}
-        resp = self.make_request('assign', user=user, params=params, status=status)
+        resp = self.make_request('assign', user=user, data=params, status=status)
         if error:
             assert_in(error, resp.body)
 
@@ -441,7 +445,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Request changes
         params = {'curator_id': self.curator['id']}
-        resp = self.make_request('assign', user=user, params=params, status=status)
+        resp = self.make_request('assign', user=user, data=params, status=status)
         if error:
             assert_in(error, resp.body)
 
@@ -969,7 +973,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         self.make_request('submit', user=self.creator['name'], status=302)
         params = {'curator_id': self.curator['id']}
-        self.make_request('assign', user=self.depadmin['name'], params=params)
+        self.make_request('assign', user=self.depadmin['name'], data=params)
 
         env = {'REMOTE_USER': self.curator['name'].encode('ascii')}
         resp = self.app.get(

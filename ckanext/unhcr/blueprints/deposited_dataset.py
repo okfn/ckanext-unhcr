@@ -48,12 +48,12 @@ def approve(dataset_id):
         return toolkit.abort(403, message % (id, error.error_summary))
 
     # Update activity stream
-    message = toolkit.request.params.get('message')
+    message = toolkit.request.form.get('message')
     helpers.create_curation_activity('dataset_approved', dataset['id'],
         dataset['name'], user_id, message=message)
 
     # Send notification email
-    message = toolkit.request.params.get('message')
+    message = toolkit.request.form.get('message')
     if curation['state'] == 'submitted':
         recipient = curation['contacts']['depositor']
     elif curation['state'] == 'review':
@@ -91,7 +91,7 @@ def assign(dataset_id):
     context['ignore_auth'] = True
 
     # Update dataset
-    curator_id = toolkit.request.params.get('curator_id')
+    curator_id = toolkit.request.form.get('curator_id')
     if curator_id:
         dataset['curator_id'] = curator_id
     else:
@@ -160,12 +160,12 @@ def request_changes(dataset_id):
     dataset = toolkit.get_action('package_update')(context, dataset)
 
     # Update activity stream
-    message = toolkit.request.params.get('message')
+    message = toolkit.request.form.get('message')
     helpers.create_curation_activity('changes_requested', dataset['id'],
             dataset['name'], user_id, message=message)
 
     # Send notification email
-    message = toolkit.request.params.get('message')
+    message = toolkit.request.form.get('message')
     if curation['state'] == 'submitted':
         recipient = curation['contacts']['depositor']
     elif curation['state'] == 'review':
@@ -207,14 +207,14 @@ def request_review(dataset_id):
     dataset = toolkit.get_action('package_update')(context, dataset)
 
     # Update activity stream
-    message = toolkit.request.params.get('message')
+    message = toolkit.request.form.get('message')
     context = _get_context(ignore_auth=True)
     depositor = toolkit.get_action('user_show')(context, {'id': dataset['creator_user_id']})
     helpers.create_curation_activity('final_review_requested', dataset['id'],
         dataset['name'], user_id, message=message, depositor_name=depositor['name'])
 
     # Send notification email
-    message = toolkit.request.params.get('message')
+    message = toolkit.request.form.get('message')
     depositor = curation['contacts']['depositor']
     subj = mailer.compose_curation_email_subj(dataset)
     body = mailer.compose_curation_email_body(
@@ -253,12 +253,12 @@ def reject(dataset_id):
     toolkit.get_action('package_delete')(context, {'id': dataset_id})
 
     # Update activity stream
-    message = toolkit.request.params.get('message')
+    message = toolkit.request.form.get('message')
     helpers.create_curation_activity('dataset_rejected', dataset['id'],
         dataset['name'], user_id, message=message)
 
     # Send notification email
-    message = toolkit.request.params.get('message')
+    message = toolkit.request.form.get('message')
     depositor = curation['contacts']['depositor']
     subj = mailer.compose_curation_email_subj(dataset)
     body = mailer.compose_curation_email_body(
@@ -296,12 +296,12 @@ def submit(dataset_id):
     dataset = toolkit.get_action('package_update')(context, dataset)
 
     # Update activity stream
-    message = toolkit.request.params.get('message')
+    message = toolkit.request.form.get('message')
     helpers.create_curation_activity('dataset_submitted', dataset['id'],
         dataset['name'], user_id, message=message)
 
     # Send notification email
-    message = toolkit.request.params.get('message')
+    message = toolkit.request.form.get('message')
     curator = curation['contacts']['curator']
     # We don't bother all curators if someone is already assigned
     users = [curator] if curator else helpers.get_data_curation_users(dataset)
@@ -343,12 +343,12 @@ def withdraw(dataset_id):
     toolkit.get_action('package_delete')(context, {'id': dataset_id})
 
     # Update activity stream
-    message = toolkit.request.params.get('message')
+    message = toolkit.request.form.get('message')
     helpers.create_curation_activity('dataset_withdrawn', dataset['id'],
         dataset['name'], user_id, message=message)
 
     # Send notification email
-    message = toolkit.request.params.get('message')
+    message = toolkit.request.form.get('message')
     for user in helpers.get_data_curation_users(dataset):
         subj = mailer.compose_curation_email_subj(dataset)
         body = mailer.compose_curation_email_body(
@@ -364,37 +364,37 @@ def withdraw(dataset_id):
 unhcr_deposited_dataset_blueprint.add_url_rule(
     rule=u'/<dataset_id>/approve',
     view_func=approve,
-    methods=['GET',],
+    methods=['POST',],
 )
 unhcr_deposited_dataset_blueprint.add_url_rule(
     rule=u'/<dataset_id>/assign',
     view_func=assign,
-    methods=['GET',],
+    methods=['POST',],
 )
 unhcr_deposited_dataset_blueprint.add_url_rule(
     rule=u'/<dataset_id>/request_changes',
     view_func=request_changes,
-    methods=['GET',],
+    methods=['POST',],
 )
 unhcr_deposited_dataset_blueprint.add_url_rule(
     rule=u'/<dataset_id>/request_review',
     view_func=request_review,
-    methods=['GET',],
+    methods=['POST',],
 )
 unhcr_deposited_dataset_blueprint.add_url_rule(
     rule=u'/<dataset_id>/reject',
     view_func=reject,
-    methods=['GET',],
+    methods=['POST',],
 )
 unhcr_deposited_dataset_blueprint.add_url_rule(
     rule=u'/<dataset_id>/submit',
     view_func=submit,
-    methods=['GET',],
+    methods=['POST',],
 )
 unhcr_deposited_dataset_blueprint.add_url_rule(
     rule=u'/<dataset_id>/withdraw',
     view_func=withdraw,
-    methods=['GET',],
+    methods=['POST',],
 )
 
 
