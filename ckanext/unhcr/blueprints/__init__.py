@@ -3,6 +3,7 @@
 from .access_requests import unhcr_access_requests_blueprint
 from .admin import unhcr_admin_blueprint
 from .data_container import unhcr_data_container_blueprint
+from .deposited_dataset import unhcr_deposited_dataset_blueprint
 from .metrics import unhcr_metrics_blueprint
 from .search_index import unhcr_search_index_blueprint
 from .storage import unhcr_s3_resource_blueprint

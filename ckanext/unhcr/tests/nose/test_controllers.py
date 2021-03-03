@@ -161,7 +161,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
             yield self.check_approve_submitted, user
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_approve_submitted(self, user, mail):
 
         # Prepare dataset
@@ -241,7 +241,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['creator']:
             yield self.check_approve_review_without_curator, user
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_approve_review_without_curator(self, user, mail):
 
         # Prepare dataset
@@ -265,7 +265,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['creator']:
             yield self.check_approve_review_with_curator, user
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_approve_review_with_curator(self, user, mail):
 
         # Prepare dataset
@@ -330,7 +330,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin']:
             yield self.check_assign_submitted, user
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_assign_submitted(self, user, mail):
 
         # Prepare dataset
@@ -352,7 +352,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin']:
             yield self.check_assign_submitted_remove, user
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_assign_submitted_remove(self, user, mail):
 
         # Prepare dataset
@@ -375,7 +375,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin']:
             yield self.check_assign_submitted_remove_not_assigned, user
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_assign_submitted_remove_not_assigned(self, user, mail):
 
         # Prepare dataset
@@ -466,7 +466,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
             yield self.check_request_changes_submitted, user
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_request_changes_submitted(self, user, mail):
 
         # Prepare dataset
@@ -507,7 +507,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['creator']:
             yield self.check_request_changes_review, user
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_request_changes_review(self, user, mail):
 
         # Prepare dataset
@@ -580,7 +580,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
             yield self.check_request_review_submitted, user
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_request_review_submitted(self, user, mail):
 
         # Prepare dataset
@@ -703,7 +703,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
             yield self.check_reject_submitted, user
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_reject_submitted(self, user, mail):
 
         # Prepare dataset
@@ -843,7 +843,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['creator']:
             yield self.check_withdraw_draft, user
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_withdraw_draft(self, user, mail):
 
         # Withdraw dataset
@@ -924,7 +924,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         self.make_request('approve', user='sysadmin', status=302)
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def test_activites_shown_on_deposited_dataset(self, mail):
 
         env = {'REMOTE_USER': self.creator['name'].encode('ascii')}
@@ -936,7 +936,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['sysadmin', 'editor', 'target_container_admin']:
             yield self.check_activities_shown, user
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_activities_shown(self, user, mail):
 
         self._approve_dataset()
@@ -952,7 +952,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         for user in ['depositor', 'curator', 'target_container_member', 'other_container_admin']:
             yield self.check_activities_not_shown, user
 
-    @mock.patch('ckanext.unhcr.controllers.deposited_dataset.mailer.mail_user_by_id')
+    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_activities_not_shown(self, user, mail):
 
         self._approve_dataset()
