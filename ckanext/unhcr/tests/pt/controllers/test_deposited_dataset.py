@@ -1,20 +1,34 @@
-class TestDepositedDatasetController(base.FunctionalTestBase):
+# -*- coding: utf-8 -*-
 
-    ACTIONS = [
-        'approve',
-        'assign',
-        'request_changes',
-        'request_review',
-        'reject',
-        'submit',
-        'withdraw',
-    ]
+import pytest
+import mock
+from ckan.lib.helpers import url_for
+from ckan.tests import helpers as core_helpers
+from ckantoolkit.tests import factories as core_factories
+from ckanext.unhcr.tests import factories
+
+
+ACTIONS = [
+    'approve',
+    'assign',
+    'request_changes',
+    'request_review',
+    'reject',
+    'submit',
+    'withdraw',
+]
+
+
+
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+)
+class TestDepositedDatasetController(object):
 
     # Config
 
     def setup(self):
-        super(TestDepositedDatasetController, self).setup()
-
+        self.app = core_helpers._get_test_app()
         # Users
         self.sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
         self.depadmin = core_factories.User(name='depadmin', id='depadmin')
@@ -96,33 +110,33 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     def assert_mail(self, mail, users, subject, texts):
         for index, user in enumerate(users):
-            assert_equals(mail.call_args_list[index][0][0], user)
-            assert_equals(mail.call_args_list[index][0][1], subject)
+            assert mail.call_args_list[index][0][0] == user
+            assert mail.call_args_list[index][0][1] == subject
             for text in texts:
-                assert_in(text, mail.call_args_list[index][0][2])
+                assert text in mail.call_args_list[index][0][2]
 
     # General
 
-    def test_all_actions_anonimous(self):
-        for action in self.ACTIONS:
+    def test_all_actions_anonymous(self):
+        for action in ACTIONS:
             self.make_request(action, status=403)
 
     def test_all_actions_bad_dataset_id(self):
-        for action in self.ACTIONS:
+        for action in ACTIONS:
             self.make_request(action, dataset_id='bad-id', status=403)
 
     def test_all_actions_bad_dataset_type(self):
         factories.Dataset(name='regular', owner_org='data-target', user=self.creator)
-        for action in self.ACTIONS:
+        for action in ACTIONS:
             self.make_request(action, dataset_id='regular', user='sysadmin', status=403)
 
     # Approve (draft)
 
     def test_approve_draft_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'creator', 'target_container_admin']:
-            yield self.check_approve_draft_not_granted, user, 302, "action is not available"
+            self.check_approve_draft_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_approve_draft_not_granted, user, 403
+            self.check_approve_draft_not_granted(user, 403)
 
     def check_approve_draft_not_granted(self, user, status, error=None):
 
@@ -139,13 +153,13 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Approve dataset
         resp = self.make_request('approve', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Approve (submitted)
 
-    def test_approve_submitted(self):
-        for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
-            yield self.check_approve_submitted, user
+    @pytest.mark.parametrize("user", ['sysadmin', 'depadmin', 'curator', 'target_container_admin'])
+    def test_approve_submitted(self, user):
+        self.check_approve_submitted(user)
 
     @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_approve_submitted(self, user, mail):
@@ -163,7 +177,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Approve dataset
         self.make_request('approve', user=user, status=302)
-        assert_equals(self.dataset['type'], 'dataset')
+        assert self.dataset['type'] == 'dataset'
         self.assert_mail(mail,
             users=['creator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
@@ -172,7 +186,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     def test_approve_submitted_final_review_requested(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
-            yield self.check_approve_submitted_final_review_requested, user, 302, "action is not available"
+            self.check_approve_submitted_final_review_requested(user, 302, "action is not available")
 
     def check_approve_submitted_final_review_requested(self, user, status, error=None):
 
@@ -184,12 +198,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Approve dataset
         resp = self.make_request('approve', user=user, status=status)
-        if error:
-            assert_in(error, resp.body)
+        assert error in resp.body
 
     def test_approve_submitted_not_valid(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
-            yield self.check_approve_submitted_not_valid, user, 302, "action is not available"
+            self.check_approve_submitted_not_valid(user, 302, "action is not available")
 
     def check_approve_submitted_not_valid(self, user, status, error=None):
 
@@ -200,14 +213,13 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Approve dataset
         resp = self.make_request('approve', user=user, status=status)
-        if error:
-            assert_in(error, resp.body)
+        assert error in resp.body
 
     def test_approve_submitted_not_granted(self):
         for user in ['creator']:
-            yield self.check_approve_submitted_not_granted, user, 302, "action is not available"
+            self.check_approve_submitted_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_approve_submitted_not_granted, user, 403
+            self.check_approve_submitted_not_granted(user, 403)
 
     def check_approve_submitted_not_granted(self, user, status, error=None):
 
@@ -219,13 +231,13 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Approve dataset
         resp = self.make_request('approve', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Approve (review)
 
-    def test_approve_review_without_curator(self):
-        for user in ['creator']:
-            yield self.check_approve_review_without_curator, user
+    def test_approve_review_without_curator(self, app):
+        self.app = app
+        self.check_approve_review_without_curator('creator')
 
     @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_approve_review_without_curator(self, user, mail):
@@ -243,13 +255,13 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Approve dataset
         self.make_request('approve', user=user, status=302)
-        assert_equals(self.dataset['type'], 'dataset')
-        assert_equals(self.dataset['owner_org'], 'data-target')
+        assert self.dataset['type'] == 'dataset'
+        assert self.dataset['owner_org'] == 'data-target'
         mail.assert_not_called()
 
-    def test_approve_review_with_curator(self):
-        for user in ['creator']:
-            yield self.check_approve_review_with_curator, user
+    def test_approve_review_with_curator(self, app):
+        self.app = app
+        self.check_approve_review_with_curator('creator')
 
     @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_approve_review_with_curator(self, user, mail):
@@ -268,8 +280,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Approve dataset
         self.make_request('approve', user=user, status=302)
-        assert_equals(self.dataset['type'], 'dataset')
-        assert_equals(self.dataset['owner_org'], 'data-target')
+        assert self.dataset['type'] == 'dataset'
+        assert self.dataset['owner_org'] == 'data-target'
         self.assert_mail(mail,
             users=['curator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
@@ -278,9 +290,9 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     def test_approve_review_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
-            yield self.check_approve_review_not_granted, user, 302, "action is not available"
+            self.check_approve_review_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_approve_review_not_granted, user, 403
+            self.check_approve_review_not_granted(user, 403)
 
     def check_approve_review_not_granted(self, user, status, error=None):
 
@@ -292,15 +304,15 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Approve dataset
         resp = self.make_request('approve', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Assign (draft)
 
     def test_assign_draft_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
-            yield self.check_assign_draft_not_granted, user, 302, "action is not available"
+            self.check_assign_draft_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_assign_draft_not_granted, user, 403
+            self.check_assign_draft_not_granted(user, 403)
 
     def check_assign_draft_not_granted(self, user, status, error=None):
 
@@ -308,13 +320,13 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         params = {'curator_id': self.curator['id']}
         resp = self.make_request('assign', user=user, data=params, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Assign (submitted)
 
-    def test_assign_submitted(self):
-        for user in ['sysadmin', 'depadmin']:
-            yield self.check_assign_submitted, user
+    @pytest.mark.parametrize("user", ['sysadmin', 'depadmin'])
+    def test_assign_submitted(self, user):
+        self.check_assign_submitted(user)
 
     @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_assign_submitted(self, user, mail):
@@ -327,16 +339,16 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Assign curator
         params = {'curator_id': self.curator['id']}
         self.make_request('assign', user=user, data=params, status=302)
-        assert_equals(self.dataset['curator_id'], self.curator['id'])
+        assert self.dataset['curator_id'] == self.curator['id']
         self.assert_mail(mail,
             users=['curator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
             texts=['A new dataset has been assigned to you for curation'],
         )
 
-    def test_assign_submitted_remove(self):
-        for user in ['sysadmin', 'depadmin']:
-            yield self.check_assign_submitted_remove, user
+    @pytest.mark.parametrize("user", ['sysadmin', 'depadmin'])
+    def test_assign_submitted_remove(self, user):
+        self.check_assign_submitted_remove(user)
 
     @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_assign_submitted_remove(self, user, mail):
@@ -350,16 +362,16 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Assign curator
         params = {'curator_id': ''}
         self.make_request('assign', user=user, data=params, status=302)
-        assert_equals(self.dataset.get('curator_id'), None)
+        assert self.dataset.get('curator_id') is None
         self.assert_mail(mail,
             users=['curator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
             texts=['You have been removed as Curator of the following dataset'],
         )
 
-    def test_assign_submitted_remove_not_assigned(self):
-        for user in ['sysadmin', 'depadmin']:
-            yield self.check_assign_submitted_remove_not_assigned, user
+    @pytest.mark.parametrize("user", ['sysadmin', 'depadmin'])
+    def test_assign_submitted_remove_not_assigned(self, user):
+        self.check_assign_submitted_remove_not_assigned(user)
 
     @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_assign_submitted_remove_not_assigned(self, user, mail):
@@ -372,13 +384,14 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Assign curator
         params = {'curator_id': ''}
         self.make_request('assign', user=user, data=params, status=302)
-        assert_equals(self.dataset.get('curator_id'), None)
+        assert self.dataset.get('curator_id') == None
         mail.assert_not_called()
 
-    # TODO: it breaks sessions for all following tests
-    #  def test_assign_submitted_bad_curator_id(self):
-        #  for user in ['sysadmin', 'depadmin']:
-            #  yield self.check_assign_submitted_bad_curator_id, user
+    # TODO: this one fails with DetachedInstanceError
+    # and breaks sessions for all following tests
+    #def test_assign_submitted_bad_curator_id(self):
+    #    for user in ['sysadmin', 'depadmin']:
+    #        self.check_assign_submitted_bad_curator_id(user)
 
     def check_assign_submitted_bad_curator_id(self, user):
 
@@ -393,9 +406,9 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     def test_assign_submitted_not_granted(self):
         for user in ['curator', 'creator']:
-            yield self.check_assign_submitted_not_granted, user, 302, "action is not available"
+            self.check_assign_submitted_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_assign_submitted_not_granted, user, 403
+            self.check_assign_submitted_not_granted(user, 403)
 
     def check_assign_submitted_not_granted(self, user, status, error=None):
 
@@ -408,15 +421,15 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         params = {'curator_id': self.curator['id']}
         resp = self.make_request('assign', user=user, data=params, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Assign (review)
 
     def test_assign_review_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'creator', 'target_container_admin']:
-            yield self.check_assign_review_not_granted, user, 302, "action is not available"
+            self.check_assign_review_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_assign_review_not_granted, user, 403
+            self.check_assign_review_not_granted(user, 403)
 
     def check_assign_review_not_granted(self, user, status, error=None):
 
@@ -429,28 +442,28 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         params = {'curator_id': self.curator['id']}
         resp = self.make_request('assign', user=user, data=params, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Request Changes (draft)
 
     def test_request_changes_draft_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'creator', 'target_container_admin']:
-            yield self.check_request_changes_draft_not_granted, user, 302, "action is not available"
+            self.check_request_changes_draft_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_request_changes_draft_not_granted, user, 403
+            self.check_request_changes_draft_not_granted(user, 403)
 
     def check_request_changes_draft_not_granted(self, user, status, error=None):
 
         # Request changes
         resp = self.make_request('request_changes', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Request Changes (submitted)
 
-    def test_request_changes_submitted(self):
-        for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
-            yield self.check_request_changes_submitted, user
+    @pytest.mark.parametrize("user", ['sysadmin', 'depadmin', 'curator', 'target_container_admin'])
+    def test_request_changes_submitted(self, user):
+        self.check_request_changes_submitted(user)
 
     @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_request_changes_submitted(self, user, mail):
@@ -462,7 +475,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Request changes
         self.make_request('request_changes', user=user, status=302)
-        assert_equals(self.dataset['curation_state'], 'draft')
+        assert self.dataset['curation_state'] == 'draft'
         self.assert_mail(mail,
             users=['creator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
@@ -471,9 +484,9 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     def test_request_changes_submitted_not_granted(self):
         for user in ['creator']:
-            yield self.check_request_changes_submitted_not_granted, user, 302, "action is not available"
+            self.check_request_changes_submitted_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_request_changes_submitted_not_granted, user, 403
+            self.check_request_changes_submitted_not_granted(user, 403)
 
     def check_request_changes_submitted_not_granted(self, user, status, error=None):
 
@@ -485,13 +498,13 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Request changes
         resp = self.make_request('request_changes', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Request Changes (review)
 
-    def test_request_changes_review(self):
-        for user in ['creator']:
-            yield self.check_request_changes_review, user
+    def test_request_changes_review(self, app):
+        self.app = app
+        self.check_request_changes_review('creator')
 
     @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_request_changes_review(self, user, mail):
@@ -510,7 +523,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Request changes
         self.make_request('request_changes', user=user, status=302)
-        assert_equals(self.dataset['curation_state'], 'submitted')
+        assert self.dataset['curation_state'] == 'submitted'
         self.assert_mail(mail,
             users=['curator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
@@ -519,9 +532,9 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     def test_request_changes_review_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
-            yield self.check_request_changes_review_not_granted, user, 302, "action is not available"
+            self.check_request_changes_review_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_request_changes_review_not_granted, user, 403
+            self.check_request_changes_review_not_granted(user, 403)
 
     def check_request_changes_review_not_granted(self, user, status, error=None):
 
@@ -533,15 +546,15 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Request changes
         resp = self.make_request('request_changes', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Request Review (draft)
 
     def test_request_review_draft(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'creator', 'target_container_admin']:
-            yield self.check_request_review_draft, user, 302, "action is not available"
+            self.check_request_review_draft(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_request_review_draft, user, 403
+            self.check_request_review_draft(user, 403)
 
     def check_request_review_draft(self, user, status, error=None):
 
@@ -558,13 +571,13 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Request review
         resp = self.make_request('request_review', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Request Review (submitted)
 
-    def test_request_review_submitted(self):
-        for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
-            yield self.check_request_review_submitted, user
+    @pytest.mark.parametrize("user", ['sysadmin', 'depadmin', 'curator', 'target_container_admin'])
+    def test_request_review_submitted(self, user):
+        self.check_request_review_submitted(user)
 
     @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_request_review_submitted(self, user, mail):
@@ -583,7 +596,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Request review
         self.make_request('request_review', user=user, status=302)
-        assert_equals(self.dataset['curation_state'], 'review')
+        assert self.dataset['curation_state'] == 'review'
         self.assert_mail(mail,
             users=['creator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
@@ -592,7 +605,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     def test_request_review_submitted_not_final_review_requested(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
-            yield self.check_request_review_submitted_not_final_review_requested, user, 302, "action is not available"
+            self.check_request_review_submitted_not_final_review_requested(user, 302, "action is not available")
 
     def check_request_review_submitted_not_final_review_requested(self, user, status, error=None):
 
@@ -610,11 +623,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Request review
         resp = self.make_request('request_review', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     def test_request_review_submitted_not_valid(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
-            yield self.check_request_review_submitted_not_valid, user, 302, "action is not available"
+            self.check_request_review_submitted_not_valid(user, 302, "action is not available")
 
     def check_request_review_submitted_not_valid(self, user, status, error=None):
 
@@ -626,14 +639,13 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Request review
         resp = self.make_request('request_review', user=user, status=status)
-        if error:
-            assert_in(error, resp.body)
+        assert error in resp.body
 
     def test_request_review_submitted_not_granted(self):
         for user in ['creator']:
-            yield self.check_request_review_submitted_not_granted, user, 302, "action is not available"
+            self.check_request_review_submitted_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_request_review_submitted_not_granted, user, 403
+            self.check_request_review_submitted_not_granted(user, 403)
 
     def check_request_review_submitted_not_granted(self, user, status, error=None):
 
@@ -646,15 +658,15 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Request review
         resp = self.make_request('request_review', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Request Review (review)
 
     def test_request_review_review_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'creator', 'target_container_admin']:
-            yield self.check_request_review_review_not_granted, user, 302, "action is not available"
+            self.check_request_review_review_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_request_review_review_not_granted, user, 403
+            self.check_request_review_review_not_granted(user, 403)
 
     def check_request_review_review_not_granted(self, user, status, error=None):
 
@@ -666,28 +678,28 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Request review
         resp = self.make_request('request_review', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Reject (draft)
 
     def test_reject_draft_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'creator', 'target_container_admin']:
-            yield self.check_reject_draft_not_granted, user, 302, "action is not available"
+            self.check_reject_draft_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_reject_draft_not_granted, user, 403
+            self.check_reject_draft_not_granted(user, 403)
 
     def check_reject_draft_not_granted(self, user, status, error=None):
 
         # Reject dataset
         resp = self.make_request('reject', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Reject (submitted)
 
-    def test_reject_submitted(self):
-        for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
-            yield self.check_reject_submitted, user
+    @pytest.mark.parametrize("user", ['sysadmin', 'depadmin', 'curator', 'target_container_admin'])
+    def test_reject_submitted(self, user):
+        self.check_reject_submitted(user)
 
     @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_reject_submitted(self, user, mail):
@@ -699,8 +711,8 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
         # Reject dataset
         self.make_request('reject', user=user, status=302)
-        assert_equals(self.dataset['state'], 'deleted')
-        assert_in('-rejected-', self.dataset['name'])
+        assert self.dataset['state'] == 'deleted'
+        assert '-rejected-' in self.dataset['name']
         self.assert_mail(mail,
             users=['creator'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
@@ -709,9 +721,9 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     def test_reject_submitted_not_granted(self):
         for user in ['creator']:
-            yield self.check_reject_submitted_not_granted, user, 302, "action is not available"
+            self.check_reject_submitted_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_reject_submitted_not_granted, user, 403
+            self.check_reject_submitted_not_granted(user, 403)
 
     def check_reject_submitted_not_granted(self, user, status, error=None):
 
@@ -723,15 +735,15 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Reject dataset
         resp = self.make_request('reject', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Reject (review)
 
     def test_reject_review_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'creator', 'target_container_admin']:
-            yield self.check_reject_review_not_granted, user, 302, "action is not available"
+            self.check_reject_review_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_reject_review_not_granted, user, 403
+            self.check_reject_review_not_granted(user, 403)
 
     def check_reject_review_not_granted(self, user, status, error=None):
 
@@ -743,13 +755,13 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Reject dataset
         resp = self.make_request('reject', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Submit (draft)
 
-    def test_submit_draft(self):
-        for user in ['creator']:
-            yield self.check_submit_draft, user
+    def test_submit_draft(self, app):
+        self.app = app
+        self.check_submit_draft('creator')
 
     @mock.patch('ckan.plugins.toolkit.enqueue_job')
     def check_submit_draft(self, user, mail):
@@ -757,39 +769,39 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Submit dataset
         self.make_request('submit', user=user, status=302)
 
-        assert_equals(self.dataset['curation_state'], 'submitted')
+        assert self.dataset['curation_state'] == 'submitted'
         subject = '[UNHCR RIDL] Curation: Test Dataset'
         text = 'A new dataset has been submitted for curation by %s' % self.creator['display_name']
         calls = [call for call in mail.call_args_list if call[0][0].__name__ == 'mail_user_by_id']
 
-        assert_equals(calls[0][0][1][0], 'curator')
-        assert_equals(calls[0][0][1][1], subject)
-        assert_in(text, calls[0][0][1][2])
+        assert calls[0][0][1][0] == 'curator'
+        assert calls[0][0][1][1] == subject
+        assert text in calls[0][0][1][2]
 
-        assert_equals(calls[1][0][1][0], 'depadmin')
-        assert_equals(calls[1][0][1][1], subject)
-        assert_in(text, calls[1][0][1][2])
+        assert calls[1][0][1][0] == 'depadmin'
+        assert calls[1][0][1][1] == subject
+        assert text in calls[1][0][1][2]
 
     def test_submit_draft_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
-            yield self.check_submit_draft_not_granted, user, 302, "action is not available"
+            self.check_submit_draft_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_submit_draft_not_granted, user, 403
+            self.check_submit_draft_not_granted(user, 403)
 
     def check_submit_draft_not_granted(self, user, status, error=None):
 
         # Submit dataset
         resp = self.make_request('submit', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Submit (submitted)
 
     def test_submit_submitted_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'creator', 'target_container_admin']:
-            yield self.check_submit_submitted_not_granted, user, 302, "action is not available"
+            self.check_submit_submitted_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_submit_submitted_not_granted, user, 403
+            self.check_submit_submitted_not_granted(user, 403)
 
     def check_submit_submitted_not_granted(self, user, status, error=None):
 
@@ -801,17 +813,17 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Submit dataset
         resp = self.make_request('submit', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Submit (review)
 
     def test_submit_reviw_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'creator', 'target_container_admin']:
-            yield self.check_submit_reviw_not_granted, user, 302, "action is not available"
+            self.check_submit_review_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_submit_reviw_not_granted, user, 403
+            self.check_submit_review_not_granted(user, 403)
 
-    def check_submit_reviw_not_granted(self, user, status, error=None):
+    def check_submit_review_not_granted(self, user, status, error=None):
 
         # Prepare dataset
         self.patch_dataset({
@@ -821,21 +833,21 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Submit dataset
         resp = self.make_request('submit', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Withdraw (draft)
 
-    def test_withdraw_draft(self):
-        for user in ['creator']:
-            yield self.check_withdraw_draft, user
+    def test_withdraw_draft(self, app):
+        self.app = app
+        self.check_withdraw_draft('creator')
 
     @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_withdraw_draft(self, user, mail):
 
         # Withdraw dataset
         self.make_request('withdraw', user=user, status=302)
-        assert_equals(self.dataset['state'], 'deleted')
-        assert_in('-withdrawn-', self.dataset['name'])
+        assert self.dataset['state'] == 'deleted'
+        assert '-withdrawn-' in self.dataset['name']
         self.assert_mail(mail,
             users=['curator', 'depadmin'],
             subject='[UNHCR RIDL] Curation: Test Dataset',
@@ -844,24 +856,24 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
 
     def test_withdraw_draft_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'target_container_admin']:
-            yield self.check_withdraw_draft_not_granted, user, 302, "action is not available"
+            self.check_withdraw_draft_not_granted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_withdraw_draft_not_granted, user, 403
+            self.check_withdraw_draft_not_granted(user, 403)
 
     def check_withdraw_draft_not_granted(self, user, status, error=None):
 
         # Withdraw dataset
         resp = self.make_request('withdraw', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Withdraw (submitted)
 
     def test_withdraw_submitted_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'creator', 'target_container_admin']:
-            yield self.check_withdraw_submitted, user, 302, "action is not available"
+            self.check_withdraw_submitted(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_withdraw_submitted, user, 403
+            self.check_withdraw_submitted(user, 403)
 
     def check_withdraw_submitted(self, user, status, error=None):
 
@@ -873,15 +885,15 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Withdraw dataset
         resp = self.make_request('withdraw', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Withdraw (review)
 
     def test_withdraw_review_not_granted(self):
         for user in ['sysadmin', 'depadmin', 'curator', 'creator', 'target_container_admin']:
-            yield self.check_withdraw_review, user, 302, "action is not available"
+            self.check_withdraw_review(user, 302, "action is not available")
         for user in ['depositor', 'target_container_member', 'other_container_admin']:
-            yield self.check_withdraw_review, user, 403
+            self.check_withdraw_review(user, 403)
 
     def check_withdraw_review(self, user, status, error=None):
 
@@ -893,7 +905,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         # Withdraw dataset
         resp = self.make_request('withdraw', user=user, status=status)
         if error:
-            assert_in(error, resp.body)
+            assert error in resp.body
 
     # Activities
 
@@ -916,11 +928,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         env = {'REMOTE_USER': self.creator['name'].encode('ascii')}
         resp = self.app.get(
             url=url_for('deposited-dataset_read', id=self.dataset['id']), extra_environ=env)
-        assert_in('Internal Activity', resp.body)
+        assert 'Internal Activity' in resp.body
 
-    def test_activites_shown_on_normal_dataset(self):
-        for user in ['sysadmin', 'editor', 'target_container_admin']:
-            yield self.check_activities_shown, user
+    @pytest.mark.parametrize("user", ['sysadmin', 'editor', 'target_container_admin'])
+    def test_activites_shown_on_normal_dataset(self, user):
+        self.check_activities_shown(user)
 
     @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_activities_shown(self, user, mail):
@@ -931,12 +943,11 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         resp = self.app.get(
             url=url_for('dataset_read', id=self.dataset['id']), extra_environ=env)
 
-        assert_in('Internal Activity', resp.body)
+        assert 'Internal Activity' in resp.body
 
-    def test_activites_not_shown_on_normal_dataset(self):
-
-        for user in ['depositor', 'curator', 'target_container_member', 'other_container_admin']:
-            yield self.check_activities_not_shown, user
+    @pytest.mark.parametrize("user", ['depositor', 'curator', 'target_container_member', 'other_container_admin'])
+    def test_activites_not_shown_on_normal_dataset(self, user):
+        self.check_activities_not_shown(user)
 
     @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
     def check_activities_not_shown(self, user, mail):
@@ -947,12 +958,10 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         resp = self.app.get(
             url=url_for('dataset_read', id=self.dataset['id']), extra_environ=env)
 
-        assert_not_in('Internal Activity', resp.body)
+        assert 'Internal Activity' not in resp.body
 
     @mock.patch('ckan.plugins.toolkit.enqueue_job')
     def test_activity_created_in_deposited_dataset(self, mail):
-
-
         self.make_request('submit', user=self.creator['name'], status=302)
         params = {'curator_id': self.curator['id']}
         self.make_request('assign', user=self.depadmin['name'], data=params)
@@ -961,7 +970,7 @@ class TestDepositedDatasetController(base.FunctionalTestBase):
         resp = self.app.get(
             url=url_for('deposited-dataset_internal_activity', dataset_id=self.dataset['name']), extra_environ=env)
 
-        assert_in('deposited dataset', resp.body)
-        assert_in('submitted dataset', resp.body)
-        assert_in('assigned', resp.body)
-        assert_in('as Curator', resp.body)
+        assert 'deposited dataset' in resp.body
+        assert 'submitted dataset' in resp.body
+        assert 'assigned' in resp.body
+        assert 'as Curator' in resp.body
