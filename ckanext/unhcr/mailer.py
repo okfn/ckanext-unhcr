@@ -44,8 +44,8 @@ def compose_container_email_body(container, user, event):
 def compose_request_container_email_body(container, recipient, requesting_user):
     context = {}
     context['recipient'] = recipient.display_name
-    context['site_title'] = config.get('ckan.site_title')
-    context['site_url'] = config.get('ckan.site_url')
+    context['site_title'] = toolkit.config.get('ckan.site_title')
+    context['site_url'] = toolkit.config.get('ckan.site_url')
     context['container'] = container
     context['container_url'] = toolkit.url_for('data-container_read', id=container['name'], qualified=True)
     context['requesting_user'] = requesting_user
