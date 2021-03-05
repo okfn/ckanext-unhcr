@@ -1,21 +1,3 @@
-import nose
-import mock
-from nose.plugins.attrib import attr
-from sqlalchemy import and_, select
-from ckan.lib.helpers import url_for
-from ckan.lib.search import index_for
-from ckan.logic import NotFound
-import ckan.model as model
-from ckan.plugins import toolkit
-from nose.tools import assert_raises, assert_equals, nottest
-from ckan.tests import helpers as core_helpers, factories as core_factories
-from ckanext.unhcr.models import AccessRequest
-from ckanext.unhcr.tests import base, factories, mocks
-
-assert_in = core_helpers.assert_in
-assert_not_in = core_helpers.assert_not_in
-
-# TODO: optimize testing speed
 class TestDepositedDatasetController(base.FunctionalTestBase):
 
     ACTIONS = [
