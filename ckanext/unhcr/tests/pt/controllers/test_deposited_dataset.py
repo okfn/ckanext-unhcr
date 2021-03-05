@@ -2,6 +2,7 @@
 
 import pytest
 import mock
+from ckan import model
 from ckan.lib.helpers import url_for
 from ckan.tests import helpers as core_helpers
 from ckantoolkit.tests import factories as core_factories
@@ -19,16 +20,12 @@ ACTIONS = [
 ]
 
 
-
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('with_request_context', 'unhcr_migrate')
 class TestDepositedDatasetController(object):
 
-    # Config
+    def setup_class(self):
+        core_helpers.reset_db()
 
-    def setup(self):
-        self.app = core_helpers._get_test_app()
         # Users
         self.sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
         self.depadmin = core_factories.User(name='depadmin', id='depadmin')
@@ -49,36 +46,50 @@ class TestDepositedDatasetController(object):
             id='other_container_admin'
         )
 
-        # Containers
-        self.deposit = factories.DataContainer(
-            users=[
-                {'name': 'curator', 'capacity': 'editor'},
-                {'name': 'depadmin', 'capacity': 'admin'},
-            ],
-            name='data-deposit',
-            id='data-deposit'
-        )
-        self.target = factories.DataContainer(
-            name='data-target',
-            id='data-target',
-            users=[
-                {'name': 'editor', 'capacity': 'editor'},
-                {'name': 'target_container_admin', 'capacity': 'admin'},
-                {'name': 'target_container_member', 'capacity': 'member'},
-            ],
-        )
-        container = factories.DataContainer(
-            users=[
-                {'name': 'other_container_admin', 'capacity': 'admin'},
-            ]
-        )
+        app = core_helpers._get_test_app()
+        with app.flask_app.test_request_context():
+            # Containers
+            self.deposit = factories.DataContainer(
+                users=[
+                    {'name': 'curator', 'capacity': 'editor'},
+                    {'name': 'depadmin', 'capacity': 'admin'},
+                ],
+                name='data-deposit',
+                id='data-deposit'
+            )
+            self.target = factories.DataContainer(
+                name='data-target',
+                id='data-target',
+                users=[
+                    {'name': 'editor', 'capacity': 'editor'},
+                    {'name': 'target_container_admin', 'capacity': 'admin'},
+                    {'name': 'target_container_member', 'capacity': 'member'},
+                ],
+            )
+            container = factories.DataContainer(
+                users=[
+                    {'name': 'other_container_admin', 'capacity': 'admin'},
+                ]
+            )
 
-        # Dataset
+    def teardown_class(self):
+        core_helpers.reset_db()
+
+
+    def setup(self):
+        self.app = core_helpers._get_test_app()
+
         self.dataset = factories.DepositedDataset(
             name='dataset',
             owner_org='data-deposit',
             owner_org_dest='data-target',
             user=self.creator)
+
+    def teardown(self):
+        package = model.Package.get(self.dataset['id'])
+        model.Session.delete(package)
+        model.Session.commit()
+
 
     # Helpers
 
