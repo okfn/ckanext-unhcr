@@ -121,7 +121,7 @@ class TestDataContainerController(object):
     def test_membership_remove(self, app):
         self.test_membership_add(app)
         url = '/data-container/membership_remove?username=user1&contname=container1'
-        resp = self.get_request(app, url, user='sysadmin')
+        resp = self.post_request(app, url, {}, user='sysadmin')
         default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
         assert resp.status_int == 302
         assert len(self.container1['users']) == 1
@@ -130,7 +130,7 @@ class TestDataContainerController(object):
 
     def test_membership_remove_no_access(self, app):
         url = '/data-container/membership_remove?username=default_test&contname=container1'
-        resp = self.get_request(app, url, user='user3', status=403)
+        resp = self.post_request(app, url, {}, user='user3', status=403)
 
 
 @pytest.mark.usefixtures(
