@@ -874,24 +874,37 @@ def access_request_list_for_user(context, data_dict):
     :returns: A list of AccessRequest objects
     :rtype: list of dictionaries
     """
+    m = context.get('model', model)
     user_id = toolkit.get_or_bust(context, "user")
     status = data_dict.get("status", "requested")
     if status not in ['requested', 'approved', 'rejected']:
         raise toolkit.ValidationError('Invalid status {}'.format(status))
 
-    user = model.User.get(user_id)
+    user = m.User.get(user_id)
     if not user:
         raise toolkit.ObjectNotFound("User not found")
 
     toolkit.check_access('access_request_list_for_user', context, data_dict)
 
-    access_requests_table = model.meta.metadata.tables["access_requests"]
-    group_table = model.meta.metadata.tables["group"]
-    package_table = model.meta.metadata.tables["package"]
-    user_table = model.meta.metadata.tables["user"]
+    access_requests_table = m.meta.metadata.tables["access_requests"]
+    group_table = m.meta.metadata.tables["group"]
+    package_table = m.meta.metadata.tables["package"]
+    user_table = m.meta.metadata.tables["user"]
+
+    select_cols = (
+        [c for c in access_requests_table.columns] +
+        [c for c in group_table.columns] +
+        [c for c in package_table.columns] +
+        [
+            c for c in user_table.columns
+            if c.name != 'plugin_extras'
+            and c.name != 'password'
+            and c.name != 'apikey'
+        ]
+    )
+
     sql = select(
-        [AccessRequest, model.Package, model.Group, model.User],
-        use_labels=True,
+        select_cols, use_labels=True,
     ).select_from(
         access_requests_table.join(
             package_table,
@@ -910,13 +923,13 @@ def access_request_list_for_user(context, data_dict):
             access_requests_table.c.user_id == user_table.c.id
         )
     ).order_by(
-        desc(AccessRequest.timestamp)
+        desc(access_requests_table.c.timestamp)
     ).where(
         access_requests_table.c.status == status
     )
 
     if user.sysadmin:
-        return [dictize_access_request(req) for req in model.Session.execute(sql).fetchall()]
+        return [dictize_access_request(req) for req in m.Session.execute(sql).fetchall()]
 
     organizations = toolkit.get_action("organization_list_for_user")(
         context, {"id": user_id, "permission": "admin"}
@@ -928,21 +941,21 @@ def access_request_list_for_user(context, data_dict):
     sql = sql.where(
         or_(
             and_(
-                AccessRequest.object_type == "package",
-                model.Package.owner_org.in_(containers),
+                access_requests_table.c.object_type == "package",
+                package_table.c.owner_org.in_(containers),
             ),
             and_(
-                AccessRequest.object_type == "organization",
-                AccessRequest.object_id.in_(containers),
+                access_requests_table.c.object_type == "organization",
+                access_requests_table.c.object_id.in_(containers),
             ),
             and_(
-                AccessRequest.object_type == "user",
-                AccessRequest.data["default_containers"].has_any(array(containers)),
+                access_requests_table.c.object_type == "user",
+                access_requests_table.c.data["default_containers"].has_any(array(containers)),
             )
         )
     )
 
-    return [dictize_access_request(req) for req in model.Session.execute(sql).fetchall()]
+    return [dictize_access_request(req) for req in m.Session.execute(sql).fetchall()]
 
 
 def _validate_status(status):
