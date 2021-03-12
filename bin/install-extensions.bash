@@ -11,5 +11,5 @@ git clone https://github.com/okfn/ckanext-hierarchy
 git clone https://github.com/okfn/ckanext-collaborators
 (cd ckanext-collaborators && python setup.py develop)
 
-git clone https://github.com/okfn/ckanext-cloudstorage
-(cd ckanext-cloudstorage && python setup.py develop)
+git clone https://github.com/keitaroinc/ckanext-s3filestore
+(cd ckanext-s3filestore && git checkout ckan-2.8 && python setup.py develop && pip install -r requirements.txt)
