@@ -223,7 +223,7 @@ class UnhcrPlugin(
             '/deposited-dataset/{id}/resource/{resource_id}/download',
             '/deposited-dataset/{id}/resource/{resource_id}/download/{filename}',
         ]
-        if not plugins.plugin_loaded('cloudstorage'):
+        if not plugins.plugin_loaded('s3filestore'):
             for route in download_routes:
                 _map.connect(route, controller=controller, action='resource_download')
         else:

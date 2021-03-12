@@ -1,13 +1,13 @@
 import logging
 from ckan import model
 import ckan.plugins.toolkit as toolkit
-from ckanext.cloudstorage.controller import StorageController
+from ckanext.s3filestore.controller import S3Controller
 from ckanext.unhcr.activity import log_download_activity
 from ckanext.unhcr.utils import resource_is_blocked
 log = logging.getLogger(__name__)
 
 
-class ExtendedStorageController(StorageController):
+class ExtendedStorageController(S3Controller):
 
     def resource_download(self, id, resource_id, filename=None):
         """
@@ -29,7 +29,7 @@ class ExtendedStorageController(StorageController):
             return toolkit.abort(404, toolkit._(u'Resource not found'))
 
         """
-        ckanext.cloudstorage.controller.StorageController
+        ckanext.s3filestore.controller.S3Controller
         will issue a redirect to a file on S3
         so we log the download activity first. See notes at
         https://github.com/okfn/ckanext-unhcr/pull/289#issuecomment-624084628
