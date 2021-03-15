@@ -577,47 +577,6 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
         assert_equals(model.State.ACTIVE, user['state'])
 
 
-class TestDatasetCollaboratorCreate(base.FunctionalTestBase):
-
-    def test_internal_user(self):
-        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
-        internal_user = core_factories.User()
-        dataset = factories.Dataset(private=True)
-
-        toolkit.get_action("dataset_collaborator_create")(
-            {'user': sysadmin['name']},
-            {
-                'id': dataset['id'],
-                'user_id': internal_user['id'],
-                'capacity': 'member',
-            }
-        )
-
-        collabs_list = toolkit.get_action("dataset_collaborator_list_for_user")(
-            {'user': sysadmin['name']},
-            {'id': internal_user['id']}
-        )
-        assert_equals(dataset['id'], collabs_list[0]['dataset_id'])
-        assert_equals('member', collabs_list[0]['capacity'])
-
-    def test_external_user(self):
-        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
-        external_user = factories.ExternalUser()
-        dataset = factories.Dataset(private=True)
-
-        action = toolkit.get_action("dataset_collaborator_create")
-        assert_raises(
-            toolkit.ValidationError,
-            action,
-            {'user': sysadmin['name']},
-            {
-                'id': dataset['id'],
-                'user_id': external_user['id'],
-                'capacity': 'member',
-            }
-        )
-
-
 class TestClamAVActions(base.FunctionalTestBase):
 
     def setup(self):
