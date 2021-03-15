@@ -577,21 +577,6 @@ class TestExternalUserUpdateState(base.FunctionalTestBase):
         assert_equals(model.State.ACTIVE, user['state'])
 
 
-class TestPackageSearch(base.FunctionalTestBase):
-
-    def test_package_search_permissions(self):
-        internal_user = core_factories.User()
-        external_user = factories.ExternalUser()
-        dataset = factories.Dataset(private=True)
-        action = toolkit.get_action("package_search")
-
-        internal_user_search_result = action({'user': internal_user["name"]}, {})
-        external_user_search_result = action({'user': external_user["name"]}, {})
-
-        assert_equals(1, internal_user_search_result['count'])  # internal_user can see this
-        assert_equals(0, external_user_search_result['count'])  # external_user can't
-
-
 class TestDatasetCollaboratorCreate(base.FunctionalTestBase):
 
     def test_internal_user(self):

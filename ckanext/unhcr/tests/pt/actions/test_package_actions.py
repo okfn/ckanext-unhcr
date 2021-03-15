@@ -195,3 +195,21 @@ class TestPackageActivityList(object):
         # an unprivileged user can't see any internal activities
         with pytest.raises(toolkit.NotAuthorized):
             action(context, data_dict)
+
+
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+)
+class TestPackageSearch(object):
+
+    def test_package_search_permissions(self):
+        internal_user = core_factories.User()
+        external_user = factories.ExternalUser()
+        dataset = factories.Dataset(private=True)
+        action = toolkit.get_action("package_search")
+
+        internal_user_search_result = action({'user': internal_user["name"]}, {})
+        external_user_search_result = action({'user': external_user["name"]}, {})
+
+        assert 1 == internal_user_search_result['count']  # internal_user can see this
+        assert 0 == external_user_search_result['count']  # external_user can't
