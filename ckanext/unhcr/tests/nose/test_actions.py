@@ -277,61 +277,6 @@ class TestDatastoreAuthRestrictedDownloads(base.FunctionalTestBase):
             resource_id=self.resource['id'])
 
 
-class TestPendingRequestsList(base.FunctionalTestBase):
-    def setup(self):
-        super(TestPendingRequestsList, self).setup()
-
-    def test_container_request_list(self):
-        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
-        container1 = factories.DataContainer(
-            name='container1',
-            id='container1',
-            state='approval_needed',
-        )
-        container2 = factories.DataContainer(
-            name='container2',
-            id='container2',
-            state='approval_needed',
-        )
-        context = {'model': model, 'user': 'sysadmin'}
-        requests = toolkit.get_action("container_request_list")(
-            context, {'all_fields': False}
-        )
-        assert_equals(requests['count'], 2)
-        assert_equals(requests['containers'], [container1['id'], container2['id']])
-
-    def test_container_request_list_all_fields(self):
-        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
-        container1 = factories.DataContainer(
-            name='container1',
-            id='container1',
-            state='approval_needed',
-        )
-        context = {'model': model, 'user': 'sysadmin'}
-        requests = toolkit.get_action("container_request_list")(
-            context, {'all_fields': True}
-        )
-        assert_equals(requests['count'], 1)
-        assert_equals(requests['containers'][0]['name'], 'container1')
-
-    def test_container_request_list_empty(self):
-        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
-        context = {'model': model, 'user': 'sysadmin'}
-        requests = toolkit.get_action("container_request_list")(
-            context, {'all_fields': True}
-        )
-        assert_equals(requests['count'], 0)
-        assert_equals(requests['containers'], [])
-
-    def test_container_request_list_not_authorized(self):
-        user = core_factories.User(name='user', id='user')
-        context = {'model': model, 'user': 'user'}
-        with assert_raises(toolkit.NotAuthorized):
-            toolkit.get_action("container_request_list")(
-                context, {'all_fields': True}
-            )
-
-
 class TestExternalUserUpdateState(base.FunctionalTestBase):
 
     def setup(self):

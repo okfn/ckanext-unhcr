@@ -96,6 +96,62 @@ class TestOrganizationMemberCreate(object):
 @pytest.mark.usefixtures(
     'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
 )
+class TestPendingRequestsList(object):
+
+    def test_container_request_list(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        container1 = factories.DataContainer(
+            name='container1',
+            id='container1',
+            state='approval_needed',
+        )
+        container2 = factories.DataContainer(
+            name='container2',
+            id='container2',
+            state='approval_needed',
+        )
+        context = {'model': model, 'user': 'sysadmin'}
+        requests = toolkit.get_action("container_request_list")(
+            context, {'all_fields': False}
+        )
+        assert requests['count'] == 2
+        assert requests['containers'] == [container1['id'], container2['id']]
+
+    def test_container_request_list_all_fields(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        container1 = factories.DataContainer(
+            name='container1',
+            id='container1',
+            state='approval_needed',
+        )
+        context = {'model': model, 'user': 'sysadmin'}
+        requests = toolkit.get_action("container_request_list")(
+            context, {'all_fields': True}
+        )
+        assert requests['count'] == 1
+        assert requests['containers'][0]['name'] == 'container1'
+
+    def test_container_request_list_empty(self):
+        sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
+        context = {'model': model, 'user': 'sysadmin'}
+        requests = toolkit.get_action("container_request_list")(
+            context, {'all_fields': True}
+        )
+        assert requests['count'] == 0
+        assert requests['containers'] == []
+
+    def test_container_request_list_not_authorized(self):
+        user = core_factories.User(name='user', id='user')
+        context = {'model': model, 'user': 'user'}
+        with pytest.raises(toolkit.NotAuthorized):
+            toolkit.get_action("container_request_list")(
+                context, {'all_fields': True}
+            )
+
+
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+)
 class TestRequestDataContainer(object):
 
     @mock.patch('ckanext.unhcr.mailer.mail_user')
