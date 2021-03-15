@@ -7,7 +7,7 @@ import pytest
 import re
 import responses
 from ckan.plugins import toolkit
-from ckan.tests import factories as core_factories
+from ckantoolkit.tests import factories as core_factories
 from ckanext.unhcr.tests import factories
 
 

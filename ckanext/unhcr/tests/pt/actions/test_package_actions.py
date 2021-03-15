@@ -5,10 +5,8 @@ import json
 import responses
 from ckan import model
 from ckan.plugins import toolkit
-from ckan.tests import (
-    helpers as core_helpers,
-    factories as core_factories,
-)
+from ckan.tests import helpers as core_helpers
+from ckantoolkit.tests import factories as core_factories
 from ckanext.unhcr.tests import factories, mocks
 from ckanext.unhcr import helpers
 from ckanext.unhcr.activity import log_download_activity
