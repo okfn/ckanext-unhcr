@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
+from ckan import model
 from ckan.plugins import toolkit
 from ckan.tests import helpers as core_helpers
 from ckanext.unhcr.tests import factories, mocks
@@ -97,6 +98,10 @@ class TestResourceUpload(object):
 
         with pytest.raises(toolkit.ValidationError) as exc:
             factories.Resource(package_id=dataset['id'])
+        # workaround for DetachedInstanceError
+        # TODO: remove this when we upgrade to CKAN 2.9
+        model.Session.refresh(model.Session.revision)
+
         assert exc.value.error_dict.keys() == ['url']
 
         assert (
