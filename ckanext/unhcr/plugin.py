@@ -223,11 +223,7 @@ class UnhcrPlugin(
             '/deposited-dataset/{id}/resource/{resource_id}/download',
             '/deposited-dataset/{id}/resource/{resource_id}/download/{filename}',
         ]
-        if not plugins.plugin_loaded('cloudstorage'):
-            for route in download_routes:
-                _map.connect(route, controller=controller, action='resource_download')
-        else:
-            controller='ckanext.unhcr.controllers.extended_storage:ExtendedStorageController'
+        if not plugins.plugin_loaded('s3filestore'):
             for route in download_routes:
                 _map.connect(route, controller=controller, action='resource_download')
 
@@ -683,7 +679,7 @@ class UnhcrPlugin(
     # IBlueprint
 
     def get_blueprint(self):
-        return [
+        bp = [
             blueprints.unhcr_access_requests_blueprint,
             blueprints.unhcr_admin_blueprint,
             blueprints.unhcr_data_container_blueprint,
@@ -691,3 +687,6 @@ class UnhcrPlugin(
             blueprints.unhcr_search_index_blueprint,
             blueprints.unhcr_user_blueprint,
         ]
+        if plugins.plugin_loaded('s3filestore'):
+            bp.append(blueprints.unhcr_s3_resource_blueprint)
+        return bp
