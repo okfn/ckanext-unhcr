@@ -1,5 +1,10 @@
 # RIDL Changelog
 
+## v2.2.0 - 2021-03-16
+
+Features:
+- Switch from ckanext-cloudstorage to ckanext-s3filestore
+
 ## v2.1.5 - 2021-02-25
 
 Fixes:
