@@ -674,7 +674,7 @@ def scan_submit(context, data_dict):
     clamav_service_base_url = toolkit.config.get('ckanext.unhcr.clamav_url')
     site_url = toolkit.config.get('ckan.site_url')
     callback_url = toolkit.url_for('/api/3/action/scan_hook', qualified=True)
-    site_user = toolkit.get_action('get_site_user')({'ignore_auth': True, 'user': None}, {})
+    site_user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
 
     try:
         resource_dict = toolkit.get_action('resource_show')(context, {'id': resource_id})
@@ -776,7 +776,7 @@ def scan_hook(context, data_dict):
     task['value'] = json.dumps(data_dict)
     task['error'] = json.dumps(data_dict.get('error'))
 
-    task = toolkit.get_action('task_status_update')({'ignore_auth': True, 'user': None}, task)
+    task = toolkit.get_action('task_status_update')({'ignore_auth': True}, task)
     context['session'].refresh(context['task_status'])
 
     if task['state'] == 'error':

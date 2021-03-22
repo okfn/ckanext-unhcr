@@ -37,7 +37,7 @@ class TestClamAVActions(object):
 
     def insert_pending_task(self):
         return toolkit.get_action('task_status_update')(
-            {'user': self.sysadmin['name']},
+            {'ignore_auth': True},
             {
                 'entity_id': self.resource['id'],
                 'entity_type': 'resource',
