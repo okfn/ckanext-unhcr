@@ -421,6 +421,11 @@ class UnhcrPlugin(
             'organization',
             'ckanext.unhcr.controllers.extended_organization:ExtendedOrganizationController',
         )
+        try:
+            getattr(toolkit.c, "controller", None)
+        except TypeError:
+            return search_params
+
         if (
             getattr(toolkit.c, "controller", None)
             and getattr(toolkit.c, "action", None)

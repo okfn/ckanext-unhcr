@@ -545,7 +545,7 @@ class TestAuthUnit(object):
 
 
 @pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+    'clean_db', 'clean_index', 'unhcr_migrate'
 )
 class TestPackageCreateAuth(object):
 
