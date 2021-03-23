@@ -76,7 +76,7 @@ def restrict_external(func):
     '''
     Decorator function to restrict external users to a small number of allowed_actions
     '''
-    def wrapper(action, context, data_dict=None):
+    def unhcr_auth_wrapper(action, context, data_dict=None):
         user = User.by_name(context.get('user'))
         if not user:
             return func(action, context, data_dict)
@@ -87,7 +87,7 @@ def restrict_external(func):
         if user.external and action not in ALLOWED_ACTIONS:
             return {'success': False, 'msg': 'Not allowed to perform this action'}
         return func(action, context, data_dict)
-    return wrapper
+    return unhcr_auth_wrapper
 
 
 _url_for = core_helpers.url_for
@@ -135,7 +135,8 @@ class UnhcrPlugin(
         activity_stream_string_icons['download resource'] = 'download'
 
         User.external = property(utils.user_is_external)
-        authz.is_authorized = restrict_external(authz.is_authorized)
+        if (authz.is_authorized.__name__ != 'unhcr_auth_wrapper'):
+            authz.is_authorized = restrict_external(authz.is_authorized)
         core_helpers.url_for = url_for
 
     def update_config_schema(self, schema):
