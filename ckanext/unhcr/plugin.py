@@ -157,16 +157,6 @@ class UnhcrPlugin(
         controller = 'ckan.controllers.organization:OrganizationController'
         _map.connect('data-deposit', '/data-container/data-deposit', controller=controller, action='read', id='data-deposit')
 
-        # deposited dataset
-        controller = 'ckanext.unhcr.controllers.deposited_dataset:DepositedDatasetController'
-        _map.connect('/deposited-dataset/{dataset_id}/approve', controller=controller, action='approve')
-        _map.connect('/deposited-dataset/{dataset_id}/assign', controller=controller, action='assign')
-        _map.connect('/deposited-dataset/{dataset_id}/request_changes', controller=controller, action='request_changes')
-        _map.connect('/deposited-dataset/{dataset_id}/request_review', controller=controller, action='request_review')
-        _map.connect('/deposited-dataset/{dataset_id}/reject', controller=controller, action='reject')
-        _map.connect('/deposited-dataset/{dataset_id}/submit', controller=controller, action='submit')
-        _map.connect('/deposited-dataset/{dataset_id}/withdraw', controller=controller, action='withdraw')
-
         # package
 
         # Re-add these core ones otherwise our route below will mask them
@@ -684,6 +674,7 @@ class UnhcrPlugin(
             blueprints.unhcr_access_requests_blueprint,
             blueprints.unhcr_admin_blueprint,
             blueprints.unhcr_data_container_blueprint,
+            blueprints.unhcr_deposited_dataset_blueprint,
             blueprints.unhcr_metrics_blueprint,
             blueprints.unhcr_search_index_blueprint,
             blueprints.unhcr_user_blueprint,

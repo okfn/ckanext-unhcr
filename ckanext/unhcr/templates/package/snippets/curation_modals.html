@@ -5,7 +5,7 @@
     <div id="curation-approve" class="modal fade" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
       <div class="modal-content">
-      <form action="/deposited-dataset/{{ pkg.id }}/approve">
+      <form action="{{ h.url_for('unhcr_deposited_dataset.approve', dataset_id=pkg.id) }}" method="POST">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
           <h3>Approve Dataset</h3>
@@ -31,7 +31,7 @@
     <div id="curation-submit" class="modal fade" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
       <div class="modal-content">
-      <form action="/deposited-dataset/{{ pkg.id }}/submit">
+      <form action="{{ h.url_for('unhcr_deposited_dataset.submit', dataset_id=pkg.id) }}" method="POST">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
           <h3>Submit Dataset</h3>
@@ -59,7 +59,7 @@
     <div id="curation-assign" class="modal fade" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
       <div class="modal-content">
-      <form action="/deposited-dataset/{{ pkg.id }}/assign">
+      <form action="{{ h.url_for('unhcr_deposited_dataset.assign', dataset_id=pkg.id) }}" method="POST">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
           <h3>Update Curator</h3>
@@ -102,7 +102,7 @@
     <div id="curation-request-changes" class="modal fade" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
       <div class="modal-content">
-      <form action="/deposited-dataset/{{ pkg.id }}/request_changes">
+      <form action="{{ h.url_for('unhcr_deposited_dataset.request_changes', dataset_id=pkg.id) }}" method="POST">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
           <h3>Request Changes</h3>
@@ -130,7 +130,7 @@
     <div id="curation-request-review" class="modal fade" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
       <div class="modal-content">
-      <form action="/deposited-dataset/{{ pkg.id }}/request_review">
+      <form action="{{ h.url_for('unhcr_deposited_dataset.request_review', dataset_id=pkg.id) }}" method="POST">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
           <h3>Request Final Review</h3>
@@ -157,7 +157,7 @@
     <div id="curation-withdraw" class="modal fade" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
       <div class="modal-content">
-      <form action="/deposited-dataset/{{ pkg.id }}/withdraw">
+      <form action="{{ h.url_for('unhcr_deposited_dataset.withdraw', dataset_id=pkg.id) }}" method="POST">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
           <h3>Withdraw Dataset</h3>
@@ -183,7 +183,7 @@
     <div id="curation-reject" class="modal fade" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
       <div class="modal-content">
-      <form action="/deposited-dataset/{{ pkg.id }}/reject">
+      <form action="{{ h.url_for('unhcr_deposited_dataset.reject', dataset_id=pkg.id) }}" method="POST">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
           <h3>Reject Dataset</h3>
