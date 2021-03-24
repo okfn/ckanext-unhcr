@@ -39,12 +39,14 @@ class TestDatastoreAuthRestrictedDownloads(base.FunctionalTestBase):
         self.resource = factories.Resource(
             package_id=self.dataset['id'],
             url_type='datastore',
+            upload=mocks.FakeFileStorage(),
         )
 
         # Actions
         core_helpers.call_action('datastore_create',
             resource_id=self.resource['id'],
-            records=[{'a':1, 'b': 2}]
+            records=[{'a': 1, 'b': 2}],
+            force=True,
         )
 
     def _get_context(self, user):
@@ -53,9 +55,6 @@ class TestDatastoreAuthRestrictedDownloads(base.FunctionalTestBase):
             'model': model,
         }
 
-    @nottest
-    # TODO: activate
-    # datastore doesn't seem ready after `datastore_create`
     def test_datastore_info_perms(self):
 
         context = self._get_context(self.normal_user)
@@ -70,9 +69,6 @@ class TestDatastoreAuthRestrictedDownloads(base.FunctionalTestBase):
         assert core_helpers.call_auth('datastore_info', context=context,
             id=self.resource['id'])
 
-    @nottest
-    # TODO: activate
-    # datastore doesn't seem ready after `datastore_create`
     def test_datastore_search_perms(self):
 
         context = self._get_context(self.normal_user)
@@ -88,9 +84,6 @@ class TestDatastoreAuthRestrictedDownloads(base.FunctionalTestBase):
         assert core_helpers.call_auth('datastore_search', context=context,
             resource_id=self.resource['id'])
 
-    @nottest
-    # TODO: activate
-    # datastore doesn't seem ready after `datastore_create`
     def test_datastore_search_sql_perms(self):
 
         context = self._get_context(self.normal_user)
