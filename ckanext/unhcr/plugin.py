@@ -527,9 +527,9 @@ class UnhcrPlugin(
     def get_auth_functions(self):
         functions = auth.restrict_access_to_get_auth_functions()
         functions['resource_download'] = auth.resource_download
-        functions['unhcr_datastore_info'] = auth.unhcr_datastore_info
-        functions['unhcr_datastore_search'] = auth.unhcr_datastore_search
-        functions['unhcr_datastore_search_sql'] = auth.unhcr_datastore_search_sql
+        functions['datastore_info'] = auth.datastore_info
+        functions['datastore_search'] = auth.datastore_search
+        functions['datastore_search_sql'] = auth.datastore_search_sql
         functions['datasets_validation_report'] = auth.datasets_validation_report
         functions['organization_create'] = auth.organization_create
         functions['organization_show'] = auth.organization_show
