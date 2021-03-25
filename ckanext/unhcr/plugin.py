@@ -29,12 +29,6 @@ _ = toolkit._
 
 
 ALLOWED_ACTIONS = [
-    'cloudstorage_initiate_multipart',
-    'cloudstorage_upload_multipart',
-    'cloudstorage_finish_multipart',
-    'cloudstorage_abort_multipart',
-    'cloudstorage_check_multipart',
-    'cloudstorage_clean_multipart',
     'datastore_create',
     'datastore_delete',
     'datastore_upsert',
@@ -586,8 +580,6 @@ class UnhcrPlugin(
             'user_show': actions.user_show,
             'user_create': actions.user_create,
         }
-        if plugins.plugin_loaded('cloudstorage'):
-            functions['cloudstorage_finish_multipart'] = actions.cloudstorage_finish_multipart
         return functions
 
     # IValidators
