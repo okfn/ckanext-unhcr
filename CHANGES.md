@@ -1,5 +1,10 @@
 # RIDL Changelog
 
+## v2.2.1 - 2021-03-25
+
+Fixes:
+- Improve display of 'external access level' field
+
 ## v2.2.0 - 2021-03-16
 
 Features:
