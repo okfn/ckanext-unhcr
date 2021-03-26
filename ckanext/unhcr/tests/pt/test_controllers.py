@@ -1268,7 +1268,7 @@ class TestPrivateResources(object):
         environ = {'REMOTE_USER': self.sysadmin['name'].encode('ascii')}
         res = app.get(url, extra_environ=environ, status=200)
 
-    def test_access_visibility_private(self, app):
+    def test_access_visibility_private_not_admin(self, app):
 
         dataset = factories.Dataset(
             visibility='private',
@@ -1297,8 +1297,7 @@ class TestPrivateResources(object):
         environ = {'REMOTE_USER': self.sysadmin['name'].encode('ascii')}
         res = app.get(url, extra_environ=environ, status=404)
 
-    @pytest.mark.skip(reason="why is the private dataset still available in the test env?")
-    def test_access_visibility_private_pages_not_visible(self, app):
+    def test_access_visibility_private_admin(self, app):
         dataset = factories.Dataset(
             private=True,
             visibility='private',
@@ -1309,11 +1308,15 @@ class TestPrivateResources(object):
             package_id=dataset['id'],
             url_type='upload',
         )
+        # Even though we tried to save this with visibility='private'
+        # this feature is disabled, so the validator has altered it for us
+        # from now on the dataset should behave as 'restricted'
+        assert dataset['visibility'] == 'restricted'
 
         url = toolkit.url_for('dataset_read', id=dataset['id'])
 
         environ = {'REMOTE_USER': self.normal_user['name'].encode('ascii')}
-        res = app.get(url, extra_environ=environ, status=404)
+        res = app.get(url, extra_environ=environ, status=200)
 
         environ = {'REMOTE_USER': self.org_user['name'].encode('ascii')}
         res = app.get(url, extra_environ=environ, status=200)
