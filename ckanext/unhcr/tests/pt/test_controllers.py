@@ -1261,12 +1261,24 @@ class TestPrivateResources(object):
 
         environ = {'REMOTE_USER': self.normal_user['name'].encode('ascii')}
         res = app.get(url, extra_environ=environ, status=200)
+        assert (
+            'You are not authorized to download the resources from this dataset'
+            in res.body
+        )
 
         environ = {'REMOTE_USER': self.org_user['name'].encode('ascii')}
         res = app.get(url, extra_environ=environ, status=200)
+        assert (
+            'You are not authorized to download the resources from this dataset'
+            not in res.body
+        )
 
         environ = {'REMOTE_USER': self.sysadmin['name'].encode('ascii')}
         res = app.get(url, extra_environ=environ, status=200)
+        assert (
+            'You are not authorized to download the resources from this dataset'
+            not in res.body
+        )
 
     def test_access_visibility_private_not_admin(self, app):
 
@@ -1317,9 +1329,21 @@ class TestPrivateResources(object):
 
         environ = {'REMOTE_USER': self.normal_user['name'].encode('ascii')}
         res = app.get(url, extra_environ=environ, status=200)
+        assert (
+            'You are not authorized to download the resources from this dataset'
+            in res.body
+        )
 
         environ = {'REMOTE_USER': self.org_user['name'].encode('ascii')}
         res = app.get(url, extra_environ=environ, status=200)
+        assert (
+            'You are not authorized to download the resources from this dataset'
+            not in res.body
+        )
 
         environ = {'REMOTE_USER': self.sysadmin['name'].encode('ascii')}
         res = app.get(url, extra_environ=environ, status=200)
+        assert (
+            'You are not authorized to download the resources from this dataset'
+            not in res.body
+        )
