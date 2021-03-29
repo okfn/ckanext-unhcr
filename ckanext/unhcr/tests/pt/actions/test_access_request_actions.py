@@ -8,9 +8,7 @@ from ckanext.unhcr.models import AccessRequest
 from ckanext.unhcr.tests import factories
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestAccessRequestUpdate(object):
     def setup(self):
         self.requesting_user = core_factories.User()
@@ -301,9 +299,7 @@ class TestAccessRequestUpdate(object):
             )
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestAccessRequestListForUser(object):
     def setup(self):
         self.sysadmin = core_factories.Sysadmin()

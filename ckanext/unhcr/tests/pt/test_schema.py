@@ -8,9 +8,7 @@ from ckantoolkit.tests import factories as core_factories
 from ckanext.unhcr.tests import factories
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestResourceFields(object):
     def setup(self):
         self.sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')

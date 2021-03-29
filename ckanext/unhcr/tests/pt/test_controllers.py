@@ -13,9 +13,7 @@ from ckanext.unhcr.models import AccessRequest
 from ckanext.unhcr.tests import factories, mocks
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestUserController(object):
 
     def test_sysadmin_not_authorized(self, app):
@@ -82,10 +80,9 @@ class TestUserController(object):
         assert not userobj.sysadmin
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestAdminController(object):
+
     def test_index_sysadmin(self, app):
         user = core_factories.Sysadmin()
         env = {'REMOTE_USER': user['name'].encode('ascii')}
@@ -97,9 +94,7 @@ class TestAdminController(object):
         app.get('/ckan-admin', extra_environ=env, status=403)
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestExtendedPackageController(object):
 
     # Config
@@ -460,9 +455,7 @@ class TestExtendedPackageController(object):
         )
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestDataContainerAccessRequests(object):
 
     def setup(self):
@@ -600,9 +593,7 @@ class TestDataContainerAccessRequests(object):
         )
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestAccessRequests(object):
     def setup(self):
         self.sysadmin = core_factories.Sysadmin()
@@ -822,9 +813,7 @@ class TestAccessRequests(object):
         )
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db',  'unhcr_migrate')
 class TestDataContainerController(object):
 
     # Config
@@ -943,9 +932,7 @@ class TestDataContainerController(object):
         resp = self.post_request(app, url, {}, user='user3', status=403)
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestUserRegister(object):
 
     def setup(self):
@@ -1092,9 +1079,7 @@ class TestUserRegister(object):
         )
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestMetricsController(object):
 
     # Helpers
@@ -1130,9 +1115,7 @@ class TestMetricsController(object):
         resp = self.get_request(app, '/metrics', user='curator', status=200)
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestSearchIndexController(object):
 
     def test_search_index_not_admin(self, app):
@@ -1173,9 +1156,7 @@ class TestSearchIndexController(object):
         assert 1 == packages['count']
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestPrivateResources(object):
 
     def setup(self):

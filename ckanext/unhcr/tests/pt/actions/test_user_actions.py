@@ -8,9 +8,7 @@ from ckantoolkit.tests import factories as core_factories
 from ckanext.unhcr.tests import factories
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestUserActions(object):
 
     def test_user_create_no_duplicate_emails(self):
@@ -87,9 +85,7 @@ class TestUserActions(object):
         assert 'Alice' == user['focal_point']
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestUserAutocomplete(object):
 
     def test_user_autocomplete(self):
@@ -121,9 +117,7 @@ class TestUserAutocomplete(object):
         assert 0 == len(result)
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestUpdateSysadmin(object):
 
     def test_sysadmin_not_authorized(self):

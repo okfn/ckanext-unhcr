@@ -9,9 +9,7 @@ from ckantoolkit.tests import factories as core_factories
 from ckanext.unhcr.tests import factories
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestOrganizationActions(object):
     def setup(self):
         factories.DataContainer(name='za', title='South Africa')
@@ -50,9 +48,7 @@ class TestOrganizationActions(object):
             )
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestOrganizationMemberCreate(object):
 
     def test_internal_user(self):
@@ -93,9 +89,7 @@ class TestOrganizationMemberCreate(object):
             )
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestPendingRequestsList(object):
 
     def test_container_request_list(self):
@@ -149,9 +143,7 @@ class TestPendingRequestsList(object):
             )
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestRequestDataContainer(object):
 
     @mock.patch('ckanext.unhcr.mailer.mail_user')

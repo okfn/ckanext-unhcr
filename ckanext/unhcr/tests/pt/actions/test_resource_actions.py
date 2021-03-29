@@ -7,9 +7,7 @@ from ckan.tests import helpers as core_helpers
 from ckanext.unhcr.tests import factories, mocks
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestResourceUpload(object):
 
     def test_upload_present(self):

@@ -10,9 +10,7 @@ from ckanext.unhcr.tests import factories
 from ckanext.unhcr import helpers
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestGetDataContainer(object):
 
     def test_get_data_container(self):
@@ -25,9 +23,7 @@ class TestGetDataContainer(object):
             helpers.get_data_container('bad-id')
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestGetAllDataContainers(object):
 
     def test_get_all_data_containers(self):
@@ -175,9 +171,7 @@ class TestGetAllDataContainers(object):
             )
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'clean_index', 'unhcr_migrate')
 class TestLinkedDatasets(object):
 
     def test_get_linked_datasets_for_form_none(self):
@@ -285,9 +279,7 @@ class TestLinkedDatasets(object):
         ]
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestPendingRequests(object):
 
     def test_get_pending_requests_total(self):
@@ -348,9 +340,7 @@ class TestPendingRequests(object):
         assert count == 0
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestDataDeposit(object):
 
     def test_get_data_deposit(self):
@@ -363,9 +353,7 @@ class TestDataDeposit(object):
         assert result == {'id': 'data-deposit', 'name': 'data-deposit'}
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestDatasetValidationErrorOrNone(object):
 
     def test_get_dataset_validation_error_or_none(self):
@@ -407,9 +395,7 @@ class TestDatasetValidationErrorOrNone(object):
         }
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestMicrodataHelpers(object):
 
     def test_convert_dataset_to_microdata_survey(self):
@@ -543,9 +529,7 @@ class TestMicrodataHelpers(object):
         }
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestDepositedDatasetHelpers(object):
 
     def setup(self):

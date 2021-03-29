@@ -12,9 +12,7 @@ from ckanext.unhcr import helpers
 from ckanext.unhcr.activity import log_download_activity
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestMicrodata(object):
 
     # General
@@ -96,9 +94,7 @@ class TestMicrodata(object):
             action(context, {'id': self.dataset['id']})
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestPackageActivityList(object):
 
     def setup(self):
@@ -195,9 +191,7 @@ class TestPackageActivityList(object):
             action(context, data_dict)
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'clean_index', 'unhcr_migrate')
 class TestPackageSearch(object):
 
     def test_package_search_permissions(self):
@@ -213,9 +207,7 @@ class TestPackageSearch(object):
         assert 0 == external_user_search_result['count']  # external_user can't
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestDatasetCollaboratorCreate(object):
 
     def test_internal_user(self):
