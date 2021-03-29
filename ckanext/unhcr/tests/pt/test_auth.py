@@ -1,26 +1,23 @@
-import nose
-import pylons
-from paste.registry import Registry
-from nose.plugins.attrib import attr
+# -*- coding: utf-8 -*-
 
-from nose.tools import assert_in, assert_not_in, assert_raises, assert_equals
+import pytest
 import ckan.plugins as plugins
 from ckan.plugins import toolkit
 from ckan.tests import helpers
-from ckan.tests import factories as core_factories
-
+from ckantoolkit.tests import factories as core_factories
 from ckanext.unhcr import auth
 from ckanext.unhcr.helpers import convert_deposited_dataset_to_regular_dataset
 from ckanext.unhcr.plugin import ALLOWED_ACTIONS
-from ckanext.unhcr.tests import base, factories
+from ckanext.unhcr.tests import factories
 from ckanext.unhcr.utils import get_module_functions
 
 
-class TestAuthUI(base.FunctionalTestBase):
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+)
+class TestAuthUI(object):
 
-    def test_non_logged_in_users(self):
-        app = self._get_test_app()
-
+    def test_non_logged_in_users(self, app):
         dataset = factories.Dataset()
         data_container = factories.DataContainer()
 
@@ -35,12 +32,9 @@ class TestAuthUI(base.FunctionalTestBase):
         for endpoint in endpoints:
             response = app.get(endpoint[0], status=endpoint[1])
             if endpoint[1] != 404:
-                assert_in('You must be logged in', response.body)
+                assert 'You must be logged in' in response.body
 
-    def test_logged_in_users(self):
-
-        app = self._get_test_app()
-
+    def test_logged_in_users(self, app):
         user = core_factories.User()
         dataset = factories.Dataset()
         data_container = factories.DataContainer()
@@ -59,12 +53,9 @@ class TestAuthUI(base.FunctionalTestBase):
 
         for endpoint in endpoints:
             response = app.get(endpoint, extra_environ=environ)
-            assert_not_in('You must be logged in', response.body)
+            assert 'You must be logged in' not in response.body
 
-    def test_logged_in_users_private_dataset(self):
-
-        app = self._get_test_app()
-
+    def test_logged_in_users_private_dataset(self, app):
         container_member = core_factories.User()
         dataset_member = core_factories.User()
         other_user = core_factories.User()
@@ -93,11 +84,11 @@ class TestAuthUI(base.FunctionalTestBase):
                 status=200,
             )
             # these users can see the dataset_read view
-            assert_not_in('You must be logged in', response.body)
+            assert 'You must be logged in' not in response.body
             # these users can also download the resource attached to dataset
-            assert_not_in(
-                'You are not authorized to download the resources from this dataset',
-                response.body
+            assert (
+                'You are not authorized to download the resources from this dataset'
+                not in response.body
             )
 
         response = app.get(
@@ -106,21 +97,16 @@ class TestAuthUI(base.FunctionalTestBase):
             status=200,
         )
         # other_user is allowed to see the dataset_read view too
-        assert_not_in('You must be logged in', response.body)
+        assert 'You must be logged in' not in response.body
         # other_user is not allowed to download the resource
-        assert_in(
-            'You are not authorized to download the resources from this dataset',
-            response.body
+        assert (
+            'You are not authorized to download the resources from this dataset'
+            in response.body
         )
         # but they can request access to it if they like
-        assert_in(
-            '<i class="fa fa-key"></i>Request Access',
-            response.body
-        )
+        assert '<i class="fa fa-key"></i>Request Access' in response.body
 
-    def test_external_users_endpoints(self):
-        app = self._get_test_app()
-
+    def test_external_users_endpoints(self, app):
         external_user = factories.ExternalUser()
         dataset = factories.Dataset()
         container = factories.DataContainer()
@@ -167,7 +153,10 @@ class TestAuthUI(base.FunctionalTestBase):
             resp = app.get(endpoint, extra_environ=env, status=200)
 
 
-class TestAuthAPI(base.FunctionalTestBase):
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+)
+class TestAuthAPI(object):
 
     def test_non_logged_in_users(self):
 
@@ -192,25 +181,29 @@ class TestAuthAPI(base.FunctionalTestBase):
         }
 
         for action in actions:
-            assert_raises(
-                toolkit.NotAuthorized,
-                helpers.call_action, action,
-                context=context)
+            with pytest.raises(toolkit.NotAuthorized):
+                helpers.call_action(action, context=context)
 
-        assert_raises(
-            toolkit.NotAuthorized,
-            helpers.call_action, 'package_show',
-            context=context, id=dataset['name'])
+        with pytest.raises(toolkit.NotAuthorized):
+            helpers.call_action(
+                'package_show',
+                context=context,
+                id=dataset['name']
+            )
 
-        assert_raises(
-            toolkit.NotAuthorized,
-            helpers.call_action, 'organization_show',
-            context=context, id=data_container['name'])
+        with pytest.raises(toolkit.NotAuthorized):
+            helpers.call_action(
+                'organization_show',
+                context=context,
+                id=data_container['name']
+            )
 
-        assert_raises(
-            toolkit.NotAuthorized,
-            helpers.call_action, 'user_show',
-            context=context, id=user['id'])
+        with pytest.raises(toolkit.NotAuthorized):
+            helpers.call_action(
+                'user_show',
+                context=context,
+                id=user['id']
+            )
 
     def test_logged_in_users(self):
 
@@ -248,9 +241,10 @@ class TestAuthAPI(base.FunctionalTestBase):
             'user_show', context=context, id=user['id'])
 
 
-class TestAuthUnit(base.FunctionalTestBase):
-
-    # Package
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+)
+class TestAuthUnit(object):
 
     def test_resource_download(self):
         container_member = core_factories.User()
@@ -275,13 +269,13 @@ class TestAuthUnit(base.FunctionalTestBase):
         )
 
         for user in [container_member, dataset_member]:
-            assert_equals(
-                {'success': True},
+            assert (
+                {'success': True} ==
                 auth.resource_download({'user': user['name']}, resource)
             )
 
-        assert_equals(
-            {'success': False},
+        assert (
+            {'success': False} ==
             auth.resource_download({'user': another_user['name']}, resource)
         )
 
@@ -321,14 +315,14 @@ class TestAuthUnit(base.FunctionalTestBase):
         )
 
         for user in [depadmin, curator, target_container_admin]:
-            assert_equals(
-                {'success': True},
+            assert (
+                {'success': True} ==
                 auth.resource_download({'user': user['name']}, resource)
             )
 
         for user in [target_container_member, other_container_admin]:
-            assert_equals(
-                {'success': False},
+            assert (
+                {'success': False} ==
                 auth.resource_download({'user': user['name']}, resource)
             )
 
@@ -348,12 +342,11 @@ class TestAuthUnit(base.FunctionalTestBase):
             for action in actions:
                 context = {'user': external_user['name']}
                 if action not in ALLOWED_ACTIONS:
-                    assert_raises(
-                        toolkit.NotAuthorized,
-                        toolkit.check_access,
-                        action,
-                        context=context
-                    )
+                    with pytest.raises(toolkit.NotAuthorized):
+                        toolkit.check_access(
+                            action,
+                            context=context
+                        )
 
     def test_external_users_plugin_actions(self):
         external_user = factories.ExternalUser()
@@ -362,12 +355,11 @@ class TestAuthUnit(base.FunctionalTestBase):
             for action in plugin.get_auth_functions().keys():
                 context = {'user': external_user['name']}
                 if action not in ALLOWED_ACTIONS:
-                    assert_raises(
-                        toolkit.NotAuthorized,
-                        toolkit.check_access,
-                        action,
-                        context=context
-                    )
+                    with pytest.raises(toolkit.NotAuthorized):
+                        toolkit.check_access(
+                            action,
+                            context=context
+                        )
 
     def test_external_users_always_allowed_actions(self):
         external_user = factories.ExternalUser()
@@ -385,7 +377,7 @@ class TestAuthUnit(base.FunctionalTestBase):
         context = {'user': external_user['name']}
 
         for action in actions:
-            assert_equals(True, toolkit.check_access(action, context))
+            assert True == toolkit.check_access(action, context)
 
     def test_organization_show(self):
         external_user = factories.ExternalUser()
@@ -397,16 +389,16 @@ class TestAuthUnit(base.FunctionalTestBase):
         )
 
         # Everyone can see the data deposit
-        assert_equals(
-            True,
+        assert (
+            True ==
             toolkit.check_access(
                 'organization_show',
                 {'user': internal_user['name']},
                 {'id': deposit['id']}
             )
         )
-        assert_equals(
-            True,
+        assert (
+            True ==
             toolkit.check_access(
                 'organization_show',
                 {'user': external_user['name']},
@@ -415,23 +407,23 @@ class TestAuthUnit(base.FunctionalTestBase):
         )
 
         # Only internal users can see other containers
-        assert_equals(
-            True,
+        assert (
+            True ==
             toolkit.check_access(
                 'organization_show',
                 {'user': internal_user['name']},
                 {'id': container['id']}
             )
         )
-        assert_raises(
-            toolkit.NotAuthorized,
-            toolkit.check_access,
-            'organization_show',
-            context={'user': external_user['name']},
-            data_dict={'id': container['id']}
-        )
+        with pytest.raises(toolkit.NotAuthorized):
+            toolkit.check_access(
+                'organization_show',
+                context={'user': external_user['name']},
+                data_dict={'id': container['id']}
+            )
 
     def test_external_user_approved_deposit(self):
+        sysadmin = core_factories.Sysadmin()
         external_user = factories.ExternalUser()
 
         target = factories.DataContainer(
@@ -460,13 +452,13 @@ class TestAuthUnit(base.FunctionalTestBase):
         })
         deposited_dataset = helpers.call_action(
             'package_update',
-            {'ignore_auth': True},
+            {'user': sysadmin['name']},
             **tmp
         )
 
         # While the dataset is in deposited state, external_user can view it
-        assert_equals(
-            True,
+        assert (
+            True ==
             toolkit.check_access(
                 'package_show',
                 {'user': external_user['name']},
@@ -478,19 +470,18 @@ class TestAuthUnit(base.FunctionalTestBase):
         approved_dataset = convert_deposited_dataset_to_regular_dataset(deposited_dataset)
         approved_dataset = helpers.call_action(
             'package_update',
-            context={'user': 'sysadmin', 'type': approved_dataset['type']},
+            context={'user': sysadmin['name'], 'type': approved_dataset['type']},
             **approved_dataset
         )
 
         # Now that the dataset has moved out of the data-deposit,
         # external_user can not view it anymore
-        assert_raises(
-            toolkit.NotAuthorized,
-            toolkit.check_access,
-            'package_show',
-            context={'user': external_user['name']},
-            data_dict={'id': approved_dataset['id']},
-        )
+        with pytest.raises(toolkit.NotAuthorized):
+            toolkit.check_access(
+                'package_show',
+                context={'user': external_user['name']},
+                data_dict={'id': approved_dataset['id']},
+            )
 
     def test_package_update(self):
 
@@ -523,31 +514,28 @@ class TestAuthUnit(base.FunctionalTestBase):
         )
 
         # Forbidden depadmin/curator/depositor
-        assert_raises(
-            toolkit.NotAuthorized,
-            toolkit.check_access,
-            'package_update',
-            context={'user': 'depadmin'},
-            data_dict={'id': dataset['id']},
-        )
-        assert_raises(
-            toolkit.NotAuthorized,
-            toolkit.check_access,
-            'package_update',
-            context={'user': 'curator'},
-            data_dict={'id': dataset['id']},
-        )
-        assert_raises(
-            toolkit.NotAuthorized,
-            toolkit.check_access,
-            'package_update',
-            context={'user': 'depositor'},
-            data_dict={'id': dataset['id']},
-        )
+        with pytest.raises(toolkit.NotAuthorized):
+            toolkit.check_access(
+                'package_update',
+                context={'user': 'depadmin'},
+                data_dict={'id': dataset['id']},
+            )
+        with pytest.raises(toolkit.NotAuthorized):
+            toolkit.check_access(
+                'package_update',
+                context={'user': 'curator'},
+                data_dict={'id': dataset['id']},
+            )
+        with pytest.raises(toolkit.NotAuthorized):
+            toolkit.check_access(
+                'package_update',
+                context={'user': 'depositor'},
+                data_dict={'id': dataset['id']},
+            )
 
         # Granted creator
-        assert_equals(
-            True,
+        assert (
+            True ==
             toolkit.check_access(
                 'package_update',
                 {'user': 'creator'},
@@ -556,10 +544,12 @@ class TestAuthUnit(base.FunctionalTestBase):
         )
 
 
-class TestPackageCreateAuth(base.FunctionalTestBase):
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'unhcr_migrate'
+)
+class TestPackageCreateAuth(object):
 
     def setup(self):
-        super(TestPackageCreateAuth, self).setup()
         factories.DataContainer(
             id='data-deposit',
             name='data-deposit',
@@ -574,7 +564,7 @@ class TestPackageCreateAuth(base.FunctionalTestBase):
         result = auth.package_create(
             {'user': 'creator'}, {'owner_org': 'data-deposit'}
         )
-        assert_equals(result['success'], True)
+        assert result['success']
 
     def test_unit_user_is_container_admin(self):
         creator = core_factories.User(name='creator')
@@ -586,7 +576,7 @@ class TestPackageCreateAuth(base.FunctionalTestBase):
         result = auth.package_create(
             {'user': 'creator'}, {'owner_org': container['name']}
         )
-        assert_equals(result['success'], True)
+        assert result['success']
 
     def test_unit_user_is_not_container_admin(self):
         creator = core_factories.User(name='creator')
@@ -598,41 +588,41 @@ class TestPackageCreateAuth(base.FunctionalTestBase):
         result = auth.package_create(
             {'user': 'creator'}, {'owner_org': container1['name']}
         )
-        assert_equals(result['success'], False)
+        assert not result['success']
 
         container2 = factories.DataContainer()
         result = auth.package_create(
             {'user': 'creator'}, {'owner_org': container2['name']}
         )
-        assert_equals(result['success'], False)
+        assert not result['success']
 
     def test_unit_no_data_dict(self):
         creator = core_factories.User(name='creator')
         result = auth.package_create({'user': 'creator'}, None)
-        assert_equals(result['success'], False)
+        assert not result['success']
 
-    @helpers.change_config('ckan.auth.create_unowned_dataset', False)
-    def test_integration_new_deposit(self):
+    @pytest.mark.ckan_config('ckan.auth.create_unowned_dataset', False)
+    def test_integration_new_deposit(self, app):
         # everyone can create datasets in the data-deposit
         external_user = factories.ExternalUser()
-        resp = self.app.get(
+        resp = app.get(
             url='/deposited-dataset/new',
             extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
             status=200,
         )
 
         internal_user = core_factories.User()
-        resp = self.app.get(
+        resp = app.get(
             url='/deposited-dataset/new',
             extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
             status=200,
         )
 
-    @helpers.change_config('ckan.auth.create_unowned_dataset', False)
-    def test_integration_new_dataset(self):
+    @pytest.mark.ckan_config('ckan.auth.create_unowned_dataset', False)
+    def test_integration_new_dataset(self, app):
         external_user = factories.ExternalUser()
         # external_user can't create a new dataset
-        resp = self.app.get(
+        resp = app.get(
             url='/dataset/new',
             extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
             status=403,
@@ -641,7 +631,7 @@ class TestPackageCreateAuth(base.FunctionalTestBase):
         internal_user = core_factories.User()
         # internal_user can't create a dataset
         # because they aren't an admin of any containers
-        resp = self.app.get(
+        resp = app.get(
             url='/dataset/new',
             extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
             status=403,
@@ -652,14 +642,14 @@ class TestPackageCreateAuth(base.FunctionalTestBase):
         )
         # now that internal_user is a container admin
         # they can create a dataset
-        resp = self.app.get(
+        resp = app.get(
             url='/dataset/new',
             extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
             status=200,
         )
 
-    @helpers.change_config('ckan.auth.create_unowned_dataset', False)
-    def test_integration_edit_deposit(self):
+    @pytest.mark.ckan_config('ckan.auth.create_unowned_dataset', False)
+    def test_integration_edit_deposit(self, app):
         # everyone can edit their own draft deposited datasets
         external_user = factories.ExternalUser()
         external_deposit = factories.DepositedDataset(
@@ -669,7 +659,7 @@ class TestPackageCreateAuth(base.FunctionalTestBase):
             user=external_user,
             state='draft',
         )
-        resp = self.app.get(
+        resp = app.get(
             url='/deposited-dataset/edit/{}'.format(external_deposit['id']),
             extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
             status=200,
@@ -683,14 +673,17 @@ class TestPackageCreateAuth(base.FunctionalTestBase):
             user=internal_user,
             state='draft',
         )
-        resp = self.app.get(
+        resp = app.get(
             url='/deposited-dataset/edit/{}'.format(internal_deposit['id']),
             extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
             status=200,
         )
 
 
-class TestExternalUserPackageAuths(base.FunctionalTestBase):
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+)
+class TestExternalUserPackageAuths(object):
 
     def setup(self):
         self.external_user = factories.ExternalUser()
@@ -749,23 +742,19 @@ class TestExternalUserPackageAuths(base.FunctionalTestBase):
         )
 
     def assert_auth_pass(self, action, data_dict):
-        assert_equals(
-            True,
-            toolkit.check_access(
-                action,
-                {'user': self.external_user['name']},
-                data_dict,
-            )
-        )
-
-    def assert_auth_fail(self, action, data_dict):
-        assert_raises(
-            toolkit.NotAuthorized,
-            toolkit.check_access,
+        assert toolkit.check_access(
             action,
             context={'user': self.external_user['name']},
             data_dict=data_dict,
         )
+
+    def assert_auth_fail(self, action, data_dict):
+        with pytest.raises(toolkit.NotAuthorized):
+            toolkit.check_access(
+                action,
+                context={'user': self.external_user['name']},
+                data_dict=data_dict,
+            )
 
     def test_package_actions(self):
         package_actions = [
@@ -812,10 +801,13 @@ class TestExternalUserPackageAuths(base.FunctionalTestBase):
                 'id': self.arbitrary_resource['id'],
             })
 
-class TestUserAuth(base.FunctionalTestBase):
+
+@pytest.mark.usefixtures(
+    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
+)
+class TestUserAuth(object):
 
     def setup(self):
-        super(TestUserAuth, self).setup()
         self.sysadmin = core_factories.Sysadmin()
         self.external_user = factories.ExternalUser()
         self.internal_user = core_factories.User()
@@ -843,17 +835,15 @@ class TestUserAuth(base.FunctionalTestBase):
             {'user': self.external_user['name']},
             {'id': self.external_user['name']},
         )
-        assert_raises(
-            toolkit.NotAuthorized,
-            toolkit.check_access,
-            'user_show',
-            context={'user': self.external_user['name']},
-            data_dict={'id': self.internal_user['name']},
-        )
-        assert_raises(
-            toolkit.NotAuthorized,
-            toolkit.check_access,
-            'user_show',
-            context={'user': self.external_user['name']},
-            data_dict={'id': self.sysadmin['name']},
-        )
+        with pytest.raises(toolkit.NotAuthorized):
+            toolkit.check_access(
+                'user_show',
+                context={'user': self.external_user['name']},
+                data_dict={'id': self.internal_user['name']},
+            )
+        with pytest.raises(toolkit.NotAuthorized):
+            toolkit.check_access(
+                'user_show',
+                context={'user': self.external_user['name']},
+                data_dict={'id': self.sysadmin['name']},
+            )
