@@ -48,7 +48,7 @@ class TestExtendedPackageController(object):
             sampling_procedure = 'nonprobability',
             operational_purpose_of_data = 'cartography',
             user=self.user1,
-            visibility='private',
+            visibility='restricted',
         )
 
         # Resources

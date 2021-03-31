@@ -20,7 +20,7 @@ class TestAccessRequestUpdate(object):
             users=[{"name": self.container1_admin["name"], "capacity": "admin"}]
         )
         self.dataset1 = factories.Dataset(
-            owner_org=self.container1["id"], visibility="private"
+            owner_org=self.container1["id"], visibility="restricted"
         )
         self.container_request = AccessRequest(
             user_id=self.requesting_user["id"],
@@ -315,7 +315,7 @@ class TestAccessRequestListForUser(object):
             ]
         )
         self.dataset1 = factories.Dataset(
-            owner_org=self.container1["id"], visibility="private"
+            owner_org=self.container1["id"], visibility="restricted"
         )
 
         self.container2_admin = core_factories.User()
@@ -326,7 +326,7 @@ class TestAccessRequestListForUser(object):
             ]
         )
         self.dataset2 = factories.Dataset(
-            owner_org=self.container2["id"], visibility="private"
+            owner_org=self.container2["id"], visibility="restricted"
         )
 
         self.container3 = factories.DataContainer()

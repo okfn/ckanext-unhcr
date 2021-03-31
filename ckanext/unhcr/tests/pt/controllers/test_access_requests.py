@@ -23,7 +23,7 @@ class TestAccessRequests(object):
         )
         self.container2 = factories.DataContainer()
         self.dataset1 = factories.Dataset(
-            owner_org=self.container1["id"], visibility="private"
+            owner_org=self.container1["id"], visibility="restricted"
         )
         self.container1_request = AccessRequest(
             user_id=self.requesting_user["id"],

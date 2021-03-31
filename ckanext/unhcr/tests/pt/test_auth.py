@@ -62,7 +62,7 @@ class TestAuthUI(object):
         )
         dataset = factories.Dataset(
             owner_org=data_container['id'],
-            visibility='private'
+            visibility='restricted'
         )
         resource = factories.Resource(
             package_id=dataset['id'],
@@ -249,7 +249,7 @@ class TestAuthUnit(object):
         )
         dataset = factories.Dataset(
             owner_org=data_container['id'],
-            visibility='private'
+            visibility='restricted'
         )
         resource = factories.Resource(
             package_id=dataset['id'],
@@ -702,7 +702,7 @@ class TestExternalUserPackageAuths(object):
         )
         self.dataset = factories.Dataset(
             owner_org=target['id'],
-            visibility='private'
+            visibility='restricted'
         )
 
         self.external_dataset_resources = [

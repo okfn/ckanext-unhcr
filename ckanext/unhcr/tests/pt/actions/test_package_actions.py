@@ -108,7 +108,7 @@ class TestPackageActivityList(object):
             ]
         )
         self.dataset1 = factories.Dataset(
-            owner_org=self.container1["id"], visibility="private"
+            owner_org=self.container1["id"], visibility="restricted"
         )
         self.resource1 = factories.Resource(
             package_id=self.dataset1['id'],
@@ -213,7 +213,7 @@ class TestDatasetCollaboratorCreate(object):
     def test_internal_user(self):
         sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
         internal_user = core_factories.User()
-        dataset = factories.Dataset(private=True)
+        dataset = factories.Dataset()
 
         toolkit.get_action("dataset_collaborator_create")(
             {'user': sysadmin['name']},
@@ -234,7 +234,7 @@ class TestDatasetCollaboratorCreate(object):
     def test_external_user(self):
         sysadmin = core_factories.Sysadmin(name='sysadmin', id='sysadmin')
         external_user = factories.ExternalUser()
-        dataset = factories.Dataset(private=True)
+        dataset = factories.Dataset()
 
         action = toolkit.get_action("dataset_collaborator_create")
         with pytest.raises(toolkit.ValidationError):
