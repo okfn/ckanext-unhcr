@@ -2,7 +2,6 @@
 
 import mock
 import pytest
-from ckan.lib.helpers import url_for
 import ckan.model as model
 from ckan.plugins import toolkit
 from ckantoolkit.tests import factories as core_factories
@@ -95,7 +94,7 @@ class TestUserRegister(object):
         }
 
     def test_custom_fields(self, app):
-        resp = app.get(url_for('user.register'))
+        resp = app.get(toolkit.url_for('user.register'))
         assert resp.status_int == 200
         assert (
             'Please describe the dataset(s) you would like to submit' in
@@ -117,7 +116,7 @@ class TestUserRegister(object):
     def test_register_success(self, app):
         mock_mailer = mock.Mock()
         with mock.patch('ckan.plugins.toolkit.enqueue_job', mock_mailer):
-            resp = app.post(url_for('user.register'), self.payload)
+            resp = app.post(toolkit.url_for('user.register'), self.payload)
 
 
         # we should have created a user object with pending state
@@ -152,7 +151,7 @@ class TestUserRegister(object):
 
     def test_register_empty_message(self, app):
         self.payload['message'] = ''
-        resp = app.post(url_for('user.register'), self.payload)
+        resp = app.post(toolkit.url_for('user.register'), self.payload)
         assert "&#39;message&#39; is required" in resp.body
         action = toolkit.get_action("user_show")
         with pytest.raises(toolkit.ObjectNotFound):
@@ -163,7 +162,7 @@ class TestUserRegister(object):
 
     def test_register_empty_focal_point(self, app):
         self.payload['focal_point'] = ''
-        resp = app.post(url_for('user.register'), self.payload)
+        resp = app.post(toolkit.url_for('user.register'), self.payload)
         assert "A focal point must be specified" in resp.body
         action = toolkit.get_action("user_show")
         with pytest.raises(toolkit.ObjectNotFound):
@@ -174,7 +173,7 @@ class TestUserRegister(object):
 
     def test_no_containers(self, app):
         self.payload['container'] = ''
-        resp = app.post(url_for('user.register'), self.payload)
+        resp = app.post(toolkit.url_for('user.register'), self.payload)
         assert "A region must be specified" in resp.body
         action = toolkit.get_action("user_show")
         with pytest.raises(toolkit.ObjectNotFound):
@@ -185,7 +184,7 @@ class TestUserRegister(object):
 
     def test_internal_user(self, app):
         self.payload['email'] = 'fred@unhcr.org'
-        resp = app.post(url_for('user.register'), self.payload)
+        resp = app.post(toolkit.url_for('user.register'), self.payload)
         assert (
             "Users with an @unhcr.org email may not register for a partner account."
             in resp.body
@@ -201,23 +200,23 @@ class TestUserRegister(object):
         user = core_factories.User()
 
         app.get(
-            url_for('user.register'),
+            toolkit.url_for('user.register'),
             extra_environ={'REMOTE_USER': user['name'].encode('ascii')},
             status=403
         )
         app.get(
-            url_for('user.register'),
+            toolkit.url_for('user.register'),
             extra_environ={'REMOTE_USER': self.sysadmin['name'].encode('ascii')},
             status=403
         )
         app.post(
-            url_for('user.register'),
+            toolkit.url_for('user.register'),
             self.payload,
             extra_environ={'REMOTE_USER': user['name'].encode('ascii')},
             status=403
         )
         app.post(
-            url_for('user.register'),
+            toolkit.url_for('user.register'),
             self.payload,
             extra_environ={'REMOTE_USER': self.sysadmin['name'].encode('ascii')},
             status=403
