@@ -1,0 +1,47 @@
+diff --git a/ckan/migration/versions/096_19ddad52b500_add_plugin_extras_to_user_table.py b/ckan/migration/versions/096_19ddad52b500_add_plugin_extras_to_user_table.py
+index 9a3b085a9..5c4c41930 100644
+--- a/ckan/migration/versions/096_19ddad52b500_add_plugin_extras_to_user_table.py
++++ b/ckan/migration/versions/096_19ddad52b500_add_plugin_extras_to_user_table.py
+@@ -8,7 +8,9 @@ Create Date: 2020-05-12 22:19:37.878470
+ """
+ from alembic import op
+ import sqlalchemy as sa
++from sqlalchemy import engine_from_config
+ from sqlalchemy.dialects import postgresql
++from sqlalchemy.engine import reflection
+ 
+ # revision identifiers, used by Alembic.
+ revision = u'19ddad52b500'
+@@ -17,14 +19,25 @@ branch_labels = None
+ depends_on = None
+ 
+ 
++def _table_has_column(table, column):
++    config = op.get_context().config
++    engine = engine_from_config(
++        config.get_section(config.config_ini_section), prefix='sqlalchemy.')
++    insp = reflection.Inspector.from_engine(engine)
++    if table not in insp.get_table_names():
++        return False
++    return column in [c['name'] for c in insp.get_columns(u'user')]
++
++
+ def upgrade():
+-    op.add_column(
+-        u'user',
+-        sa.Column(
+-            u'plugin_extras',
+-            postgresql.JSONB(astext_type=sa.Text()),
+-            nullable=True)
+-    )
++    if not _table_has_column(u'user', u'plugin_extras'):
++        op.add_column(
++            u'user',
++            sa.Column(
++                u'plugin_extras',
++                postgresql.JSONB(astext_type=sa.Text()),
++                nullable=True)
++        )
+ 
+ 
+ def downgrade():

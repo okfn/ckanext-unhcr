@@ -1,15 +1,15 @@
 diff --git a/ckan/logic/action/update.py b/ckan/logic/action/update.py
-index e11d41ec7..d7d432726 100644
+index 7ca6a4ee2..9e2dd3066 100644
 --- a/ckan/logic/action/update.py
 +++ b/ckan/logic/action/update.py
-@@ -263,7 +263,9 @@ def package_update(context, data_dict):
-         raise NotFound(_('Package was not found.'))
-     context["package"] = pkg
+@@ -251,7 +251,9 @@ def package_update(context, data_dict):
+ 
+     # immutable fields
      data_dict["id"] = pkg.id
 -    data_dict['type'] = pkg.type
 +    # Allow setting type using context
 +    # We don't use type from data_dict for security reasons
 +    data_dict["type"] = context.get('type') or pkg.type
-
+ 
      _check_access('package_update', context, data_dict)
-
+ 
