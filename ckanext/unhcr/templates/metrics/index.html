@@ -4,9 +4,8 @@
 
 {% block scripts %}
   {{ super() }}
-  {% resource 'unhcr/graphs/c3__0_7_15__min.css' %}
-  {% resource 'unhcr/graphs/d3__5_15_0__min.js' %}
-  {% resource 'unhcr/graphs/c3__0_7_15__min.js' %}
+  {% asset 'unhcr/graph_css' %}
+  {% asset 'unhcr/graph_js' %}
 {% endblock %}
 
 {% block secondary_content %}

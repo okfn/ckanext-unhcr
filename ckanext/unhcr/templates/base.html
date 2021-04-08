@@ -3,7 +3,7 @@
 {% block styles %}
   {{ super() }}
   <link href="https://fonts.googleapis.com/css?family=Lato:400,400i,700" rel="stylesheet">
-  {% resource 'unhcr/theme.css' %}
+  {% asset 'unhcr/ridl_theme_css' %}
 {% endblock %}
 
 {% block scripts %}
@@ -12,5 +12,5 @@
   {% endif %}
 
   {{ super() }}
-  {% resource 'unhcr/theme.js' %}
+  {% asset 'unhcr/ridl_theme_js' %}
 {% endblock %}

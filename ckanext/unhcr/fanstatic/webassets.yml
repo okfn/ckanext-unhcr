@@ -1,0 +1,24 @@
+ridl_theme_js:
+  filter: rjsmin
+  output: ckanext-unhcr/%(version)s_theme.js
+  extra:
+    preload:
+      - base/main
+  contents:
+    - theme.js
+
+ridl_theme_css:
+  output: ckanext-unhcr/%(version)s_theme.css
+  contents:
+    - theme.css
+
+graph_js:
+  output: ckanext-unhcr/%(version)s_graph.js
+  contents:
+    - graphs/d3__5_15_0__min.js
+    - graphs/c3__0_7_15__min.js
+
+graph_css:
+  output: ckanext-unhcr/%(version)s_graph.css
+  contents:
+    - graphs/c3__0_7_15__min.css

@@ -1,4 +1,4 @@
-{% resource 'hierarchy/hierarchy_theme.css' %}
-{% resource 'hierarchy/jquery.hierarchy.js' %}
+{% asset 'hierarchy/hierarchy_js' %}
+{% asset 'hierarchy/hierarchy_css' %}
 {% set top_nodes = [h.group_tree_section(id_=c.group_dict.id, type_=c.group_dict.type, include_siblings=False)] %}
 {{ h.render_tree(top_nodes)|safe }}
