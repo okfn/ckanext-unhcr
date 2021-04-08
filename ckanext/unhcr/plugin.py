@@ -13,10 +13,10 @@ from ckan.lib.plugins import DefaultPermissionLabels
 
 # 🙈
 import ckan.authz as authz
-from ckan.lib.activity_streams import (
-    activity_stream_string_functions,
-    activity_stream_string_icons,
-)
+#from ckan.lib.activity_streams import (
+#    activity_stream_string_functions,
+#    activity_stream_string_icons,
+#)
 
 from ckanext.unhcr import actions, auth, blueprints, helpers, jobs, utils, validators
 
@@ -128,9 +128,9 @@ class UnhcrPlugin(
         # but not yet :(
         toolkit.add_ckan_admin_tab(config_, 'unhcr_search_index.index', 'Search Index')
 
-        activity_stream_string_functions['changed package'] = helpers.custom_activity_renderer
-        activity_stream_string_functions['download resource'] = helpers.download_resource_renderer
-        activity_stream_string_icons['download resource'] = 'download'
+        #activity_stream_string_functions['changed package'] = helpers.custom_activity_renderer
+        #activity_stream_string_functions['download resource'] = helpers.download_resource_renderer
+        #activity_stream_string_icons['download resource'] = 'download'
 
         User.external = property(utils.user_is_external)
         if (authz.is_authorized.__name__ != 'unhcr_auth_wrapper'):
@@ -537,7 +537,6 @@ class UnhcrPlugin(
         functions['package_activity_list'] = auth.package_activity_list
         functions['package_create'] = auth.package_create
         functions['package_update'] = auth.package_update
-        functions['dataset_collaborator_create'] = auth.dataset_collaborator_create
         functions['scan_hook'] = auth.scan_hook
         functions['scan_submit'] = auth.scan_submit
         functions['access_request_list_for_user'] = auth.access_request_list_for_user
@@ -559,7 +558,6 @@ class UnhcrPlugin(
             'package_update': actions.package_update,
             'package_publish_microdata': actions.package_publish_microdata,
             'package_get_microdata_collections': actions.package_get_microdata_collections,
-            'dataset_collaborator_create': actions.dataset_collaborator_create,
             'organization_create': actions.organization_create,
             'organization_member_create': actions.organization_member_create,
             'organization_member_delete': actions.organization_member_delete,
