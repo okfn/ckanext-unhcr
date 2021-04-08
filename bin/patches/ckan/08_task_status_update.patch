@@ -1,9 +1,9 @@
 diff --git a/ckan/logic/action/update.py b/ckan/logic/action/update.py
-index db6fd192d..fdc49f078 100644
+index 7ca6a4ee2..d42e0430c 100644
 --- a/ckan/logic/action/update.py
 +++ b/ckan/logic/action/update.py
-@@ -758,7 +769,6 @@ def task_status_update(context, data_dict):
-     session = model.meta.create_local_session()
+@@ -932,7 +932,6 @@ def task_status_update(context, data_dict):
+     session = model.Session
      context['session'] = session
  
 -    user = context['user']
