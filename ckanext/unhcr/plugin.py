@@ -18,7 +18,7 @@ import ckan.authz as authz
 #    activity_stream_string_icons,
 #)
 
-from ckanext.unhcr import actions, auth, blueprints, helpers, jobs, utils, validators
+from ckanext.unhcr import actions, auth, click_commands, blueprints, helpers, jobs, utils, validators
 
 from ckanext.scheming.helpers import scheming_get_dataset_schema
 from ckanext.hierarchy.helpers import group_tree_section
@@ -105,6 +105,7 @@ def url_for(*args, **kw):
 class UnhcrPlugin(
         plugins.SingletonPlugin, DefaultTranslation, DefaultPermissionLabels):
     plugins.implements(plugins.IConfigurer)
+    plugins.implements(plugins.IClick)
     plugins.implements(plugins.ITranslation)
     plugins.implements(plugins.IFacets)
     plugins.implements(plugins.ITemplateHelpers)
@@ -145,6 +146,11 @@ class UnhcrPlugin(
         })
 
         return schema
+
+    # IClick
+
+    def get_commands(self):
+        return [click_commands.unhcr]
 
     # IRoutes
 
