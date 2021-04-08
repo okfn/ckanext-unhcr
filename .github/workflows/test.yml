@@ -6,14 +6,14 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: openknowledge/ckan-dev:2.8
+      image: openknowledge/ckan-dev:2.9-py2
 
     services:
       solr:
-        image: ckan/ckan-solr-dev:2.8
+        image: ckan/ckan-solr-dev:2.9-py2
 
       postgres:
-        image: ckan/ckan-postgres-dev:2.8
+        image: ckan/ckan-postgres-dev:2.9-py2
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
