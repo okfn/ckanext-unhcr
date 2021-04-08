@@ -21,9 +21,8 @@ import ckan.logic.action.create as create_core
 import ckan.logic.action.delete as delete_core
 import ckan.logic.action.update as update_core
 import ckan.logic.action.patch as patch_core
-import ckan.lib.activity_streams as activity_streams
+#import ckan.lib.activity_streams as activity_streams
 import ckan.lib.dictization.model_dictize as model_dictize
-from ckanext.collaborators.logic import action as collaborators_action
 from ckanext.unhcr import helpers, mailer, utils
 from ckanext.unhcr.models import AccessRequest
 from ckanext.scheming.helpers import scheming_get_dataset_schema
