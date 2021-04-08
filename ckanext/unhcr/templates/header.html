@@ -75,18 +75,31 @@
         )
       }}
     {% elif c.userobj.sysadmin or h.user_is_curator() %}
-      {{
+      {#
         h.build_nav_main(
           ('data-container_index', _('Organizations')),
           ('data-deposit', _('Data Deposit')),
           ('search', _('Datasets')),
           ('unhcr_metrics.metrics', _('Metrics')),
         )
-      }}
-    {% else %}
+      #}
       {{
         h.build_nav_main(
+          ('data-deposit', _('Data Deposit')),
+          ('search', _('Datasets')),
+          ('unhcr_metrics.metrics', _('Metrics')),
+        )
+      }}
+    {% else %}
+      {#
+        h.build_nav_main(
           ('data-container_index', _('Organizations')),
+          ('data-deposit', _('Data Deposit')),
+          ('search', _('Datasets')),
+        )
+      #}
+      {{
+        h.build_nav_main(
           ('data-deposit', _('Data Deposit')),
           ('search', _('Datasets')),
         )
