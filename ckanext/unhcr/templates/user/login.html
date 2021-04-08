@@ -4,9 +4,11 @@
 
 {% block page_heading %}Partner Login{% endblock %}
 
-{% block form %}
-  {{ super.super() }}
-{% endblock %}
+{#
+  TODO: when you move to keitaroinc/saml2auth
+  handle this in
+  templates/user/snippets/login_form.html
+#}
 
 {% block secondary_content %}
   {% snippet "user/snippets/login_sidebar.html" %}
