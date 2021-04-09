@@ -818,14 +818,6 @@ def scan_hook(context, data_dict):
 
 
 @toolkit.chained_action
-def cloudstorage_finish_multipart(up_func, context, data_dict):
-    toolkit.check_access('cloudstorage_finish_multipart', context, data_dict)
-    result = up_func(context, data_dict)
-    toolkit.get_action('scan_submit')(context, {'id': data_dict['id']})
-    return result
-
-
-@toolkit.chained_action
 def resource_create(up_func, context, data_dict):
     toolkit.check_access('resource_create', context, data_dict)
     has_upload = data_dict.get('upload') is not None
