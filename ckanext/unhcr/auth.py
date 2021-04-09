@@ -272,15 +272,32 @@ def resource_download(context, data_dict):
     return {'success': False}
 
 
-def unhcr_datastore_info(context, data_dict):
-    return auth_datastore_core.datastore_auth(context, data_dict, 'resource_download')
+@toolkit.chained_auth_function
+def datastore_info(next_auth, context, data_dict):
+    parent_auth = auth_datastore_core.datastore_auth(
+        context,
+        data_dict,
+        'resource_download'
+    )
+    if not parent_auth['success']:
+        return parent_auth
+    return next_auth(context, data_dict)
 
 
-def unhcr_datastore_search(context, data_dict):
-    return auth_datastore_core.datastore_auth(context, data_dict, 'resource_download')
+@toolkit.chained_auth_function
+def datastore_search(next_auth, context, data_dict):
+    parent_auth = auth_datastore_core.datastore_auth(
+        context,
+        data_dict,
+        'resource_download'
+    )
+    if not parent_auth['success']:
+        return parent_auth
+    return next_auth(context, data_dict)
 
 
-def unhcr_datastore_search_sql(context, data_dict):
+@toolkit.chained_auth_function
+def datastore_search_sql(next_auth, context, data_dict):
     '''need access to view all tables in query'''
 
     for name in context['table_names']:
@@ -292,7 +309,7 @@ def unhcr_datastore_search_sql(context, data_dict):
             return {
                 'success': False,
                 'msg': 'Not authorized to read resource.'}
-    return {'success': True}
+    return next_auth(context, data_dict)
 
 
 def datasets_validation_report(context, data_dict):
