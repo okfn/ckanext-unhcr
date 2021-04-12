@@ -4,9 +4,7 @@ import pytest
 from ckanext.unhcr.jobs import _modify_package
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestJobs(object):
 
     # date_range

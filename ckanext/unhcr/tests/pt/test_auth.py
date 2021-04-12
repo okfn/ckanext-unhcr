@@ -12,9 +12,7 @@ from ckanext.unhcr.tests import factories
 from ckanext.unhcr.utils import get_module_functions
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestAuthUI(object):
 
     def test_non_logged_in_users(self, app):
@@ -64,7 +62,7 @@ class TestAuthUI(object):
         )
         dataset = factories.Dataset(
             owner_org=data_container['id'],
-            visibility='private'
+            visibility='restricted'
         )
         resource = factories.Resource(
             package_id=dataset['id'],
@@ -153,9 +151,7 @@ class TestAuthUI(object):
             resp = app.get(endpoint, extra_environ=env, status=200)
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestAuthAPI(object):
 
     def test_non_logged_in_users(self):
@@ -241,9 +237,7 @@ class TestAuthAPI(object):
             'user_show', context=context, id=user['id'])
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestAuthUnit(object):
 
     def test_resource_download(self):
@@ -255,7 +249,7 @@ class TestAuthUnit(object):
         )
         dataset = factories.Dataset(
             owner_org=data_container['id'],
-            visibility='private'
+            visibility='restricted'
         )
         resource = factories.Resource(
             package_id=dataset['id'],
@@ -544,9 +538,7 @@ class TestAuthUnit(object):
         )
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'clean_index', 'unhcr_migrate')
 class TestPackageCreateAuth(object):
 
     def setup(self):
@@ -680,9 +672,7 @@ class TestPackageCreateAuth(object):
         )
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestExternalUserPackageAuths(object):
 
     def setup(self):
@@ -712,7 +702,7 @@ class TestExternalUserPackageAuths(object):
         )
         self.dataset = factories.Dataset(
             owner_org=target['id'],
-            visibility='private'
+            visibility='restricted'
         )
 
         self.external_dataset_resources = [
@@ -802,9 +792,7 @@ class TestExternalUserPackageAuths(object):
             })
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestUserAuth(object):
 
     def setup(self):

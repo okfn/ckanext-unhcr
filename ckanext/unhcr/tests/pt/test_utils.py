@@ -8,9 +8,7 @@ from ckanext.unhcr.tests import factories
 from ckanext.unhcr import utils
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestUtils(object):
 
     def test_normalize_list(self):

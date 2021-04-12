@@ -9,9 +9,7 @@ from ckanext.unhcr.tests import factories
 from ckanext.unhcr import mailer
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'clean_index', 'unhcr_migrate')
 class TestSummaryMailer(object):
 
     # General
@@ -218,9 +216,7 @@ class TestSummaryMailer(object):
         assert user1['name'] not in recipient_ids
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestAccessRequestMailer(object):
 
     # General
@@ -431,9 +427,7 @@ class TestAccessRequestMailer(object):
         assert self.sysadmin['id'] in recipient_ids
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestInfectedFileMailer(object):
 
     def test_email_body(self):

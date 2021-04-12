@@ -3,7 +3,7 @@
 import pytest
 import mock
 from ckan import model
-from ckan.lib.helpers import url_for
+from ckan.plugins import toolkit
 from ckan.tests import helpers as core_helpers
 from ckantoolkit.tests import factories as core_factories
 from ckanext.unhcr.tests import factories
@@ -938,7 +938,7 @@ class TestDepositedDatasetController(object):
 
         env = {'REMOTE_USER': self.creator['name'].encode('ascii')}
         resp = self.app.get(
-            url=url_for('deposited-dataset_read', id=self.dataset['id']), extra_environ=env)
+            url=toolkit.url_for('deposited-dataset_read', id=self.dataset['id']), extra_environ=env)
         assert 'Internal Activity' in resp.body
 
     @pytest.mark.parametrize("user", ['sysadmin', 'editor', 'target_container_admin'])
@@ -952,7 +952,7 @@ class TestDepositedDatasetController(object):
 
         env = {'REMOTE_USER': user.encode('ascii')}
         resp = self.app.get(
-            url=url_for('dataset_read', id=self.dataset['id']), extra_environ=env)
+            url=toolkit.url_for('dataset_read', id=self.dataset['id']), extra_environ=env)
 
         assert 'Internal Activity' in resp.body
 
@@ -967,7 +967,7 @@ class TestDepositedDatasetController(object):
 
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
         resp = self.app.get(
-            url=url_for('dataset_read', id=self.dataset['id']), extra_environ=env)
+            url=toolkit.url_for('dataset_read', id=self.dataset['id']), extra_environ=env)
 
         assert 'Internal Activity' not in resp.body
 
@@ -979,7 +979,7 @@ class TestDepositedDatasetController(object):
 
         env = {'REMOTE_USER': self.curator['name'].encode('ascii')}
         resp = self.app.get(
-            url=url_for('deposited-dataset_internal_activity', dataset_id=self.dataset['name']), extra_environ=env)
+            url=toolkit.url_for('deposited-dataset_internal_activity', dataset_id=self.dataset['name']), extra_environ=env)
 
         assert 'deposited dataset' in resp.body
         assert 'submitted dataset' in resp.body

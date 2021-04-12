@@ -58,20 +58,7 @@ jobs:
       - name: Initialize DB
         run: ./bin/init-db.bash
 
-      - name: Run nose tests
-        run: |
-          nosetests --ckan \
-            --nologcapture \
-            --with-pylons=./test.ini \
-            --with-coverage \
-            --cover-package=ckanext.unhcr \
-            --cover-inclusive \
-            --cover-erase \
-            --cover-tests \
-            --cover-xml \
-            ckanext/unhcr/tests/nose
-
-      - name: Run pytest tests
+      - name: Run tests
         run: |
           pytest \
             --ckan-ini=test.ini \

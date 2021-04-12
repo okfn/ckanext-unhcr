@@ -8,9 +8,7 @@ from ckanext.unhcr.models import AccessRequest
 from ckanext.unhcr.tests import factories
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestAccessRequestUpdate(object):
     def setup(self):
         self.requesting_user = core_factories.User()
@@ -22,7 +20,7 @@ class TestAccessRequestUpdate(object):
             users=[{"name": self.container1_admin["name"], "capacity": "admin"}]
         )
         self.dataset1 = factories.Dataset(
-            owner_org=self.container1["id"], visibility="private"
+            owner_org=self.container1["id"], visibility="restricted"
         )
         self.container_request = AccessRequest(
             user_id=self.requesting_user["id"],
@@ -301,9 +299,7 @@ class TestAccessRequestUpdate(object):
             )
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestAccessRequestListForUser(object):
     def setup(self):
         self.sysadmin = core_factories.Sysadmin()
@@ -319,7 +315,7 @@ class TestAccessRequestListForUser(object):
             ]
         )
         self.dataset1 = factories.Dataset(
-            owner_org=self.container1["id"], visibility="private"
+            owner_org=self.container1["id"], visibility="restricted"
         )
 
         self.container2_admin = core_factories.User()
@@ -330,7 +326,7 @@ class TestAccessRequestListForUser(object):
             ]
         )
         self.dataset2 = factories.Dataset(
-            owner_org=self.container2["id"], visibility="private"
+            owner_org=self.container2["id"], visibility="restricted"
         )
 
         self.container3 = factories.DataContainer()

@@ -10,9 +10,7 @@ from ckanext.unhcr.tests import factories
 from ckanext.unhcr import validators
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestDataDepositValidators(object):
 
     def test_deposited_dataset_owner_org(self):
@@ -89,9 +87,7 @@ class TestDataDepositValidators(object):
             validators.deposited_dataset_curation_state( 'invalid', {})
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestPrivateDatasetValidators(object):
 
 
@@ -164,9 +160,7 @@ class TestPrivateDatasetValidators(object):
             )
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestOwnerOrgValidator(object):
 
     def test_owner_org_validator_org_member_save_to_owner_org(self):
@@ -289,9 +283,7 @@ class TestOwnerOrgValidator(object):
                 )
 
 
-@pytest.mark.usefixtures(
-    'clean_db', 'clean_index', 'with_request_context', 'unhcr_migrate'
-)
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestDepositedDatasetCurationIdValidator(object):
 
     def setup(self):
