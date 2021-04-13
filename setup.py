@@ -84,9 +84,6 @@ setup(
         [ckan.plugins]
         unhcr = ckanext.unhcr.plugin:UnhcrPlugin
 
-        [paste.paster_command]
-        unhcr = ckanext.unhcr.commands:Unhcr
-
         [babel.extractors]
         ckan = ckan.lib.extract:extract_ckan
     ''',
