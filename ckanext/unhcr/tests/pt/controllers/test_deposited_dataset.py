@@ -106,7 +106,7 @@ class TestDepositedDatasetController(object):
         )
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
         data = kwargs.pop('data', {})
-        resp = self.app.post(url, data, extra_environ=env, **kwargs)
+        resp = self.app.post(url, data=data, extra_environ=env, **kwargs)
         if not dataset_id:
             try:
                 self.dataset = core_helpers.call_action(

@@ -74,7 +74,7 @@ class TestAccessRequests(object):
             action=action, request_id=request_id
         )
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
-        resp = app.post(url, data, extra_environ=env, **kwargs)
+        resp = app.post(url, data=data, extra_environ=env, **kwargs)
         return resp
 
     def make_list_request(self, app, user=None, **kwargs):
