@@ -9,7 +9,7 @@ from ckanext.unhcr.models import AccessRequest
 from ckanext.unhcr.tests import factories
 
 
-@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate', 'with_request_context')
 class TestUserController(object):
 
     def test_sysadmin_not_authorized(self, app):
@@ -39,12 +39,11 @@ class TestUserController(object):
             '/user/sysadmin',
             data={'id': user['id'], 'status': '1' },
             extra_environ=env,
-            status=302
+            status=200,
         )
-        resp2 = resp.follow(extra_environ=env, status=200)
         assert (
             'Promoted Alice to sysadmin' in
-            resp2.body
+            resp.body
         )
 
         # now they are a sysadmin
@@ -63,12 +62,11 @@ class TestUserController(object):
             '/user/sysadmin',
             data={'id': user['id'], 'status': '0' },
             extra_environ=env,
-            status=302
+            status=200,
         )
-        resp2 = resp.follow(extra_environ=env, status=200)
         assert (
             'Revoked sysadmin permission from Bob' in
-            resp2.body
+            resp.body
         )
 
         # now they are not a sysadmin any more
