@@ -222,7 +222,7 @@ def get_summary_email_recipients():
     )
     curator_ids = [c[0] for c in curators]
 
-    all_users = toolkit.get_action('user_list')({ 'ignore_auth': True }, {})
+    all_users = toolkit.get_action('user_list')({ 'ignore_auth': True, 'keep_email': True }, {})
     default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
 
     for user in all_users:
