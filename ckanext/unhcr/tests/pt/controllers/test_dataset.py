@@ -90,7 +90,7 @@ class TestExtendedPackageController(object):
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
         resp = app.post(
             url,
-            {'message': message},
+            data={'message': message},
             extra_environ=env,
             **kwargs
         )
@@ -154,7 +154,7 @@ class TestExtendedPackageController(object):
 
         }
 
-        resp = app.post(url, data, extra_environ=env)
+        resp = app.post(url, data=data, extra_environ=env)
 
         assert 'The form contains invalid entries:' not in resp.body
 
@@ -187,7 +187,7 @@ class TestExtendedPackageController(object):
 
         }
 
-        resp = app.post(url, data, extra_environ=env)
+        resp = app.post(url, data=data, extra_environ=env)
 
         assert 'The form contains invalid entries:' in resp.body
         assert 'All data resources require an uploaded file' in resp.body

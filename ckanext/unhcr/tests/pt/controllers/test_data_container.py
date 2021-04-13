@@ -33,7 +33,7 @@ class TestDataContainerAccessRequests(object):
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
         resp = app.post(
             url,
-            {'message': message},
+            data={'message': message},
             extra_environ=env,
             **kwargs
         )
@@ -180,7 +180,7 @@ class TestDataContainerController(object):
 
     def post_request(self, app, url, data, user=None, **kwargs):
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
-        resp = app.post(url, data, extra_environ=env, **kwargs)
+        resp = app.post(url, data=data, extra_environ=env, **kwargs)
         self.update_containers()
         return resp
 
