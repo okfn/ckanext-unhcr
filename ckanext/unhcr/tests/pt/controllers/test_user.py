@@ -95,7 +95,7 @@ class TestUserRegister(object):
 
     def test_custom_fields(self, app):
         resp = app.get(toolkit.url_for('user.register'))
-        assert resp.status_int == 200
+        assert resp.status_code == 200
         assert (
             'Please describe the dataset(s) you would like to submit' in
             resp.body
@@ -145,7 +145,7 @@ class TestUserRegister(object):
         )
 
         # 'success' page content
-        assert resp.status_int == 200
+        assert resp.status_code == 200
         assert 'Partner Account Requested' in resp.body
         assert "We'll send an email with further instructions" in resp.body
 
