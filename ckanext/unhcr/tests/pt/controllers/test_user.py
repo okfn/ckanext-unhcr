@@ -15,14 +15,14 @@ class TestUserController(object):
     def test_sysadmin_not_authorized(self, app):
         user = core_factories.User()
         env = {'REMOTE_USER': user['name'].encode('ascii')}
-        app.post('/user/sysadmin', {}, extra_environ=env, status=403)
+        app.post('/user/sysadmin', data={}, extra_environ=env, status=403)
 
     def test_sysadmin_invalid_user(self, app):
         user = core_factories.Sysadmin()
         env = {'REMOTE_USER': user['name'].encode('ascii')}
         app.post(
             '/user/sysadmin',
-            {'id': 'fred', 'status': '1' },
+            data={'id': 'fred', 'status': '1' },
             extra_environ=env,
             status=404
         )
@@ -37,7 +37,7 @@ class TestUserController(object):
         # promote them
         resp = app.post(
             '/user/sysadmin',
-            {'id': user['id'], 'status': '1' },
+            data={'id': user['id'], 'status': '1' },
             extra_environ=env,
             status=302
         )
@@ -61,7 +61,7 @@ class TestUserController(object):
         # revoke their status
         resp = app.post(
             '/user/sysadmin',
-            {'id': user['id'], 'status': '0' },
+            data={'id': user['id'], 'status': '0' },
             extra_environ=env,
             status=302
         )
