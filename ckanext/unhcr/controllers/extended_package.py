@@ -13,13 +13,6 @@ log = logging.getLogger(__name__)
 
 class ExtendedPackageController(PackageController):
 
-    # Read
-
-    def read(self, id):
-        if not toolkit.c.user:
-            return toolkit.abort(403, toolkit.render('page.html'))
-        return super(ExtendedPackageController, self).read(id)
-
     # Publish
 
     def publish(self, id):
