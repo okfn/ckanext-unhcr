@@ -22,7 +22,7 @@ class TestAdminController(object):
         app.get('/ckan-admin', extra_environ=env, status=403)
 
 
-@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate', 'with_request_context')
 class TestSearchIndexController(object):
 
     def test_search_index_not_admin(self, app):
@@ -56,7 +56,7 @@ class TestSearchIndexController(object):
 
         # invoke a search_index_rebuild
         env = {'REMOTE_USER': user['name'].encode('ascii')}
-        app.post('/ckan-admin/search_index/rebuild', extra_environ=env, status=302)
+        app.post('/ckan-admin/search_index/rebuild', extra_environ=env, status=200)
 
         # now package_search will tell us there is 1 dataset
         packages = toolkit.get_action('package_search')(context, data_dict)
