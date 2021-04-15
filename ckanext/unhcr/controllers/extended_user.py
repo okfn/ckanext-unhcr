@@ -41,8 +41,15 @@ class ExtendedUserController(UserController):
             req for req in access_requests if req['object_type'] == 'user'
         ]
 
+        try:
+            user_dict = toolkit.get_action('user_show')(
+                context, {'id': context['user']}
+            )
+        except (toolkit.NotAuthorized, toolkit.ObjectNotFound):
+            user_dict = {}
+
         return toolkit.render('user/dashboard_requests.html', {
-            'user_dict': context['user'],
+            'user_dict': user_dict,
             'new_container_requests': new_container_requests,
             'container_access_requests': container_access_requests,
             'dataset_access_requests': dataset_access_requests,
