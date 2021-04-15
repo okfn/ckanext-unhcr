@@ -9,6 +9,10 @@ ridl_theme_js:
 
 ridl_theme_css:
   output: ckanext-unhcr/%(version)s_theme.css
+  extra:
+    preload:
+      - vendor/font-awesome
+      - hierarchy/hierarchy_css
   contents:
     - theme.css
 
