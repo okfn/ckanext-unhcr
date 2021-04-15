@@ -48,17 +48,17 @@ ul.hierarchy-tree {
 
 ul.hierarchy-tree {
   background: none;
-  background-image: url(../../hierarchy/images/vline.png);
+  background-image: url(/images/vline.png);
   background-repeat: repeat-y;
 
   & li {
     background: none;
-    background-image: url(../../hierarchy/images/node.png);
+    background-image: url(/images/node.png);
     background-repeat: no-repeat;
 
     &:last-child {
       background: none;
-      background-image: url(../../hierarchy/images/lastnode.png);
+      background-image: url(/images/lastnode.png);
       background-repeat: no-repeat;
       background-color: var(--main-bg);
 

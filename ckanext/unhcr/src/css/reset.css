@@ -21,7 +21,7 @@ body {
   min-height:0;
 }
 
-[role="main"] {
+.main {
 
   & > .container {
 
