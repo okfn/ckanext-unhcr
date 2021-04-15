@@ -174,26 +174,26 @@
         font-size: 20px;
       }
 
-      &[href="/dataset"] {
+      &[href="/dataset/"] {
         &::before {
           @mixin icon-database;
         }
       }
 
-      &[href="/organization"],
-      &[href="/data-container"] {
+      &[href="/organization/"],
+      &[href="/data-container/"] {
         &::before {
           @mixin icon-package;
         }
       }
 
-      &[href="/group"] {
+      &[href="/group/"] {
         &::before {
           @mixin icon-directory;
         }
       }
 
-      &[href="/metrics"] {
+      &[href="/metrics/"] {
         &::before {
           @mixin icon-list;
         }
