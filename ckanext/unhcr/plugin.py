@@ -159,31 +159,7 @@ class UnhcrPlugin(
         _map.connect('data-deposit', '/data-container/data-deposit', controller=controller, action='read', id='data-deposit')
 
         # package
-
-        # Re-add these core ones otherwise our route below will mask them
-        _map.connect('search', '/dataset', controller='package', action='search', highlight_actions='index search')
-        _map.connect('add dataset', '/dataset/new', controller='package', action='new')
-        _map.connect('/dataset/{action}', controller='package',
-                  requirements=dict(action='|'.join([
-                      'list',
-                      'autocomplete',
-                      'search'
-                  ])))
-
-        # Re-add these DDI ones otherwise our route below will mask them
-        _map.connect(
-            '/dataset/import',
-            controller='ckanext.ddi.controllers:ImportFromXml',
-            action='import_form'
-        )
-        _map.connect(
-            '/dataset/importfile',
-            controller='ckanext.ddi.controllers:ImportFromXml',
-            action='run_import'
-        )
-
         controller = 'ckanext.unhcr.controllers.extended_package:ExtendedPackageController'
-        _map.connect('/dataset/{id}', controller=controller, action='read')
         _map.connect('/dataset/publish/{id}', controller=controller, action='publish')
         _map.connect('/dataset/copy/{id}', controller=controller, action='copy')
         _map.connect('/dataset/{id}/resource_copy/{resource_id}', controller=controller, action='resource_copy')
@@ -218,16 +194,6 @@ class UnhcrPlugin(
         if not plugins.plugin_loaded('s3filestore'):
             for route in download_routes:
                 _map.connect(route, controller=controller, action='resource_download')
-
-
-        # organization
-
-        # Re-add this core one otherwise our route below will mask it
-        _map.connect('data-container_new', '/data-container/new',
-                        controller='organization', action='new')
-
-        controller = 'ckanext.unhcr.controllers.extended_organization:ExtendedOrganizationController'
-        _map.connect('/data-container/{id}', controller=controller, action='read')
 
         # user
         controller = 'ckanext.unhcr.controllers.extended_user:ExtendedUserController'
