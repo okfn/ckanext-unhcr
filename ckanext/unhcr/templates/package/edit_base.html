@@ -1,17 +1,15 @@
 {% ckan_extends %}
 
-{% set pkg = c.pkg_dict %}
-
-{% if pkg.type == 'deposited-dataset' %}
+{% if dataset_type == 'deposited-dataset' %}
   {% set curation = h.get_deposited_dataset_user_curation_status(pkg, c.userobj.id) %}
 {% endif %}
 
 {% block secondary %}
 <aside class="secondary col-sm-3">
   {% block secondary_content %}
-    {% if pkg.type == 'deposited-dataset' %}
+    {% if pkg and dataset_type == 'deposited-dataset' %}
       {% snippet "package/snippets/curation_sidebar.html", pkg=pkg, curation=curation, editing=True %}
-    {% elif h.check_access('sysadmin') %}
+    {% elif pkg and h.check_access('sysadmin') %}
       {% snippet "package/snippets/publish_sidebar.html", pkg=pkg, editing=True %}
     {% else %}
       {{ super() }}
@@ -19,16 +17,16 @@
   {% endblock %}
 
   {% block user_guide %}
-    {% snippet "snippets/user_guide.html", is_deposit=pkg.type == 'deposited-dataset' %}
+    {% snippet "snippets/user_guide.html", is_deposit=dataset_type == 'deposited-dataset' %}
   {% endblock %}
 </aside>
 {% endblock %}
 
 {% block footer %}
   {{ super() }}
-  {% if pkg.type == 'deposited-dataset' %}
+  {% if pkg and dataset_type == 'deposited-dataset' %}
     {% snippet "package/snippets/curation_modals.html", pkg=pkg, curation=curation %}
-  {% elif h.check_access('sysadmin') %}
+  {% elif pkg and h.check_access('sysadmin') %}
     {% snippet "package/snippets/publish_modals.html", pkg=pkg, editing=True %}
   {% endif %}
 {% endblock %}
