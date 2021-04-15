@@ -1,4 +1,4 @@
-[role=main] {
+.main {
   background-color: var(--body-bg);
 
   & .pill {
@@ -332,7 +332,7 @@
               width: 16px;
               height: 16px;
               background-color: var(--primary-colour);
-              background-image: url(../../../remove.png);
+              background-image: url(/remove.png);
               background-size: 16px 16px;
               background-position: center;
               right: 10px;
