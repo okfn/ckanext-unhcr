@@ -1,4 +1,4 @@
-[role=main] {
+.main {
   background-color: var(--body-bg);
 
   & .pill {

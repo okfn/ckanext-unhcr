@@ -10,7 +10,8 @@ body {
   width: 100vw;
 }
 
-[role="main"] {
+[role="main"],
+.main {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
