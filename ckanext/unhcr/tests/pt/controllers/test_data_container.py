@@ -10,7 +10,7 @@ from ckanext.unhcr.models import AccessRequest
 from ckanext.unhcr.tests import factories
 
 
-@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate', 'with_request_context')
 class TestDataContainerAccessRequests(object):
 
     def setup(self):
@@ -94,7 +94,7 @@ class TestDataContainerAccessRequests(object):
         with mock.patch('ckan.plugins.toolkit.enqueue_job', mock_mailer):
             resp = self.make_request_access_request(
                 app, container_id='container1', user='user1', message='I can haz access?',
-                status=302
+                status=200
             )
 
         mock_mailer.assert_called_once()
@@ -116,10 +116,9 @@ class TestDataContainerAccessRequests(object):
             ).all())
         )
 
-        resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user1'}, status=200)
         assert (
             'Requested access to container Test Container' in
-            resp2.body
+            resp.body
         )
 
     def test_request_access_user_already_has_access(self, app):
@@ -127,7 +126,7 @@ class TestDataContainerAccessRequests(object):
         with mock.patch('ckan.plugins.toolkit.enqueue_job', mock_mailer):
             resp = self.make_request_access_request(
                 app, container_id='container1', user='admin', message='I can haz access?',
-                status=302
+                status=200
             )
 
         mock_mailer.assert_not_called()
@@ -141,10 +140,9 @@ class TestDataContainerAccessRequests(object):
             ).all())
         )
 
-        resp2 = resp.follow(extra_environ={'REMOTE_USER': 'admin'}, status=200)
         assert (
             'You are already a member of Test Container' in
-            resp2.body
+            resp.body
         )
 
 
