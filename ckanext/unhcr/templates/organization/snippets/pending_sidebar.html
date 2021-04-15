@@ -4,7 +4,7 @@
   <section class="module module-narrow curation-title">
     <div class="module context-info">
       <div class="module-content">
-        <h1 class="heading">{{ c.group_dict.display_name }}</h1>
+        <h1 class="heading">{{ group_dict.display_name }}</h1>
         <p><span class="label label-sidebar">PENDING DATA CONTAINER</span></p>
       </div>
     </div>
@@ -25,13 +25,13 @@
     <div class="module-content curation-buttons">
 
       {% if h.check_access('sysadmin') %}
-        <a href="/data-container/{{ c.group_dict.id }}/approve" class="btn btn-warning">
+        <a href="/data-container/{{ group_dict.id }}/approve" class="btn btn-warning">
           {% trans %}Approve Data Container{% endtrans %}
         </a>
       {% endif %}
 
       {% if h.check_access('sysadmin') %}
-        <a href="/data-container/{{ c.group_dict.id }}/reject" class="btn btn-danger">
+        <a href="/data-container/{{ group_dict.id }}/reject" class="btn btn-danger">
           {% trans %}Reject Data Container{% endtrans %}
         </a>
       {% endif %}
@@ -43,7 +43,7 @@
   <section class="module module-narrow module-shallow curation-tree">
     <h2 class="module-heading"><i class="fa fa-globe"></i>Destination</h2>
     <p class="module-content">
-      {% snippet 'organization/snippets/organization_tree.html', top_nodes=[h.group_tree_section(id_=c.group_dict.id, type_=c.group_dict.type, include_siblings=False)], use_shortnames=True %}
+      {% snippet 'organization/snippets/organization_tree.html', top_nodes=[h.group_tree_section(id_=group_dict.id, type_=group_dict.type, include_siblings=False)], use_shortnames=True %}
     </p>
   </section>
 

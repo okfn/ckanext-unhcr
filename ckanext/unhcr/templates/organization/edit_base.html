@@ -3,7 +3,7 @@
 {% set deposit = h.get_data_deposit() %}
 
 {% block page_header %}
-  {% if c.group_dict.id != deposit.id %}
+  {% if organization and organization.id != deposit.id %}
     {{ super() }}
   {% endif %}
 {% endblock %}
@@ -11,24 +11,24 @@
 {% block secondary %}
 <aside class="secondary col-sm-3">
   {% block secondary_content %}
-    {% if c.group_dict.id == deposit.id %}
+    {% if organization and organization.id == deposit.id %}
       {% snippet "organization/snippets/curation_sidebar.html", deposit=deposit, facet_titles=c.facet_titles, editing=True %}
-    {% elif c.group_dict.state == 'approval_needed' %}
-      {% snippet "organization/snippets/pending_sidebar.html", group_dict=group_dict %}
+    {% elif organization and organization.state == 'approval_needed' %}
+      {% snippet "organization/snippets/pending_sidebar.html", group_dict=organization %}
     {% else %}
       {{ super() }}
     {% endif %}
   {% endblock %}
 
   {% block user_guide %}
-    {% snippet "snippets/user_guide.html", is_deposit=c.group_dict.id == deposit.id %}
+    {% snippet "snippets/user_guide.html", is_deposit=organization and organization.id == deposit.id %}
   {% endblock %}
 </aside>
 {% endblock %}
 
 {% block footer %}
   {{ super() }}
-  {% if c.group_dict.id == deposit.id %}
+  {% if organization and organization.id == deposit.id %}
     {% snippet "organization/snippets/curation_modals.html", deposit=deposit %}
   {% endif %}
 {% endblock %}
