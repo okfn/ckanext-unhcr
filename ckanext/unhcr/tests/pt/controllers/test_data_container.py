@@ -148,7 +148,7 @@ class TestDataContainerAccessRequests(object):
         )
 
 
-@pytest.mark.usefixtures('clean_db',  'unhcr_migrate')
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate', 'with_request_context')
 class TestDataContainerController(object):
 
     # Config
@@ -213,9 +213,8 @@ class TestDataContainerController(object):
             'contnames': 'container1',
             'role': 'editor',
         }
-        resp = self.post_request(app, '/data-container/membership_add', data, user='sysadmin')
+        resp = self.post_request(app, '/data-container/membership_add', data, user='sysadmin', status=200)
         default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
-        assert resp.status_int == 302
         assert len(self.container1['users']) == 2
         assert self.container1['users'][0]['name'] == default_user['name']
         assert self.container1['users'][0]['capacity'] == 'admin'
@@ -228,9 +227,8 @@ class TestDataContainerController(object):
             'contnames': ['container1', 'container2'],
             'role': 'editor',
         }
-        resp = self.post_request(app, '/data-container/membership_add', data, user='sysadmin')
+        resp = self.post_request(app, '/data-container/membership_add', data, user='sysadmin', status=200)
         default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
-        assert resp.status_int == 302
         assert len(self.container1['users']) == 2
         assert self.container1['users'][0]['name'] == default_user['name']
         assert self.container1['users'][0]['capacity'] == 'admin'
@@ -255,9 +253,8 @@ class TestDataContainerController(object):
     def test_membership_remove(self, app):
         self.test_membership_add(app)
         url = '/data-container/membership_remove?username=user1&contname=container1'
-        resp = self.post_request(app, url, {}, user='sysadmin')
+        resp = self.post_request(app, url, {}, user='sysadmin', status=200)
         default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
-        assert resp.status_int == 302
         assert len(self.container1['users']) == 1
         assert self.container1['users'][0]['name'] == default_user['name']
         assert self.container1['users'][0]['capacity'] == 'admin'
