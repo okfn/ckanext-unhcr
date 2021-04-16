@@ -1122,7 +1122,7 @@ def external_user_update_state(context, data_dict):
 
     toolkit.check_access('external_user_update_state', context, data_dict)
 
-    if state not in m.State.all:
+    if state not in [m.State.ACTIVE, m.State.DELETED]:
         raise toolkit.ValidationError('Invalid state {}'.format(state))
 
     user_obj = m.User.get(user_id)
