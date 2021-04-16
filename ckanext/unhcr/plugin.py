@@ -153,11 +153,6 @@ class UnhcrPlugin(
 
     def before_map(self, _map):
 
-        # header
-        # TODO: review header item creation
-        controller = 'ckan.controllers.organization:OrganizationController'
-        _map.connect('data-deposit', '/data-container/data-deposit', controller=controller, action='read', id='data-deposit')
-
         # package
         controller = 'ckanext.unhcr.controllers.extended_package:ExtendedPackageController'
         _map.connect('/dataset/publish/{id}', controller=controller, action='publish')
