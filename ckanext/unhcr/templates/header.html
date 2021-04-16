@@ -69,30 +69,22 @@
 {% block header_site_navigation_tabs %}
   {% if c.userobj %}
     {% if c.userobj.external %}
-      {{
-        h.build_nav_main(
-          ('data-deposit', _('Deposit Data')),
-        )
-      }}
-    {% elif c.userobj.sysadmin or h.user_is_curator() %}
-      {{
-        h.build_nav_main(
-          ('data-container.index', _('Organizations')),
-          ('data-deposit', _('Data Deposit')),
-          ('search', _('Datasets')),
-          ('unhcr_metrics.metrics', _('Metrics')),
-        )
-      }}
+
+      <li><a href="{{ h.url_for('data-container.read', id='data-deposit') }}">{{ _('Deposit Data') }}</a></li>
+
     {% else %}
-      {{
-        h.build_nav_main(
-          ('data-container.index', _('Organizations')),
-          ('data-deposit', _('Data Deposit')),
-          ('search', _('Datasets')),
-        )
-      }}
+
+      <li><a href="{{ h.url_for('data-container.index') }}">{{ _('Organizations') }}</a></li>
+      <li><a href="{{ h.url_for('data-container.read', id='data-deposit') }}">{{ _('Deposit Data') }}</a></li>
+      <li><a href="{{ h.url_for('dataset.search') }}">{{ _('Datasets') }}</a></li>
+
+      {% if c.userobj.sysadmin or h.user_is_curator() %}
+          <li><a href="{{ h.url_for('unhcr_metrics.metrics') }}">{{ _('Metrics') }}</a></li>
+      {% endif %}
     {% endif %}
+
   {% endif %}
+
   {% if g.debug %}
     <small>Debug: {{ c.user }}</small>
   {% endif %}
