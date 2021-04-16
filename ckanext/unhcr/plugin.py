@@ -524,6 +524,7 @@ class UnhcrPlugin(
             'package_publish_microdata': actions.package_publish_microdata,
             'package_get_microdata_collections': actions.package_get_microdata_collections,
             'package_collaborator_create': actions.package_collaborator_create,
+            'package_collaborator_delete': actions.package_collaborator_delete,
             'organization_create': actions.organization_create,
             'organization_member_create': actions.organization_member_create,
             'organization_member_delete': actions.organization_member_delete,
