@@ -138,7 +138,7 @@ class TestAccessRequestUpdate(object):
                 {'id': self.dataset_request.id, 'status': 'approved'}
             )
 
-        collaborators = toolkit.get_action("dataset_collaborator_list")(
+        collaborators = toolkit.get_action("package_collaborator_list")(
             {"ignore_auth": True}, {"id": self.dataset1["id"]}
         )
         assert 0 == len(collaborators)
@@ -154,7 +154,7 @@ class TestAccessRequestUpdate(object):
                 {'id': self.dataset_request.id, 'status': 'approved'}
             )
 
-            collaborators = toolkit.get_action("dataset_collaborator_list")(
+            collaborators = toolkit.get_action("package_collaborator_list")(
                 {"ignore_auth": True}, {"id": self.dataset1["id"]}
             )
             assert self.requesting_user["id"] == collaborators[0]["user_id"]
@@ -178,7 +178,7 @@ class TestAccessRequestUpdate(object):
                 {'id': self.dataset_request.id, 'status': 'rejected'}
             )
 
-        collaborators = toolkit.get_action("dataset_collaborator_list")(
+        collaborators = toolkit.get_action("package_collaborator_list")(
             {"ignore_auth": True}, {"id": self.dataset1["id"]}
         )
         assert 0 == len(collaborators)
@@ -192,7 +192,7 @@ class TestAccessRequestUpdate(object):
             {'id': self.dataset_request.id, 'status': 'rejected'}
         )
 
-        collaborators = toolkit.get_action("dataset_collaborator_list")(
+        collaborators = toolkit.get_action("package_collaborator_list")(
             {"ignore_auth": True}, {"id": self.dataset1["id"]}
         )
         assert 0 == len(collaborators)

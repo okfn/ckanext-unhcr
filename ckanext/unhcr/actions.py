@@ -177,7 +177,7 @@ def package_get_microdata_collections(context, data_dict):
 
 
 @toolkit.chained_action
-def dataset_collaborator_create(up_func, context, data_dict):
+def package_collaborator_create(up_func, context, data_dict):
 
     m = context.get('model', model)
     user_id = toolkit.get_or_bust(data_dict, 'user_id')
@@ -996,7 +996,7 @@ def access_request_update(context, data_dict):
             'send_mail': True,
         }
         if status == 'approved':
-            toolkit.get_action('dataset_collaborator_create')(
+            toolkit.get_action('package_collaborator_create')(
                 context, _data_dict
             )
     elif request.object_type == 'organization':

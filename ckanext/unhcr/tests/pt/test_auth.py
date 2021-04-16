@@ -69,7 +69,7 @@ class TestAuthUI(object):
             url_type='upload',
         )
         helpers.call_action(
-            'dataset_collaborator_create',
+            'package_collaborator_create',
             id=dataset['id'],
             user_id=dataset_member['id'],
             capacity='member',
@@ -256,7 +256,7 @@ class TestAuthUnit(object):
             url_type='upload',
         )
         helpers.call_action(
-            'dataset_collaborator_create',
+            'package_collaborator_create',
             id=dataset['id'],
             user_id=dataset_member['id'],
             capacity='member',
