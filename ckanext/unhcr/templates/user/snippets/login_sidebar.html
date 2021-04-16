@@ -4,7 +4,7 @@
     <div class="module-content">
       <ul class="list-unstyled nav nav-simple">
         <li class="nav-item">
-          <a href="{{ h.url_for('user.login', came_from='/') }}">Log in</a>
+          <a href="{{ h.url_for('saml2auth.saml2login', came_from='/') }}">Log in</a>
         </li>
       </ul>
     </div>
@@ -17,7 +17,7 @@
     <div class="module-content">
       <ul class="list-unstyled nav nav-simple">
         <li class="nav-item">
-          <a href="/service/login">Log in</a>
+          <a href="{{ h.url_for('user.login') }}">Log in</a>
         </li>
         <li class="nav-item">
           <a href="{{ h.url_for('user.register') }}">Request an Account</a>

@@ -1,0 +1,5 @@
+{% ckan_extends %}
+{% block login_button %}
+  {# ckanext-saml2auth adds a "SSO" button here that we want to hide #}
+  <button class="btn btn-primary" type="submit">{{ _('Login') }}</button>
+{% endblock %}

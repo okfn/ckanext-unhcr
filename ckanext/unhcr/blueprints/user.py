@@ -205,6 +205,11 @@ def logged_in():
         return core_login()
 
 
+def logged_out():
+    # redirect to home
+    return toolkit.redirect_to('home.index')
+
+
 unhcr_user_blueprint.add_url_rule(
     rule=u'/sysadmin',
     view_func=sysadmin,
@@ -219,4 +224,9 @@ unhcr_user_blueprint.add_url_rule(
 unhcr_user_blueprint.add_url_rule(
     u'/logged_in',
     view_func=logged_in
+)
+
+unhcr_user_blueprint.add_url_rule(
+    u'/logged_out',
+    view_func=logged_out
 )

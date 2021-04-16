@@ -176,12 +176,12 @@ def _render_tree_node(node):
 # Access restriction
 
 def page_authorized():
+
     if (toolkit.c.controller == 'error' and
             toolkit.c.action == 'document' and
             toolkit.c.code and toolkit.c.code[0] != '403'):
         return True
 
-    # TODO: remove request_reset and perform_reset when LDAP is integrated
     allowed_controllers = [
         'user',  # most actions are defined in the core 'user' blueprint
         'unhcr_user',  # we override some actions in the 'unhcr_user' blueprint
@@ -202,7 +202,6 @@ def page_authorized():
             toolkit.c.controller in allowed_controllers
             and toolkit.c.action in allowed_actions
         )
-        or toolkit.request.path == '/service/login'
     )
 
 

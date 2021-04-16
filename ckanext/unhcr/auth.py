@@ -59,9 +59,6 @@ def site_read(context, data_dict):
     if toolkit.request.path.startswith('/api'):
         # Let individual API actions deal with their auth
         return {'success': True}
-    elif toolkit.request.path == '/service/login':
-        # Allow local logins
-        return {'success': True}
 
     userobj = context.get('auth_user_obj')
     if not userobj:
