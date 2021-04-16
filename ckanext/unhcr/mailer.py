@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from datetime import datetime, timedelta
 import itertools
 import logging
@@ -370,3 +372,34 @@ def compose_infected_file_email_body(recipient, resource_name, package_id, resou
     context['h'] = toolkit.h
 
     return render_jinja2('emails/resource/infected_file.html', context)
+
+
+# Collaborators
+
+def _compose_collaborator_email_subj(dataset):
+    return u'{0} - Notification about collaborator role for {1}'.format(
+        toolkit.config.get('ckan.site_title'), dataset.title)
+
+def _compose_collaborator_email_body(user, dataset, role, event):
+    dataset_link = toolkit.url_for('dataset_read', id=dataset.id, qualified=True)
+    return render_jinja2('collaborators/emails/{0}_collaborator.html'.format(event), {
+        'user_name': user.fullname or user.name,
+        'role': role,
+        'site_title': toolkit.config.get('ckan.site_title'),
+        'site_url': toolkit.config.get('ckan.site_url'),
+        'dataset_title': dataset.title,
+        'dataset_link': dataset_link
+    })
+
+def mail_notification_to_collaborator(dataset_id, user_id, capacity, event):
+    user = model.User.get(user_id)
+    dataset = model.Package.get(dataset_id)
+
+    try:
+        subj = _compose_collaborator_email_subj(dataset)
+        body = _compose_collaborator_email_body(user, dataset, capacity, event)
+        core_mailer.mail_user(user, subj, body, headers={
+            'Content-Type': 'text/html; charset=UTF-8'
+        })
+    except core_mailer.MailerException as exception:
+        log.exception(exception)

@@ -189,7 +189,30 @@ def package_collaborator_create(up_func, context, data_dict):
         message = 'Partner users can not be a dataset collaborator'
         raise toolkit.ValidationError({'message': message}, error_summary=message)
 
-    return up_func(context, data_dict)
+    collaborator = up_func(context, data_dict)
+
+    mailer.mail_notification_to_collaborator(
+        collaborator['package_id'],
+        collaborator['user_id'],
+        collaborator['capacity'],
+        event='create'
+    )
+
+    return collaborator
+
+
+@toolkit.chained_action
+def package_collaborator_delete(up_func, context, data_dict):
+    up_func(context, data_dict)
+
+    mailer.mail_notification_to_collaborator(
+        data_dict['id'],
+        data_dict['user_id'],
+        capacity='collaborator',
+        event='delete',
+    )
+
+    return
 
 
 # Organization
@@ -993,7 +1016,6 @@ def access_request_update(context, data_dict):
             'id': request.object_id,
             'user_id': request.user_id,
             'capacity': request.role,
-            'send_mail': True,
         }
         if status == 'approved':
             toolkit.get_action('package_collaborator_create')(
