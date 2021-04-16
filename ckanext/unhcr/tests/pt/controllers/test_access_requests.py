@@ -9,7 +9,7 @@ from ckanext.unhcr.models import AccessRequest
 from ckanext.unhcr.tests import factories
 
 
-@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate', 'with_request_context')
 class TestAccessRequests(object):
     def setup(self):
         self.sysadmin = core_factories.Sysadmin()
@@ -74,7 +74,7 @@ class TestAccessRequests(object):
             action=action, request_id=request_id
         )
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
-        resp = app.post(url, data, extra_environ=env, **kwargs)
+        resp = app.post(url, data=data, extra_environ=env, **kwargs)
         return resp
 
     def make_list_request(self, app, user=None, **kwargs):
@@ -124,7 +124,7 @@ class TestAccessRequests(object):
                 action='approve',
                 request_id=self.container1_request.id,
                 user=self.container1_admin["name"],
-                status=302,
+                status=200,
                 data={},
             )
         mock_mailer.assert_called_once()
@@ -134,17 +134,13 @@ class TestAccessRequests(object):
             mock_mailer.call_args[0][1]
         )
 
-        resp2 = resp.follow(
-            extra_environ={'REMOTE_USER': self.container1_admin["name"].encode('ascii')},
-            status=200
-        )
         orgs = toolkit.get_action("organization_list_for_user")(
             {"user": self.requesting_user["name"]},
             {"id": self.requesting_user["name"], "permission": "read"}
         )
         assert self.container1['id'] == orgs[0]['id']
         assert 'approved' == self.container1_request.status
-        assert 'Access Request Approved' in resp2.body
+        assert 'Access Request Approved' in resp.body
 
     def test_access_requests_reject_container_admin(self, app):
         mock_mailer = mock.Mock()
@@ -154,7 +150,7 @@ class TestAccessRequests(object):
                 action='reject',
                 request_id=self.container1_request.id,
                 user=self.container1_admin["name"],
-                status=302,
+                status=200,
                 data={'message': 'nope'},
             )
         mock_mailer.assert_called_once()
@@ -164,17 +160,13 @@ class TestAccessRequests(object):
             mock_mailer.call_args[0][1]
         )
 
-        resp2 = resp.follow(
-            extra_environ={'REMOTE_USER': self.container1_admin["name"].encode('ascii')},
-            status=200
-        )
         orgs = toolkit.get_action("organization_list_for_user")(
             {"user": self.requesting_user["name"]},
             {"id": self.requesting_user["name"], "permission": "read"}
         )
         assert 0 == len(orgs)
         assert 'rejected' == self.container1_request.status
-        assert 'Access Request Rejected' in resp2.body
+        assert 'Access Request Rejected' in resp.body
 
     def test_access_requests_list_invalid_user(self, app):
         for user in [None, self.standard_user["name"]]:

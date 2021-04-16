@@ -10,7 +10,7 @@ from ckanext.unhcr.models import AccessRequest
 from ckanext.unhcr.tests import factories
 
 
-@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate', 'with_request_context')
 class TestDataContainerAccessRequests(object):
 
     def setup(self):
@@ -33,7 +33,7 @@ class TestDataContainerAccessRequests(object):
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
         resp = app.post(
             url,
-            {'message': message},
+            data={'message': message},
             extra_environ=env,
             **kwargs
         )
@@ -94,7 +94,7 @@ class TestDataContainerAccessRequests(object):
         with mock.patch('ckan.plugins.toolkit.enqueue_job', mock_mailer):
             resp = self.make_request_access_request(
                 app, container_id='container1', user='user1', message='I can haz access?',
-                status=302
+                status=200
             )
 
         mock_mailer.assert_called_once()
@@ -116,10 +116,9 @@ class TestDataContainerAccessRequests(object):
             ).all())
         )
 
-        resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user1'}, status=200)
         assert (
             'Requested access to container Test Container' in
-            resp2.body
+            resp.body
         )
 
     def test_request_access_user_already_has_access(self, app):
@@ -127,7 +126,7 @@ class TestDataContainerAccessRequests(object):
         with mock.patch('ckan.plugins.toolkit.enqueue_job', mock_mailer):
             resp = self.make_request_access_request(
                 app, container_id='container1', user='admin', message='I can haz access?',
-                status=302
+                status=200
             )
 
         mock_mailer.assert_not_called()
@@ -141,14 +140,13 @@ class TestDataContainerAccessRequests(object):
             ).all())
         )
 
-        resp2 = resp.follow(extra_environ={'REMOTE_USER': 'admin'}, status=200)
         assert (
             'You are already a member of Test Container' in
-            resp2.body
+            resp.body
         )
 
 
-@pytest.mark.usefixtures('clean_db',  'unhcr_migrate')
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate', 'with_request_context')
 class TestDataContainerController(object):
 
     # Config
@@ -180,7 +178,7 @@ class TestDataContainerController(object):
 
     def post_request(self, app, url, data, user=None, **kwargs):
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
-        resp = app.post(url, data, extra_environ=env, **kwargs)
+        resp = app.post(url, data=data, extra_environ=env, **kwargs)
         self.update_containers()
         return resp
 
@@ -213,9 +211,8 @@ class TestDataContainerController(object):
             'contnames': 'container1',
             'role': 'editor',
         }
-        resp = self.post_request(app, '/data-container/membership_add', data, user='sysadmin')
+        resp = self.post_request(app, '/data-container/membership_add', data, user='sysadmin', status=200)
         default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
-        assert resp.status_int == 302
         assert len(self.container1['users']) == 2
         assert self.container1['users'][0]['name'] == default_user['name']
         assert self.container1['users'][0]['capacity'] == 'admin'
@@ -228,9 +225,8 @@ class TestDataContainerController(object):
             'contnames': ['container1', 'container2'],
             'role': 'editor',
         }
-        resp = self.post_request(app, '/data-container/membership_add', data, user='sysadmin')
+        resp = self.post_request(app, '/data-container/membership_add', data, user='sysadmin', status=200)
         default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
-        assert resp.status_int == 302
         assert len(self.container1['users']) == 2
         assert self.container1['users'][0]['name'] == default_user['name']
         assert self.container1['users'][0]['capacity'] == 'admin'
@@ -255,9 +251,8 @@ class TestDataContainerController(object):
     def test_membership_remove(self, app):
         self.test_membership_add(app)
         url = '/data-container/membership_remove?username=user1&contname=container1'
-        resp = self.post_request(app, url, {}, user='sysadmin')
+        resp = self.post_request(app, url, {}, user='sysadmin', status=200)
         default_user = toolkit.get_action('get_site_user')({ 'ignore_auth': True })
-        assert resp.status_int == 302
         assert len(self.container1['users']) == 1
         assert self.container1['users'][0]['name'] == default_user['name']
         assert self.container1['users'][0]['capacity'] == 'admin'

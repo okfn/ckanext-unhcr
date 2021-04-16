@@ -9,20 +9,20 @@ from ckanext.unhcr.models import AccessRequest
 from ckanext.unhcr.tests import factories
 
 
-@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate', 'with_request_context')
 class TestUserController(object):
 
     def test_sysadmin_not_authorized(self, app):
         user = core_factories.User()
         env = {'REMOTE_USER': user['name'].encode('ascii')}
-        app.post('/user/sysadmin', {}, extra_environ=env, status=403)
+        app.post('/user/sysadmin', data={}, extra_environ=env, status=403)
 
     def test_sysadmin_invalid_user(self, app):
         user = core_factories.Sysadmin()
         env = {'REMOTE_USER': user['name'].encode('ascii')}
         app.post(
             '/user/sysadmin',
-            {'id': 'fred', 'status': '1' },
+            data={'id': 'fred', 'status': '1' },
             extra_environ=env,
             status=404
         )
@@ -37,14 +37,13 @@ class TestUserController(object):
         # promote them
         resp = app.post(
             '/user/sysadmin',
-            {'id': user['id'], 'status': '1' },
+            data={'id': user['id'], 'status': '1' },
             extra_environ=env,
-            status=302
+            status=200,
         )
-        resp2 = resp.follow(extra_environ=env, status=200)
         assert (
             'Promoted Alice to sysadmin' in
-            resp2.body
+            resp.body
         )
 
         # now they are a sysadmin
@@ -61,14 +60,13 @@ class TestUserController(object):
         # revoke their status
         resp = app.post(
             '/user/sysadmin',
-            {'id': user['id'], 'status': '0' },
+            data={'id': user['id'], 'status': '0' },
             extra_environ=env,
-            status=302
+            status=200,
         )
-        resp2 = resp.follow(extra_environ=env, status=200)
         assert (
             'Revoked sysadmin permission from Bob' in
-            resp2.body
+            resp.body
         )
 
         # now they are not a sysadmin any more
@@ -95,7 +93,7 @@ class TestUserRegister(object):
 
     def test_custom_fields(self, app):
         resp = app.get(toolkit.url_for('user.register'))
-        assert resp.status_int == 200
+        assert resp.status_code == 200
         assert (
             'Please describe the dataset(s) you would like to submit' in
             resp.body
@@ -116,7 +114,7 @@ class TestUserRegister(object):
     def test_register_success(self, app):
         mock_mailer = mock.Mock()
         with mock.patch('ckan.plugins.toolkit.enqueue_job', mock_mailer):
-            resp = app.post(toolkit.url_for('user.register'), self.payload)
+            resp = app.post(toolkit.url_for('user.register'), data=self.payload)
 
 
         # we should have created a user object with pending state
@@ -145,13 +143,13 @@ class TestUserRegister(object):
         )
 
         # 'success' page content
-        assert resp.status_int == 200
+        assert resp.status_code == 200
         assert 'Partner Account Requested' in resp.body
         assert "We'll send an email with further instructions" in resp.body
 
     def test_register_empty_message(self, app):
         self.payload['message'] = ''
-        resp = app.post(toolkit.url_for('user.register'), self.payload)
+        resp = app.post(toolkit.url_for('user.register'), data=self.payload)
         assert "&#39;message&#39; is required" in resp.body
         action = toolkit.get_action("user_show")
         with pytest.raises(toolkit.ObjectNotFound):
@@ -162,7 +160,7 @@ class TestUserRegister(object):
 
     def test_register_empty_focal_point(self, app):
         self.payload['focal_point'] = ''
-        resp = app.post(toolkit.url_for('user.register'), self.payload)
+        resp = app.post(toolkit.url_for('user.register'), data=self.payload)
         assert "A focal point must be specified" in resp.body
         action = toolkit.get_action("user_show")
         with pytest.raises(toolkit.ObjectNotFound):
@@ -173,7 +171,7 @@ class TestUserRegister(object):
 
     def test_no_containers(self, app):
         self.payload['container'] = ''
-        resp = app.post(toolkit.url_for('user.register'), self.payload)
+        resp = app.post(toolkit.url_for('user.register'), data=self.payload)
         assert "A region must be specified" in resp.body
         action = toolkit.get_action("user_show")
         with pytest.raises(toolkit.ObjectNotFound):
@@ -184,7 +182,7 @@ class TestUserRegister(object):
 
     def test_internal_user(self, app):
         self.payload['email'] = 'fred@unhcr.org'
-        resp = app.post(toolkit.url_for('user.register'), self.payload)
+        resp = app.post(toolkit.url_for('user.register'), data=self.payload)
         assert (
             "Users with an @unhcr.org email may not register for a partner account."
             in resp.body
@@ -211,13 +209,13 @@ class TestUserRegister(object):
         )
         app.post(
             toolkit.url_for('user.register'),
-            self.payload,
+            data=self.payload,
             extra_environ={'REMOTE_USER': user['name'].encode('ascii')},
             status=403
         )
         app.post(
             toolkit.url_for('user.register'),
-            self.payload,
+            data=self.payload,
             extra_environ={'REMOTE_USER': self.sysadmin['name'].encode('ascii')},
             status=403
         )

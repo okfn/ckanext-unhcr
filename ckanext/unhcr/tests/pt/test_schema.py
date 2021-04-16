@@ -60,9 +60,6 @@ class TestResourceFields(object):
 
         with pytest.raises(toolkit.ValidationError) as e:
             call_action('package_update', {'user': self.sysadmin['name']}, **dataset)
-        # workaround for DetachedInstanceError
-        # TODO: remove this when we upgrade to CKAN 2.9
-        model.Session.refresh(model.Session.revision)
 
         errors = e.value.error_dict['resources'][0]
 
@@ -97,9 +94,6 @@ class TestResourceFields(object):
 
         with pytest.raises(toolkit.ValidationError) as e:
             call_action('package_update', {'user': self.sysadmin['name']}, **dataset)
-        # workaround for DetachedInstanceError
-        # TODO: remove this when we upgrade to CKAN 2.9
-        model.Session.refresh(model.Session.revision)
 
         errors = e.value.error_dict['resources'][1]
 
