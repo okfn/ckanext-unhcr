@@ -1,4 +1,7 @@
+# -*- coding: utf-8 -*-
+
 import pytest
+import mock
 from datetime import datetime, timedelta
 import ckan.model as model
 from ckan.lib.jinja_extensions import regularise_html
@@ -451,3 +454,36 @@ class TestInfectedFileMailer(object):
         assert '<a href="{}">infected resource</a>'.format(resource_link) in regularised_body
         assert 'scanned and found to be infected.' in regularised_body
         assert 'Win.Test.EICAR_HDB-1 FOUND' in regularised_body
+
+
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
+class TestCollaboratorsMailer(object):
+
+    @mock.patch('ckanext.unhcr.mailer.core_mailer.mail_user')
+    def test_email_notification_create(self, mock_mail_user):
+        dataset = factories.Dataset()
+        user = core_factories.User()
+        capacity = 'editor'
+
+        mailer.mail_notification_to_collaborator(
+            dataset['id'], user['id'], capacity, 'create')
+
+        assert mock_mail_user.call_count == 1
+
+    @mock.patch('ckanext.unhcr.mailer.core_mailer.mail_user')
+    def test_email_notification_delete(self, mock_mail_user):
+        dataset = factories.Dataset()
+        user = core_factories.User()
+        capacity = 'editor'
+
+        mailer.mail_notification_to_collaborator(
+            dataset['id'], user['id'], capacity, 'delete')
+
+        assert mock_mail_user.call_count == 1
+
+    # TODO: tests for body function
+
+    def test_subject_unicode(self):
+        dataset = factories.Dataset(title=u'réfugiés')
+        subject = mailer._compose_collaborator_email_subj(model.Package.get(dataset['id']))
+        assert u'réfugiés' in subject

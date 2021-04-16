@@ -147,7 +147,7 @@ class TestAccessRequestUpdate(object):
 
     def test_access_request_update_approve_dataset_container_admin(self):
         mock_mailer = mock.Mock()
-        with mock.patch('ckanext.collaborators.logic.action.mail_notification_to_collaborator', mock_mailer):
+        with mock.patch('ckanext.unhcr.actions.mailer.mail_notification_to_collaborator', mock_mailer):
             action = toolkit.get_action("access_request_update")
             action(
                 {"model": model, "user": self.container1_admin["name"]},
