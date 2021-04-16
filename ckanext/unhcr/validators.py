@@ -265,13 +265,13 @@ def owner_org_validator(key, data, errors, context):
     if userobj and userobj.sysadmin:
         return validators.owner_org_validator(key, data, errors, context)
 
-    action = toolkit.get_action('dataset_collaborator_list_for_user')
+    action = toolkit.get_action('package_collaborator_list_for_user')
     if user and action and package:
         try:
             datasets = action(context, {'id': user})
         except toolkit.ObjectNotFound:
             datasets = []
-        if package.id in [d['dataset_id'] for d in datasets]:
+        if package.id in [d['package_id'] for d in datasets]:
             if data.get(key) == package.owner_org:
                 try:
                     return validators.owner_org_validator(key, data, errors, context)

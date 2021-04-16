@@ -499,6 +499,7 @@ class UnhcrPlugin(
         functions['group_list_authz'] = auth.group_list_authz
         functions['package_activity_list'] = auth.package_activity_list
         functions['package_create'] = auth.package_create
+        functions['package_collaborator_create'] = auth.package_collaborator_create
         functions['package_update'] = auth.package_update
         functions['scan_hook'] = auth.scan_hook
         functions['scan_submit'] = auth.scan_submit
@@ -521,6 +522,7 @@ class UnhcrPlugin(
             'package_update': actions.package_update,
             'package_publish_microdata': actions.package_publish_microdata,
             'package_get_microdata_collections': actions.package_get_microdata_collections,
+            'package_collaborator_create': actions.package_collaborator_create,
             'organization_create': actions.organization_create,
             'organization_member_create': actions.organization_member_create,
             'organization_member_delete': actions.organization_member_delete,

@@ -230,7 +230,7 @@ class TestExtendedPackageController(object):
 
     def test_resource_download_collaborator(self, app):
         core_helpers.call_action(
-            'dataset_collaborator_create',
+            'package_collaborator_create',
             id='dataset1',
             user_id='user3',
             capacity='member',
