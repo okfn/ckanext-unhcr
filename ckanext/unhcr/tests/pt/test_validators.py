@@ -226,7 +226,7 @@ class TestOwnerOrgValidator(object):
             visibility='private'
         )
         call_action(
-            'dataset_collaborator_create',
+            'package_collaborator_create',
             id=dataset['id'],
             user_id=user['id'],
             capacity='member',
@@ -259,7 +259,7 @@ class TestOwnerOrgValidator(object):
             visibility='private'
         )
         call_action(
-            'dataset_collaborator_create',
+            'package_collaborator_create',
             id=dataset['id'],
             user_id=user['id'],
             capacity='member',

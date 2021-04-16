@@ -143,7 +143,7 @@ class TestPackageActivityList(object):
     def test_dataset_editor(self):
         collaborator = core_factories.User()
         core_helpers.call_action(
-            'dataset_collaborator_create',
+            'package_collaborator_create',
             id=self.dataset1['id'],
             user_id=collaborator['id'],
             capacity='editor',
@@ -215,7 +215,7 @@ class TestDatasetCollaboratorCreate(object):
         internal_user = core_factories.User()
         dataset = factories.Dataset()
 
-        toolkit.get_action("dataset_collaborator_create")(
+        toolkit.get_action("package_collaborator_create")(
             {'user': sysadmin['name']},
             {
                 'id': dataset['id'],
@@ -224,11 +224,11 @@ class TestDatasetCollaboratorCreate(object):
             }
         )
 
-        collabs_list = toolkit.get_action("dataset_collaborator_list_for_user")(
+        collabs_list = toolkit.get_action("package_collaborator_list_for_user")(
             {'user': sysadmin['name']},
             {'id': internal_user['id']}
         )
-        assert dataset['id'] == collabs_list[0]['dataset_id']
+        assert dataset['id'] == collabs_list[0]['package_id']
         assert 'member' == collabs_list[0]['capacity']
 
     def test_external_user(self):
@@ -236,7 +236,7 @@ class TestDatasetCollaboratorCreate(object):
         external_user = factories.ExternalUser()
         dataset = factories.Dataset()
 
-        action = toolkit.get_action("dataset_collaborator_create")
+        action = toolkit.get_action("package_collaborator_create")
         with pytest.raises(toolkit.ValidationError):
             action(
                 {'user': sysadmin['name']},
