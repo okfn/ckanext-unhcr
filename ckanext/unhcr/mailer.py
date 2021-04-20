@@ -338,7 +338,7 @@ def compose_account_approved_email_subj():
 def compose_account_approved_email_body(recipient):
     context = {}
     context['recipient'] = recipient
-    context['login_url'] = toolkit.url_for('/service/login', qualified=True)
+    context['login_url'] = toolkit.url_for('user.login', _external=True)
     context['h'] = toolkit.h
 
     return render_jinja2('emails/user/account_approved.html', context)
