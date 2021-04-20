@@ -35,7 +35,7 @@
 
 .resource-read {
 
-  & [role=main] {
+  & .main {
     & .wrapper::before {
       display: none;
     }
