@@ -776,7 +776,6 @@ def scan_hook(context, data_dict):
     task['error'] = json.dumps(data_dict.get('error'))
 
     task = toolkit.get_action('task_status_update')({'ignore_auth': True}, task)
-    context['session'].refresh(context['task_status'])
 
     if task['state'] == 'error':
         recipients = toolkit.aslist(toolkit.config.get('ckanext.unhcr.error_emails', []))
