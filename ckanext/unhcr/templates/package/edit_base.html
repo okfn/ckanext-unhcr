@@ -1,6 +1,6 @@
 {% ckan_extends %}
 
-{% if dataset_type == 'deposited-dataset' %}
+{% if pkg and dataset_type == 'deposited-dataset' %}
   {% set curation = h.get_deposited_dataset_user_curation_status(pkg, c.userobj.id) %}
 {% endif %}
 
