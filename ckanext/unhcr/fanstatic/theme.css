@@ -1737,13 +1737,13 @@ ol.unstyled {
   }
 }
 
-.resource-read [role=main] .wrapper::before {
+.resource-read .main .wrapper::before {
   display: none;
 }
 
 @media (min-width: 768px) {
 
-  .resource-read [role=main] .toolbar .breadcrumb {
+  .resource-read .main .toolbar .breadcrumb {
     display: block;
   }
 }
