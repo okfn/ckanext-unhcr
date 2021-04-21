@@ -573,7 +573,6 @@ class UnhcrPlugin(
             'upload_not_empty': validators.upload_not_empty,
             'object_id_validator': validators.object_id_validator,
             'activity_type_exists': validators.activity_type_exists,
-            'owner_org_validator': validators.owner_org_validator,
         }
 
     # IPermissionLabels

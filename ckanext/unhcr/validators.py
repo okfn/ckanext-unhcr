@@ -253,35 +253,3 @@ def activity_type_exists(activity_type):
     if activity_type in _object_id_validators:
         return activity_type
     return validators.activity_type_exists(activity_type)
-
-
-# Collaborators
-
-def owner_org_validator(key, data, errors, context):
-    user = context.get('user')
-    package = context.get('package')
-
-    userobj = model.User.get(user)
-    if userobj and userobj.sysadmin:
-        return validators.owner_org_validator(key, data, errors, context)
-
-    action = toolkit.get_action('package_collaborator_list_for_user')
-    if user and action and package:
-        try:
-            datasets = action(context, {'id': user})
-        except toolkit.ObjectNotFound:
-            datasets = []
-        if package.id in [d['package_id'] for d in datasets]:
-            if data.get(key) == package.owner_org:
-                try:
-                    return validators.owner_org_validator(key, data, errors, context)
-                except Invalid as e:
-                    if e.error in (
-                        u'You cannot add a dataset to this organization',
-                        u'You cannot add a dataset to this data container',
-                    ):
-                        return
-                    raise e
-            raise Invalid('You cannot move this dataset to another data container')
-
-    return validators.owner_org_validator(key, data, errors, context)
