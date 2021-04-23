@@ -927,12 +927,14 @@ class TestDepositedDatasetController(object):
 
         self.make_request('approve', user='sysadmin', status=200)
 
-    @mock.patch('ckanext.unhcr.blueprints.deposited_dataset.mailer.mail_user_by_id')
-    def test_activites_shown_on_deposited_dataset(self, mail):
+    def test_activites_shown_on_deposited_dataset(self, app):
 
         env = {'REMOTE_USER': self.creator['name'].encode('ascii')}
-        resp = self.app.get(
-            url=toolkit.url_for('deposited-dataset_read', id=self.dataset['id']), extra_environ=env)
+        resp = app.get(
+            url=toolkit.url_for('deposited-dataset_read', id=self.dataset['id']),
+            extra_environ=env,
+            status=200,
+        )
         assert 'Internal Activity' in resp.body
 
     @pytest.mark.parametrize("user", ['sysadmin', 'editor', 'target_container_admin'])
@@ -945,9 +947,12 @@ class TestDepositedDatasetController(object):
         self._approve_dataset()
 
         env = {'REMOTE_USER': user.encode('ascii')}
-        resp = self.app.get(
-            url=toolkit.url_for('dataset_read', id=self.dataset['id']), extra_environ=env)
-
+        with self.app.flask_app.test_request_context():
+            resp = self.app.get(
+                url=toolkit.url_for('dataset_read', id=self.dataset['id']),
+                extra_environ=env,
+                status=200,
+            )
         assert 'Internal Activity' in resp.body
 
     @pytest.mark.parametrize("user", ['depositor', 'curator', 'target_container_member', 'other_container_admin'])
@@ -959,22 +964,27 @@ class TestDepositedDatasetController(object):
 
         self._approve_dataset()
 
-        env = {'REMOTE_USER': user.encode('ascii')} if user else {}
-        resp = self.app.get(
-            url=toolkit.url_for('dataset_read', id=self.dataset['id']), extra_environ=env)
-
+        env = {'REMOTE_USER': user.encode('ascii')}
+        with self.app.flask_app.test_request_context():
+            resp = self.app.get(
+                url=toolkit.url_for('dataset_read', id=self.dataset['id']),
+                extra_environ=env,
+                status=200,
+            )
         assert 'Internal Activity' not in resp.body
 
     @mock.patch('ckan.plugins.toolkit.enqueue_job')
-    def test_activity_created_in_deposited_dataset(self, mail):
-        self.make_request('submit', user=self.creator['name'], status=302)
+    def test_activity_created_in_deposited_dataset(self, mail, app):
+        self.make_request('submit', user=self.creator['name'], status=200)
         params = {'curator_id': self.curator['id']}
         self.make_request('assign', user=self.depadmin['name'], data=params)
 
         env = {'REMOTE_USER': self.curator['name'].encode('ascii')}
-        resp = self.app.get(
-            url=toolkit.url_for('deposited-dataset_internal_activity', dataset_id=self.dataset['name']), extra_environ=env)
-
+        resp = app.get(
+            url=toolkit.url_for('deposited-dataset_internal_activity', dataset_id=self.dataset['name']),
+            extra_environ=env,
+            status=200,
+        )
         assert 'deposited dataset' in resp.body
         assert 'submitted dataset' in resp.body
         assert 'assigned' in resp.body
