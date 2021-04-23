@@ -20,7 +20,7 @@ ACTIONS = [
 ]
 
 
-@pytest.mark.usefixtures('with_request_context', 'unhcr_migrate')
+@pytest.mark.usefixtures('unhcr_migrate', 'with_request_context')
 class TestDepositedDatasetController(object):
 
     def setup_class(self):
@@ -47,30 +47,28 @@ class TestDepositedDatasetController(object):
         )
 
         app = core_helpers._get_test_app()
-        with app.flask_app.test_request_context():
-            # Containers
-            self.deposit = factories.DataContainer(
-                users=[
-                    {'name': 'curator', 'capacity': 'editor'},
-                    {'name': 'depadmin', 'capacity': 'admin'},
-                ],
-                name='data-deposit',
-                id='data-deposit'
-            )
-            self.target = factories.DataContainer(
-                name='data-target',
-                id='data-target',
-                users=[
-                    {'name': 'editor', 'capacity': 'editor'},
-                    {'name': 'target_container_admin', 'capacity': 'admin'},
-                    {'name': 'target_container_member', 'capacity': 'member'},
-                ],
-            )
-            container = factories.DataContainer(
-                users=[
-                    {'name': 'other_container_admin', 'capacity': 'admin'},
-                ]
-            )
+        self.deposit = factories.DataContainer(
+            users=[
+                {'name': 'curator', 'capacity': 'editor'},
+                {'name': 'depadmin', 'capacity': 'admin'},
+            ],
+            name='data-deposit',
+            id='data-deposit'
+        )
+        self.target = factories.DataContainer(
+            name='data-target',
+            id='data-target',
+            users=[
+                {'name': 'editor', 'capacity': 'editor'},
+                {'name': 'target_container_admin', 'capacity': 'admin'},
+                {'name': 'target_container_member', 'capacity': 'member'},
+            ],
+        )
+        container = factories.DataContainer(
+            users=[
+                {'name': 'other_container_admin', 'capacity': 'admin'},
+            ]
+        )
 
     def teardown_class(self):
         core_helpers.reset_db()
@@ -106,7 +104,8 @@ class TestDepositedDatasetController(object):
         )
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
         data = kwargs.pop('data', {})
-        resp = self.app.post(url, data=data, extra_environ=env, **kwargs)
+        with self.app.flask_app.test_request_context():
+            resp = self.app.post(url, data=data, extra_environ=env, **kwargs)
         if not dataset_id:
             try:
                 self.dataset = core_helpers.call_action(
