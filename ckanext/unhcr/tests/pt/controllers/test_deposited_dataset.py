@@ -394,11 +394,9 @@ class TestDepositedDatasetController(object):
         assert self.dataset.get('curator_id') == None
         mail.assert_not_called()
 
-    # TODO: this one fails with DetachedInstanceError
-    # and breaks sessions for all following tests
-    #def test_assign_submitted_bad_curator_id(self):
-    #    for user in ['sysadmin', 'depadmin']:
-    #        self.check_assign_submitted_bad_curator_id(user)
+    def test_assign_submitted_bad_curator_id(self):
+        for user in ['sysadmin', 'depadmin']:
+            self.check_assign_submitted_bad_curator_id(user)
 
     def check_assign_submitted_bad_curator_id(self, user):
 
