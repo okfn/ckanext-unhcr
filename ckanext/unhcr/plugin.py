@@ -171,10 +171,6 @@ class UnhcrPlugin(
         _map.connect('/deposited-dataset/activity/{dataset_id}/{offset}', controller=controller, action='activity')
         _map.connect('/deposited-dataset/{id}/resource_data/{resource_id}', controller='ckanext.datapusher.plugin:ResourceDataController', action='resource_data')
 
-        # user
-        controller = 'ckanext.unhcr.controllers.extended_user:ExtendedUserController'
-        _map.connect('dashboard.requests', '/dashboard/requests', controller=controller, action='list_requests', ckan_icon='spinner')
-
         return _map
 
     # IFacets
@@ -620,6 +616,7 @@ class UnhcrPlugin(
         return [
             blueprints.unhcr_access_requests_blueprint,
             blueprints.unhcr_admin_blueprint,
+            blueprints.unhcr_dashboard_blueprint,
             blueprints.unhcr_dataset_blueprint,
             blueprints.unhcr_data_container_blueprint,
             blueprints.unhcr_deposited_dataset_blueprint,

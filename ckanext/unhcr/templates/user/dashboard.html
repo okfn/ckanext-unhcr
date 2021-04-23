@@ -14,7 +14,7 @@
       {% set total = h.get_pending_requests_total() %}
       {% set suffix = ' (%s)' % total %}
       {% set icon = 'exclamation' if total else 'check' %}
-      {{ h.build_nav_icon('dashboard.requests', _('Pending Requests') + suffix, icon=icon) }}
+      {{ h.build_nav_icon('unhcr_dashboard.requests', _('Pending Requests') + suffix, icon=icon) }}
     {% endif %}
   </ul>
   </header>

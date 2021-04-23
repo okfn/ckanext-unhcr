@@ -2,6 +2,7 @@
 
 from .access_requests import unhcr_access_requests_blueprint
 from .admin import unhcr_admin_blueprint
+from .dashboard import unhcr_dashboard_blueprint
 from .dataset import unhcr_dataset_blueprint
 from .data_container import unhcr_data_container_blueprint
 from .deposited_dataset import unhcr_deposited_dataset_blueprint

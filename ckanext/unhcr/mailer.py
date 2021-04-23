@@ -310,7 +310,7 @@ def compose_request_access_email_body(object_type, recipient, obj, requesting_us
     context['requesting_user'] = requesting_user
     context['message'] = message
     context['dashboard_url'] = toolkit.url_for(
-        'dashboard.requests',
+        'unhcr_dashboard.requests',
         qualified=True,
     )
     context['h'] = toolkit.h

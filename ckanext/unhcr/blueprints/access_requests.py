@@ -27,7 +27,7 @@ def approve(request_id):
 
     toolkit.h.flash_success('Access Request Approved')
 
-    return toolkit.redirect_to('dashboard.requests')
+    return toolkit.redirect_to('unhcr_dashboard.requests')
 
 
 @require_user
@@ -58,7 +58,7 @@ def reject(request_id):
 
     toolkit.h.flash_success('Access Request Rejected')
 
-    return toolkit.redirect_to('dashboard.requests')
+    return toolkit.redirect_to('unhcr_dashboard.requests')
 
 
 unhcr_access_requests_blueprint.add_url_rule(
