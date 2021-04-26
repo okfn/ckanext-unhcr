@@ -62,7 +62,7 @@ class TestExtendedPackageController(object):
 
     # Helpers
 
-    def make_dataset_request(self, app, dataset_id=None, user=None, **kwargs):
+    def make_dataset_copy_request(self, app, dataset_id=None, user=None, **kwargs):
         url = '/dataset/copy/%s' % dataset_id
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
         resp = app.get(url=url, extra_environ=env, **kwargs)
@@ -96,10 +96,15 @@ class TestExtendedPackageController(object):
         )
         return resp
 
-    # Dataset
+    # Dataset Copy
 
     def test_dataset_copy(self, app):
-        resp = self.make_dataset_request(app, dataset_id='dataset1', user='user1')
+        resp = self.make_dataset_copy_request(
+            app,
+            dataset_id='dataset1',
+            user='user1',
+            status=200
+        )
         assert 'action="/dataset/new"' in resp.body
         assert 'You are copying' in resp.body
         assert 'f2f' in resp.body
@@ -109,7 +114,12 @@ class TestExtendedPackageController(object):
         assert 'container1' in resp.body
 
     def test_dataset_copy_to_other_org(self, app):
-        resp = self.make_dataset_request(app, dataset_id='dataset1', user='user2')
+        resp = self.make_dataset_copy_request(
+            app,
+            dataset_id='dataset1',
+            user='user2',
+            status=200
+        )
         assert 'action="/dataset/new"' in resp.body
         assert 'You are copying' in resp.body
         assert 'f2f' in resp.body
@@ -119,17 +129,26 @@ class TestExtendedPackageController(object):
         assert 'container1' not in resp.body
 
     def test_dataset_copy_no_orgs(self, app):
-        resp = self.make_dataset_request(app, dataset_id='dataset1', user='user3', status=403)
+        resp = self.make_dataset_copy_request(
+            app,
+            dataset_id='dataset1',
+            user='user3',
+            status=403
+        )
 
     def test_dataset_copy_bad_dataset(self, app):
-        resp = self.make_dataset_request(app, dataset_id='bad', user='user1', status=404)
+        resp = self.make_dataset_copy_request(
+            app,
+            dataset_id='bad',
+            user='user1',
+            status=404
+        )
 
     # Resource Upload
 
     def test_edit_resource_works(self, app):
         url = toolkit.url_for(
-            controller='package',
-            action='resource_edit',
+            'resource.edit',
             id=self.dataset1['id'],
             resource_id=self.resource1['id']
         )
@@ -154,14 +173,13 @@ class TestExtendedPackageController(object):
 
         }
 
-        resp = app.post(url, data=data, extra_environ=env)
+        resp = app.post(url, data=data, extra_environ=env, status=200)
 
         assert 'The form contains invalid entries:' not in resp.body
 
     def test_edit_resource_must_provide_upload(self, app):
         url = toolkit.url_for(
-            controller='package',
-            action='resource_edit',
+            'resource.edit',
             id=self.dataset1['id'],
             resource_id=self.resource1['id']
         )
@@ -187,7 +205,7 @@ class TestExtendedPackageController(object):
 
         }
 
-        resp = app.post(url, data=data, extra_environ=env)
+        resp = app.post(url, data=data, extra_environ=env, status=200)
 
         assert 'The form contains invalid entries:' in resp.body
         assert 'All data resources require an uploaded file' in resp.body
@@ -196,8 +214,10 @@ class TestExtendedPackageController(object):
 
     def test_resource_copy(self, app):
         resp = self.make_resource_copy_request(
-            app, dataset_id='dataset1', resource_id=self.resource1['id'], user='user1')
-        assert 'action="/dataset/new_resource/dataset1"' in resp.body
+            app, dataset_id='dataset1', resource_id=self.resource1['id'], user='user1',
+            status=200
+        )
+        assert 'action="/dataset/dataset1/resource/new"' in resp.body
         assert 'resource1 (copy)' in resp.body
         assert 'anonymized_public' in resp.body
         assert 'Add'in resp.body
