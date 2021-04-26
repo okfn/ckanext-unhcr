@@ -11,7 +11,7 @@ from ckanext.unhcr.models import AccessRequest
 from ckanext.unhcr.tests import factories, mocks
 
 
-@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate', 'with_request_context')
 class TestExtendedPackageController(object):
 
     # Config
@@ -318,7 +318,7 @@ class TestExtendedPackageController(object):
         with mock.patch('ckan.plugins.toolkit.enqueue_job', mock_mailer):
             resp = self.make_request_access_request(
                 app, dataset_id='dataset1', user='user3', message='I can haz access?',
-                status=302
+                status=200
             )
 
         mock_mailer.assert_called_once()
@@ -340,10 +340,9 @@ class TestExtendedPackageController(object):
             ).all())
         )
 
-        resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user3'}, status=200)
         assert (
             'Requested access to download resources from Test Dataset 1' in
-            resp2.body
+            resp.body
         )
 
     def test_request_access_user_already_has_access(self, app):
@@ -351,7 +350,7 @@ class TestExtendedPackageController(object):
         with mock.patch('ckan.plugins.toolkit.enqueue_job', mock_mailer):
             resp = self.make_request_access_request(
                 app, dataset_id='dataset1', user='user1', message='I can haz access?',
-                status=302
+                status=200
             )
 
         mock_mailer.assert_not_called()
@@ -365,14 +364,13 @@ class TestExtendedPackageController(object):
             ).all())
         )
 
-        resp2 = resp.follow(extra_environ={'REMOTE_USER': 'user1'}, status=200)
         assert (
             'You already have access to download resources from Test Dataset 1' in
-            resp2.body
+            resp.body
         )
 
 
-@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate', 'with_request_context')
 class TestPrivateResources(object):
 
     def setup(self):
