@@ -13,10 +13,10 @@
 
 {% block resource_actions_inner %}
   {% if h.check_access('package_update', {'id': pkg.id}) %}
-    <li>{% link_for _('Copy'), controller='ckanext.unhcr.controllers.extended_package:ExtendedPackageController', action='resource_copy', id=pkg.name, resource_id=res.id, class_='btn', icon='copy' %}</li>
+    <li>{% link_for _('Copy'), named_route='unhcr_dataset.resource_copy', dataset_id=pkg.name, resource_id=res.id, class_='btn', icon='copy' %}</li>
   {% endif %}
   {% if h.check_access('package_update', {'id':pkg.id }) %}
-    <li>{% link_for _('Manage'), controller='package', action='resource_edit', id=pkg.name, resource_id=res.id, class_='btn', icon='wrench' %}</li>
+    <li>{% link_for _('Manage'), named_route='resource.edit', id=pkg.name, resource_id=res.id, class_='btn', icon='wrench' %}</li>
   {% endif %}
   {% if res.url and h.is_url(res.url) %}
     {% if h.can_download(pkg) %}

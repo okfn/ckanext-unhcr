@@ -4,10 +4,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <form
-        action="{% url_for
-          controller='ckanext.unhcr.controllers.extended_package:ExtendedPackageController',
-          action='request_access',
-          id=pkg.id %}"
+        action="{% url_for 'unhcr_dataset.request_access', dataset_id=pkg.id %}"
         method="POST"
       >
 
