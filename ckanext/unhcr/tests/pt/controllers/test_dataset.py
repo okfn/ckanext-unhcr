@@ -96,6 +96,60 @@ class TestExtendedPackageController(object):
         )
         return resp
 
+    def make_dataset_publish_request(self, app, dataset_id, user=None, **kwargs):
+        url = '/dataset/publish/{}'.format(dataset_id)
+        env = {'REMOTE_USER': user.encode('ascii')} if user else {}
+        resp = app.get(url=url, extra_environ=env, **kwargs)
+        return resp
+
+    # Dataset Publish
+
+    def test_publish_dataset_no_resources(self, app):
+        draft_dataset = factories.Dataset(
+            name='dataset2',
+            title='Test Dataset 2',
+            owner_org='container1',
+            data_collection_technique = 'f2f',
+            sampling_procedure = 'nonprobability',
+            operational_purpose_of_data = 'cartography',
+            user=self.user1,
+            visibility='restricted',
+            state='draft',
+        )
+        resp = self.make_dataset_publish_request(
+            app,
+            draft_dataset['id'],
+            user='user1',
+            status=400,
+        )
+        assert 'Dataset must have one or more resources to publish' in resp.body
+
+    def test_publish_dataset_with_resources(self, app):
+        draft_dataset = factories.Dataset(
+            name='dataset2',
+            title='Test Dataset 2',
+            owner_org='container1',
+            data_collection_technique = 'f2f',
+            sampling_procedure = 'nonprobability',
+            operational_purpose_of_data = 'cartography',
+            user=self.user1,
+            visibility='restricted',
+            state='draft',
+        )
+        factories.Resource(
+            name='resource1',
+            package_id=draft_dataset['name'],
+            url_type='upload',
+            upload=mocks.FakeFileStorage(),
+            url = "http://fakeurl/test.txt",
+        )
+        self.make_dataset_publish_request(
+            app,
+            draft_dataset['id'],
+            user='user1',
+            status=200,
+        )
+
     # Dataset Copy
 
     def test_dataset_copy(self, app):
