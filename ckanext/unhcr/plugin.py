@@ -155,11 +155,6 @@ class UnhcrPlugin(
 
         # package
         controller = 'ckanext.unhcr.controllers.extended_package:ExtendedPackageController'
-        _map.connect('/dataset/publish/{id}', controller=controller, action='publish')
-        _map.connect('/dataset/copy/{id}', controller=controller, action='copy')
-        _map.connect('/dataset/{id}/resource_copy/{resource_id}', controller=controller, action='resource_copy')
-        _map.connect('/dataset/{id}/publish_microdata', controller=controller, action='publish_microdata')
-        _map.connect('/dataset/{id}/request_access', controller=controller, action='request_access', conditions={'method': ['POST']})
         _map.connect('dataset_internal_activity', '/dataset/internal_activity/{dataset_id}', controller=controller, action='activity')
         _map.connect('deposited-dataset_internal_activity', '/deposited-dataset/internal_activity/{dataset_id}', controller=controller, action='activity')
 
@@ -167,16 +162,13 @@ class UnhcrPlugin(
         # these are needed because register_package_plugins() only maps a
         # subset of /dataset routes for custom package types
         _map.connect('/deposited-dataset/resources/{id}', controller=controller, action='resources')
-        _map.connect('/deposited-dataset/{id}/resource_copy/{resource_id}', controller=controller, action='resource_copy')
         _map.connect('/deposited-dataset/{id}/resource_delete/{resource_id}', controller=controller, action='resource_delete')
         _map.connect('/deposited-dataset/{id}/resource_edit/{resource_id}', controller=controller, action='resource_edit')
         _map.connect('/deposited-dataset/{id}/resource/{resource_id}', controller=controller, action='resource_read')
         _map.connect('/deposited-dataset/{id}/resource/{resource_id}/view/{view_id}', controller=controller, action='resource_view')
         _map.connect('/deposited-dataset/new_resource/{id}', controller=controller, action='new_resource')
-        _map.connect('/deposited-dataset/publish/{id}', controller=controller, action='publish')
         _map.connect('/deposited-dataset/activity/{dataset_id}', controller=controller, action='activity')
         _map.connect('/deposited-dataset/activity/{dataset_id}/{offset}', controller=controller, action='activity')
-        _map.connect('/deposited-dataset/copy/{id}', controller=controller, action='copy')
         _map.connect('/deposited-dataset/{id}/resource_data/{resource_id}', controller='ckanext.datapusher.plugin:ResourceDataController', action='resource_data')
 
         # resource download routes
@@ -639,6 +631,7 @@ class UnhcrPlugin(
         bp = [
             blueprints.unhcr_access_requests_blueprint,
             blueprints.unhcr_admin_blueprint,
+            blueprints.unhcr_dataset_blueprint,
             blueprints.unhcr_data_container_blueprint,
             blueprints.unhcr_deposited_dataset_blueprint,
             blueprints.unhcr_metrics_blueprint,
