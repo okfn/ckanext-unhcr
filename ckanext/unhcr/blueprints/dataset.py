@@ -126,6 +126,9 @@ def resource_copy(package_type, dataset_id, resource_id):
     return view.get(package_type, dataset_id, data=data)
 
 
+def _call_publish_action(context, data_dict):
+    return toolkit.get_action('package_publish_microdata')(context, data_dict)
+
 def publish_microdata(package_type, dataset_id):
     if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
         return toolkit.abort(403, "Forbidden")
@@ -144,8 +147,10 @@ def publish_microdata(package_type, dataset_id):
     # Publish to Microdata
     error = None
     try:
-        survey = toolkit.get_action('package_publish_microdata')(
-            context.copy(), {'id': dataset_id, 'nation': nation, 'repoid': repoid})
+        survey = _call_publish_action(
+            context.copy(),
+            {'id': dataset_id, 'nation': nation, 'repoid': repoid}
+        )
     except (toolkit.NotAuthorized, RuntimeError) as exception:
         error = str(exception)
 
@@ -154,7 +159,7 @@ def publish_microdata(package_type, dataset_id):
         message = 'Dataset "%s" published to the Microdata library at the following address: "%s"'
         toolkit.h.flash_success(message % (dataset['title'], survey['url']))
     else:
-        message = 'Dataset "%s" publishing to the Microdata library is not completed for the following reason: "%s"'
+        message = 'Dataset "%s" publishing to the Microdata library failed for the following reason: "%s"'
         toolkit.h.flash_error(message % (dataset['title'], error))
     return toolkit.redirect_to('dataset_edit', id=dataset['name'])
 
