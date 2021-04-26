@@ -6,10 +6,8 @@
     <div class="modal-content">
 
     <form
-      action="{% url_for
-        controller='ckanext.unhcr.controllers.extended_package:ExtendedPackageController',
-        action='publish_microdata',
-        id=pkg.id %}"
+      action="{% url_for 'unhcr_dataset.publish_microdata', dataset_id=pkg.id %}"
+      method="POST"
     >
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>

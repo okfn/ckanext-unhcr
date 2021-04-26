@@ -43,7 +43,7 @@
     </a>
   {% endif %}
   {% if h.organizations_available('create_dataset') %}
-    {% link_for _('Copy'), controller='ckanext.unhcr.controllers.extended_package:ExtendedPackageController', action='copy', id=pkg.name, class_='btn', icon='copy' %}
+    {% link_for _('Copy'), named_route='unhcr_dataset.copy', dataset_id=pkg.id, class_='btn', icon='copy' %}
   {% endif %}
   {{ super() }}
 {% endblock %}
