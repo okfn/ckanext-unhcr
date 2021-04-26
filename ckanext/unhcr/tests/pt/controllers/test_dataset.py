@@ -102,6 +102,13 @@ class TestExtendedPackageController(object):
         resp = app.get(url=url, extra_environ=env, **kwargs)
         return resp
 
+    def make_dataset_publish_microdata_request(self, app, dataset_id, user=None, **kwargs):
+        url = '/dataset/{}/publish_microdata'.format(dataset_id)
+        env = {'REMOTE_USER': user.encode('ascii')} if user else {}
+        resp = app.post(url=url, extra_environ=env, **kwargs)
+        return resp
+
+
     # Dataset Publish
 
     def test_publish_dataset_no_resources(self, app):
@@ -344,6 +351,43 @@ class TestExtendedPackageController(object):
         # have also logged a 'download resource' action for this user/resource
         result = model.Session.execute(sql).fetchall()
         assert 1 == len(result)
+
+    # Publish Microdata
+
+    def test_publish_microdata_invalid_method(self, app):
+        resp = app.get(
+            '/dataset/dataset1/publish_microdata',
+            extra_environ={'REMOTE_USER': 'user3'},
+            status=404
+        )
+
+    def test_publish_microdata_valid(self, app):
+        mock_action = mock.MagicMock(return_value={'url': 'http://foo.bar/baz'})
+        with mock.patch('ckanext.unhcr.blueprints.dataset._call_publish_action', mock_action):
+            resp = self.make_dataset_publish_microdata_request(
+                app,
+                dataset_id='dataset1',
+                user='user1',
+                status=200
+            )
+        mock_action.assert_called_once()
+        assert (
+            'published to the Microdata library at the following address: &#34;http://foo.bar/baz&#34;'
+            in resp.body
+        )
+
+    def test_publish_microdata_errors(self, app):
+        mock_action = mock.Mock()
+        mock_action.side_effect = RuntimeError('oh no!')
+        with mock.patch('ckanext.unhcr.blueprints.dataset._call_publish_action', mock_action):
+            resp = self.make_dataset_publish_microdata_request(
+                app,
+                dataset_id='dataset1',
+                user='user1',
+                status=200
+            )
+        mock_action.assert_called_once()
+        assert 'failed for the following reason: &#34;oh no!&#34;' in resp.body
 
     # Request Access
 
