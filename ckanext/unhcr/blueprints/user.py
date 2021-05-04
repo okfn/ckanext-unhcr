@@ -12,7 +12,7 @@ from ckan.views.user import (
     login as core_login
 )
 from ckanext.unhcr.helpers import get_data_deposit
-from ckanext.unhcr.utils import get_internal_domains
+from ckanext.unhcr.utils import require_user, get_internal_domains
 from ckanext.unhcr import mailer
 
 log = logging.getLogger(__name__)
@@ -22,10 +22,8 @@ _ = toolkit._
 unhcr_user_blueprint = Blueprint('unhcr_user', __name__, url_prefix=u'/user')
 
 
+@require_user
 def sysadmin():
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     id_ = toolkit.request.form.get('id')
     status = toolkit.asbool(toolkit.request.form.get('status'))
 

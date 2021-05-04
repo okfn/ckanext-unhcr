@@ -13,6 +13,7 @@ from ckanext.unhcr.metrics import (
     get_users_by_datasets,
     get_users_by_downloads,
 )
+from ckanext.unhcr.utils import require_user
 
 
 unhcr_metrics_blueprint = Blueprint(
@@ -22,12 +23,9 @@ unhcr_metrics_blueprint = Blueprint(
 )
 
 
+@require_user
 def metrics():
-    if (
-        not hasattr(toolkit.c, "user") or
-        not toolkit.c.user or
-        not (toolkit.c.userobj.sysadmin or user_is_curator())
-    ):
+    if (not (toolkit.c.userobj.sysadmin or user_is_curator())):
         return toolkit.abort(403, "Forbidden")
 
     context = { 'user': toolkit.c.user }

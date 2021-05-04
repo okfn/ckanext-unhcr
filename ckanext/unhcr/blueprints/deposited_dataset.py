@@ -7,6 +7,7 @@ import random
 from ckan import model
 import ckan.plugins.toolkit as toolkit
 from ckanext.unhcr import helpers, mailer
+from ckanext.unhcr.utils import require_user
 log = logging.getLogger(__name__)
 
 
@@ -17,10 +18,8 @@ unhcr_deposited_dataset_blueprint = Blueprint(
 )
 
 
+@require_user
 def approve(dataset_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     user_id = getattr(toolkit.c.userobj, 'id', None)
 
     # Get curation data
@@ -70,10 +69,8 @@ def approve(dataset_id):
     return toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 
 
+@require_user
 def assign(dataset_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     user_id = getattr(toolkit.c.userobj, 'id', None)
 
     # Get curation data
@@ -132,10 +129,8 @@ def assign(dataset_id):
     return toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 
 
+@require_user
 def request_changes(dataset_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     user_id = getattr(toolkit.c.userobj, 'id', None)
 
     # Get curation data
@@ -182,10 +177,8 @@ def request_changes(dataset_id):
     return toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 
 
+@require_user
 def request_review(dataset_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     user_id = getattr(toolkit.c.userobj, 'id', None)
 
     # Get curation data
@@ -227,10 +220,8 @@ def request_review(dataset_id):
     return toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 
 
+@require_user
 def reject(dataset_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     user_id = getattr(toolkit.c.userobj, 'id', None)
 
     # Get curation data
@@ -271,10 +262,8 @@ def reject(dataset_id):
     return toolkit.redirect_to('data-container_read', id='data-deposit')
 
 
+@require_user
 def submit(dataset_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     user_id = getattr(toolkit.c.userobj, 'id', None)
 
     # Get curation data
@@ -317,10 +306,8 @@ def submit(dataset_id):
     return toolkit.redirect_to('deposited-dataset_read', id=dataset['name'])
 
 
+@require_user
 def withdraw(dataset_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     user_id = getattr(toolkit.c.userobj, 'id', None)
 
     # Get curation data
