@@ -11,6 +11,7 @@ import ckan.logic.action.delete as delete_core
 import ckan.plugins.toolkit as toolkit
 from ckanext.unhcr import helpers
 from ckanext.unhcr import mailer
+from ckanext.unhcr.utils import require_user
 log = logging.getLogger(__name__)
 
 
@@ -42,9 +43,8 @@ def _raise_not_authz_or_not_pending(container_id):
         raise toolkit.ObjectNotFound('Data container "{}" not found'.format(container_id))
 
 
+@require_user
 def approve(container_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
     context = {'model': model, 'user': toolkit.c.user}
 
     # check access and state
@@ -66,9 +66,8 @@ def approve(container_id):
     return toolkit.redirect_to('data-container_read', id=container_id)
 
 
+@require_user
 def reject(container_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
     context = {'model': model, 'user': toolkit.c.user}
 
     # check access and state
@@ -91,10 +90,8 @@ def reject(container_id):
     return toolkit.redirect_to('data-container_index')
 
 
+@require_user
 def membership():
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     context = {'model': model, 'user': toolkit.c.user}
     username = toolkit.request.params.get('username')
 
@@ -161,10 +158,8 @@ def membership():
     })
 
 
+@require_user
 def membership_add():
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     form_data = _parse_form(toolkit.request.form)
     context = {'model': model, 'user': toolkit.c.user}
     username = form_data.get('username')
@@ -207,10 +202,8 @@ def membership_add():
     return toolkit.redirect_to('unhcr_data_container.membership', username=username)
 
 
+@require_user
 def membership_remove():
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     context = {'model': model, 'user': toolkit.c.user}
     username = toolkit.request.params.get('username')
     contname = toolkit.request.params.get('contname')
@@ -237,10 +230,8 @@ def membership_remove():
     return toolkit.redirect_to('unhcr_data_container.membership', username=username)
 
 
+@require_user
 def request_access(container_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     message = toolkit.request.form.get('message')
 
     deposit = helpers.get_data_deposit()

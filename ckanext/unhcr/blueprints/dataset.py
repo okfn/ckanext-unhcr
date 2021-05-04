@@ -9,7 +9,7 @@ import ckan.plugins.toolkit as toolkit
 from ckanext.scheming.helpers import scheming_get_dataset_schema
 from ckanext.unhcr import mailer
 from ckanext.unhcr.activity import log_download_activity
-from ckanext.unhcr.utils import resource_is_blocked
+from ckanext.unhcr.utils import require_user, resource_is_blocked
 
 
 log = logging.getLogger(__name__)
@@ -23,10 +23,8 @@ unhcr_dataset_blueprint = Blueprint(
 )
 
 
+@require_user
 def publish(package_type, dataset_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     context = {'model': model, 'user': toolkit.c.user}
     dataset = toolkit.get_action('package_show')(context.copy(), {'id': dataset_id})
     if len(dataset['resources']) == 0:
@@ -36,10 +34,8 @@ def publish(package_type, dataset_id):
     return toolkit.redirect_to('dataset.read', id=dataset['name'])
 
 
+@require_user
 def copy(package_type, dataset_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     context = {'model': model, 'user': toolkit.c.user}
 
     # Get organizations
@@ -88,10 +84,8 @@ def copy(package_type, dataset_id):
     return view.get(package_type, data=data)
 
 
+@require_user
 def resource_copy(package_type, dataset_id, resource_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     context = {'model': model, 'user': toolkit.c.user}
 
     # Check access
@@ -129,10 +123,8 @@ def resource_copy(package_type, dataset_id, resource_id):
 def _call_publish_action(context, data_dict):
     return toolkit.get_action('package_publish_microdata')(context, data_dict)
 
+@require_user
 def publish_microdata(package_type, dataset_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     nation = toolkit.request.form.get('nation')
     repoid = toolkit.request.form.get('repoid')
     context = {'model': model, 'user': toolkit.c.user}
@@ -164,10 +156,8 @@ def publish_microdata(package_type, dataset_id):
     return toolkit.redirect_to('dataset_edit', id=dataset['name'])
 
 
+@require_user
 def request_access(package_type, dataset_id):
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     message = toolkit.request.form.get('message')
 
     context = {'model': model, 'user': toolkit.c.user}

@@ -3,6 +3,7 @@
 from flask import Blueprint
 import ckan.model as model
 import ckan.plugins.toolkit as toolkit
+from ckanext.unhcr.utils import require_user
 
 
 unhcr_search_index_blueprint = Blueprint(
@@ -12,10 +13,8 @@ unhcr_search_index_blueprint = Blueprint(
 )
 
 
+@require_user
 def index():
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     try:
         toolkit.check_access('sysadmin', {'user': toolkit.c.user})
     except toolkit.NotAuthorized:
@@ -24,10 +23,8 @@ def index():
     return toolkit.render('admin/search_index.html')
 
 
+@require_user
 def rebuild():
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     try:
         errors = toolkit.get_action('search_index_rebuild')({'user': toolkit.c.user}, {})
     except toolkit.NotAuthorized:

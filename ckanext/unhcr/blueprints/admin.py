@@ -2,15 +2,14 @@
 
 from flask import Blueprint
 import ckan.plugins.toolkit as toolkit
+from ckanext.unhcr.utils import require_user
 
 
 unhcr_admin_blueprint = Blueprint('unhcr_admin', __name__, url_prefix=u'/ckan-admin')
 
 
+@require_user
 def index():
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
-
     try:
         toolkit.check_access('sysadmin', {})
     except toolkit.NotAuthorized:
