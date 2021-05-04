@@ -4,7 +4,7 @@ from ckan import model
 import ckan.plugins.toolkit as toolkit
 from ckanext.s3filestore.views.resource import resource_download as base_resource_download
 from ckanext.unhcr.activity import log_download_activity
-from ckanext.unhcr.utils import resource_is_blocked
+from ckanext.unhcr.utils import require_user, resource_is_blocked
 log = logging.getLogger(__name__)
 
 
@@ -15,14 +15,12 @@ unhcr_s3_resource_blueprint = Blueprint(
 )
 
 
+@require_user
 def resource_download(package_type, id, resource_id, filename=None):
     """
     Wraps default `resource_download` endpoint checking
     the custom `resource_download` auth function
     """
-
-    if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
-        return toolkit.abort(403, "Forbidden")
 
     context = {'model': model, 'session': model.Session,
                 'user': toolkit.c.user, 'auth_user_obj': toolkit.c.userobj}
