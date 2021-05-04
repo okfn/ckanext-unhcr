@@ -1,4 +1,5 @@
 import json
+from functools import wraps
 import ckan.plugins.toolkit as toolkit
 # TODO: move here helpers not used in templates?
 
@@ -68,3 +69,15 @@ def resource_is_blocked(context, resource_id):
         pass
 
     return False
+
+
+def require_user(func):
+    '''
+    Decorator for flask view functions. Returns 403 response if no user is logged in
+    '''
+    @wraps(func)
+    def view_wrapper(*args, **kwargs):
+        if (not hasattr(toolkit.c, "user") or not toolkit.c.user):
+            return toolkit.abort(403, "Forbidden")
+        return func(*args, **kwargs)
+    return view_wrapper
