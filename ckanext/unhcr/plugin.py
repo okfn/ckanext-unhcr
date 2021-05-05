@@ -171,17 +171,6 @@ class UnhcrPlugin(
         _map.connect('/deposited-dataset/activity/{dataset_id}/{offset}', controller=controller, action='activity')
         _map.connect('/deposited-dataset/{id}/resource_data/{resource_id}', controller='ckanext.datapusher.plugin:ResourceDataController', action='resource_data')
 
-        # resource download routes
-        download_routes = [
-            '/dataset/{id}/resource/{resource_id}/download',
-            '/dataset/{id}/resource/{resource_id}/download/{filename}',
-            '/deposited-dataset/{id}/resource/{resource_id}/download',
-            '/deposited-dataset/{id}/resource/{resource_id}/download/{filename}',
-        ]
-        if not plugins.plugin_loaded('s3filestore'):
-            for route in download_routes:
-                _map.connect(route, controller=controller, action='resource_download')
-
         # user
         controller = 'ckanext.unhcr.controllers.extended_user:ExtendedUserController'
         _map.connect('dashboard.requests', '/dashboard/requests', controller=controller, action='list_requests', ckan_icon='spinner')
@@ -628,16 +617,14 @@ class UnhcrPlugin(
     # IBlueprint
 
     def get_blueprint(self):
-        bp = [
+        return [
             blueprints.unhcr_access_requests_blueprint,
             blueprints.unhcr_admin_blueprint,
             blueprints.unhcr_dataset_blueprint,
             blueprints.unhcr_data_container_blueprint,
             blueprints.unhcr_deposited_dataset_blueprint,
             blueprints.unhcr_metrics_blueprint,
+            blueprints.unhcr_resource_blueprint,
             blueprints.unhcr_search_index_blueprint,
             blueprints.unhcr_user_blueprint,
         ]
-        if plugins.plugin_loaded('s3filestore'):
-            bp.append(blueprints.unhcr_s3_resource_blueprint)
-        return bp
