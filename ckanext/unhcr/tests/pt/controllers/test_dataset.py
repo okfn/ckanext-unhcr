@@ -75,11 +75,9 @@ class TestExtendedPackageController(object):
         return resp
 
     def make_resource_download_request(self, app, dataset_id, resource_id, user=None, **kwargs):
-        url = toolkit.url_for(
-            controller='package',
-            action='resource_download',
-            id=dataset_id,
-            resource_id=resource_id
+        url = '/dataset/{dataset}/resource/{resource}/download'.format(
+            dataset=dataset_id,
+            resource=resource_id,
         )
         env = {'REMOTE_USER': user.encode('ascii')} if user else {}
         resp = app.get(url=url, extra_environ=env, **kwargs)
