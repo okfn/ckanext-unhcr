@@ -11,6 +11,6 @@ class FakeFileStorage(cgi.FieldStorage, object):
             self.file = StringIO()
             self.file.write('Some data')
 
-        self.list = list(self.file)
+        self.list = [self.file]
         self.filename = filename
         self.name = "upload"
