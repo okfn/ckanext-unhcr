@@ -10,7 +10,7 @@ from ckanext.unhcr.tests import factories, mocks
 
 
 @pytest.mark.usefixtures('clean_db', 'unhcr_migrate', 'with_request_context')
-class TestExtendedPackageController(object):
+class TestDatasetViews(object):
 
     # Config
 
