@@ -1,5 +1,10 @@
 # RIDL Changelog
 
+## v2.3.0 - 2021-05-06
+
+Features:
+- Include google analytics tracking code
+
 ## v2.2.1 - 2021-03-25
 
 Fixes:
