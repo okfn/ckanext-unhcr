@@ -57,7 +57,6 @@ class TestExtendedPackageController(object):
             package_id='dataset1',
             url_type='upload',
             upload=mocks.FakeFileStorage(),
-            url = "http://fakeurl/test.txt",
         )
 
     # Helpers
@@ -146,7 +145,6 @@ class TestExtendedPackageController(object):
             package_id=draft_dataset['name'],
             url_type='upload',
             upload=mocks.FakeFileStorage(),
-            url = "http://fakeurl/test.txt",
         )
         self.make_dataset_publish_request(
             app,
