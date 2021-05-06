@@ -23,7 +23,7 @@ unhcr_resource_blueprint = Blueprint(
 
 
 @require_user
-def resource_download(package_type, id, resource_id, filename=None):
+def download(package_type, id, resource_id, filename=None):
     context = {'model': model, 'session': model.Session,
                 'user': toolkit.c.user, 'auth_user_obj': toolkit.c.userobj}
 
@@ -48,7 +48,7 @@ def resource_download(package_type, id, resource_id, filename=None):
 
 
 @require_user
-def resource_copy(package_type, dataset_id, resource_id):
+def copy(package_type, dataset_id, resource_id):
     context = {'model': model, 'user': toolkit.c.user}
 
     # Check access
@@ -85,13 +85,13 @@ def resource_copy(package_type, dataset_id, resource_id):
 
 unhcr_resource_blueprint.add_url_rule(
     rule=u'/<dataset_id>/resource_copy/<resource_id>',
-    view_func=resource_copy,
+    view_func=copy,
 )
 unhcr_resource_blueprint.add_url_rule(
     u'/<id>/resource/<resource_id>/download',
-    view_func=resource_download
+    view_func=download
 )
 unhcr_resource_blueprint.add_url_rule(
     u'/<id>/resource/<resource_id>/download/<filename>',
-    view_func=resource_download
+    view_func=download
 )
