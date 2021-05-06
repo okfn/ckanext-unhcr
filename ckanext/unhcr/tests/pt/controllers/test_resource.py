@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import pytest
 from sqlalchemy import select, and_
 import ckan.model as model
@@ -128,6 +129,32 @@ class TestResourceViews(object):
     def test_resource_download_bad_resource(self, app):
         resp = self.make_resource_download_request(
             app, dataset_id='dataset1', resource_id='bad', user='user1',
+            status=404
+        )
+
+    def test_resource_download_blocked(self, app):
+        toolkit.get_action('task_status_update')(
+            {
+                'ignore_auth': True,
+                # task_status_update wants a user object
+                # for no reason, even with 'ignore_auth': True
+                # give it an empty string to keep it happy
+                'user': ''
+            },
+            {
+                'entity_id': self.resource1['id'],
+                'entity_type': 'resource',
+                'task_type': 'clamav',
+                'last_updated': str(datetime.datetime.utcnow()),
+                'state': 'complete',
+                'key': 'clamav',
+                'value': '{"data": {"status_code": 1}}',
+                'error': 'null',
+            }
+        )
+
+        resp = self.make_resource_download_request(
+            app, dataset_id='dataset1', resource_id=self.resource1['id'], user='user1',
             status=404
         )
 
