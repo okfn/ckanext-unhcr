@@ -1028,6 +1028,10 @@ def get_envname():
     return envname.lower()
 
 
+def get_google_analytics_id():
+    return toolkit.config.get('ckanext.unhcr.google_analytics_id', '')
+
+
 def get_max_resource_size():
     return toolkit.config.get('ckan.max_resource_size', 10)
 

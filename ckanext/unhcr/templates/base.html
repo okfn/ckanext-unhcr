@@ -7,6 +7,10 @@
 {% endblock %}
 
 {% block scripts %}
+  {% if h.get_google_analytics_id() %}
+    {% snippet 'snippets/google_analytics_embed.html' %}
+  {% endif %}
+
   {{ super() }}
   {% resource 'unhcr/theme.js' %}
 {% endblock %}
