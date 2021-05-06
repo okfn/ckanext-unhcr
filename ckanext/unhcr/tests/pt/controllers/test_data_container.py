@@ -147,7 +147,7 @@ class TestDataContainerAccessRequests(object):
 
 
 @pytest.mark.usefixtures('clean_db', 'unhcr_migrate', 'with_request_context')
-class TestDataContainerController(object):
+class TestDataContainerViews(object):
 
     # Config
 
