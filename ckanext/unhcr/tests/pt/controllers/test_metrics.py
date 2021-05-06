@@ -6,7 +6,7 @@ from ckanext.unhcr.tests import factories
 
 
 @pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
-class TestMetricsController(object):
+class TestMetricsView(object):
 
     # Helpers
 
