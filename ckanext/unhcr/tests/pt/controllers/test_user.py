@@ -197,25 +197,32 @@ class TestUserRegister(object):
     def test_logged_in(self, app):
         user = core_factories.User()
 
-        app.get(
-            toolkit.url_for('user.register'),
-            extra_environ={'REMOTE_USER': user['name'].encode('ascii')},
-            status=403
-        )
-        app.get(
-            toolkit.url_for('user.register'),
-            extra_environ={'REMOTE_USER': self.sysadmin['name'].encode('ascii')},
-            status=403
-        )
-        app.post(
-            toolkit.url_for('user.register'),
-            data=self.payload,
-            extra_environ={'REMOTE_USER': user['name'].encode('ascii')},
-            status=403
-        )
-        app.post(
-            toolkit.url_for('user.register'),
-            data=self.payload,
-            extra_environ={'REMOTE_USER': self.sysadmin['name'].encode('ascii')},
-            status=403
-        )
+        with app.flask_app.test_request_context():
+            app.get(
+                toolkit.url_for('user.register'),
+                extra_environ={'REMOTE_USER': user['name'].encode('ascii')},
+                status=403
+            )
+
+        with app.flask_app.test_request_context():
+            app.get(
+                toolkit.url_for('user.register'),
+                extra_environ={'REMOTE_USER': self.sysadmin['name'].encode('ascii')},
+                status=403
+            )
+
+        with app.flask_app.test_request_context():
+            app.post(
+                toolkit.url_for('user.register'),
+                data=self.payload,
+                extra_environ={'REMOTE_USER': user['name'].encode('ascii')},
+                status=403
+            )
+
+        with app.flask_app.test_request_context():
+            app.post(
+                toolkit.url_for('user.register'),
+                data=self.payload,
+                extra_environ={'REMOTE_USER': self.sysadmin['name'].encode('ascii')},
+                status=403
+            )

@@ -76,11 +76,12 @@ class TestAuthUI(object):
         )
 
         for user in [container_member, dataset_member]:
-            response = app.get(
-                '/dataset/{}'.format(dataset['name']),
-                extra_environ={ 'REMOTE_USER': str(user['name']) },
-                status=200,
-            )
+            with app.flask_app.test_request_context():
+                response = app.get(
+                    '/dataset/{}'.format(dataset['name']),
+                    extra_environ={ 'REMOTE_USER': str(user['name']) },
+                    status=200,
+                )
             # these users can see the dataset_read view
             assert 'You must be logged in' not in response.body
             # these users can also download the resource attached to dataset
@@ -597,48 +598,53 @@ class TestPackageCreateAuth(object):
     def test_integration_new_deposit(self, app):
         # everyone can create datasets in the data-deposit
         external_user = factories.ExternalUser()
-        resp = app.get(
-            url='/deposited-dataset/new',
-            extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
-            status=200,
-        )
+        with app.flask_app.test_request_context():
+            resp = app.get(
+                url='/deposited-dataset/new',
+                extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
+                status=200,
+            )
 
         internal_user = core_factories.User()
-        resp = app.get(
-            url='/deposited-dataset/new',
-            extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
-            status=200,
-        )
+        with app.flask_app.test_request_context():
+            resp = app.get(
+                url='/deposited-dataset/new',
+                extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
+                status=200,
+            )
 
     @pytest.mark.ckan_config('ckan.auth.create_unowned_dataset', False)
     def test_integration_new_dataset(self, app):
         external_user = factories.ExternalUser()
         # external_user can't create a new dataset
-        resp = app.get(
-            url='/dataset/new',
-            extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
-            status=403,
-        )
+        with app.flask_app.test_request_context():
+            resp = app.get(
+                url='/dataset/new',
+                extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
+                status=403,
+            )
 
         internal_user = core_factories.User()
         # internal_user can't create a dataset
         # because they aren't an admin of any containers
-        resp = app.get(
-            url='/dataset/new',
-            extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
-            status=403,
-        )
+        with app.flask_app.test_request_context():
+            resp = app.get(
+                url='/dataset/new',
+                extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
+                status=403,
+            )
 
         factories.DataContainer(
             users=[{'name': internal_user['name'], 'capacity': 'admin'}]
         )
         # now that internal_user is a container admin
         # they can create a dataset
-        resp = app.get(
-            url='/dataset/new',
-            extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
-            status=200,
-        )
+        with app.flask_app.test_request_context():
+            resp = app.get(
+                url='/dataset/new',
+                extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
+                status=200,
+            )
 
     @pytest.mark.ckan_config('ckan.auth.create_unowned_dataset', False)
     def test_integration_edit_deposit(self, app):
@@ -651,11 +657,12 @@ class TestPackageCreateAuth(object):
             user=external_user,
             state='draft',
         )
-        resp = app.get(
-            url='/deposited-dataset/edit/{}'.format(external_deposit['id']),
-            extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
-            status=200,
-        )
+        with app.flask_app.test_request_context():
+            resp = app.get(
+                url='/deposited-dataset/edit/{}'.format(external_deposit['id']),
+                extra_environ={'REMOTE_USER': external_user['name'].encode('ascii')},
+                status=200,
+            )
 
         internal_user = core_factories.User()
         internal_deposit = factories.DepositedDataset(
@@ -665,11 +672,12 @@ class TestPackageCreateAuth(object):
             user=internal_user,
             state='draft',
         )
-        resp = app.get(
-            url='/deposited-dataset/edit/{}'.format(internal_deposit['id']),
-            extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
-            status=200,
-        )
+        with app.flask_app.test_request_context():
+            resp = app.get(
+                url='/deposited-dataset/edit/{}'.format(internal_deposit['id']),
+                extra_environ={'REMOTE_USER': internal_user['name'].encode('ascii')},
+                status=200,
+            )
 
 
 @pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
