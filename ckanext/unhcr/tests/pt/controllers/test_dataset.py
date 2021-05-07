@@ -323,7 +323,7 @@ class TestDatasetViews(object):
         )
 
 
-@pytest.mark.usefixtures('clean_db', 'unhcr_migrate', 'with_request_context')
+@pytest.mark.usefixtures('clean_db', 'unhcr_migrate')
 class TestPrivateResources(object):
 
     def setup(self):
@@ -354,48 +354,52 @@ class TestPrivateResources(object):
 
         assert dataset['private'] == True
 
-    def test_access_visibility_public(self, app):
-
+    def test_visibility_public(self, app):
         dataset = factories.Dataset(
-            visibility='public'
+            visibility='public',
+            owner_org=self.container['id'],
         )
         resource = factories.Resource(
             package_id=dataset['id'],
             url_type='upload',
+            upload=mocks.FakeFileStorage(),
         )
 
-        url = toolkit.url_for(
-            controller='package',
-            action='resource_download',
+        resource_download_url = toolkit.url_for(
+            'resource.download',
             id=dataset['id'],
-            resource_id=resource['id'])
-
-        # We don't have data but we pass authorization
-        environ = {'REMOTE_USER': self.normal_user['name'].encode('ascii')}
-        res = app.get(url, extra_environ=environ, status=404)
-
-    def test_access_visibility_restricted(self, app):
-
-        dataset = factories.Dataset(
-            visibility='restricted'
+            resource_id=resource['id']
         )
-        resource = factories.Resource(
-            package_id=dataset['id'],
-            url_type='upload',
-        )
+        dataset_read_url = toolkit.url_for('dataset.read', id=dataset['id'])
 
-        url = toolkit.url_for(
-            controller='package',
-            action='resource_download',
-            id=dataset['id'],
-            resource_id=resource['id'])
+        with app.flask_app.test_request_context():
+            environ = {'REMOTE_USER': self.normal_user['name'].encode('ascii')}
+            res = app.get(dataset_read_url, extra_environ=environ, status=200)
+            assert (
+                'You are not authorized to download the resources from this dataset'
+                not in res.body
+            )
+            app.get(resource_download_url, extra_environ=environ, status=200)
 
-        # We don't pass authorization (forbidden)
-        environ = {'REMOTE_USER': self.normal_user['name'].encode('ascii')}
-        res = app.get(url, extra_environ=environ, status=403)
+        with app.flask_app.test_request_context():
+            environ = {'REMOTE_USER': self.org_user['name'].encode('ascii')}
+            res = app.get(dataset_read_url, extra_environ=environ, status=200)
+            assert (
+                'You are not authorized to download the resources from this dataset'
+                not in res.body
+            )
+            app.get(resource_download_url, extra_environ=environ, status=200)
 
-    def test_access_visibility_restricted_pages_visible(self, app):
+        with app.flask_app.test_request_context():
+            environ = {'REMOTE_USER': self.sysadmin['name'].encode('ascii')}
+            res = app.get(dataset_read_url, extra_environ=environ, status=200)
+            assert (
+                'You are not authorized to download the resources from this dataset'
+                not in res.body
+            )
+            app.get(resource_download_url, extra_environ=environ, status=200)
 
+    def test_visibility_restricted(self, app):
         dataset = factories.Dataset(
             visibility='restricted',
             owner_org=self.container['id'],
@@ -403,95 +407,89 @@ class TestPrivateResources(object):
         resource = factories.Resource(
             package_id=dataset['id'],
             url_type='upload',
+            upload=mocks.FakeFileStorage(),
         )
 
-        url = toolkit.url_for('dataset_read', id=dataset['id'])
-
-        environ = {'REMOTE_USER': self.normal_user['name'].encode('ascii')}
-        res = app.get(url, extra_environ=environ, status=200)
-        assert (
-            'You are not authorized to download the resources from this dataset'
-            in res.body
-        )
-
-        environ = {'REMOTE_USER': self.org_user['name'].encode('ascii')}
-        res = app.get(url, extra_environ=environ, status=200)
-        assert (
-            'You are not authorized to download the resources from this dataset'
-            not in res.body
-        )
-
-        environ = {'REMOTE_USER': self.sysadmin['name'].encode('ascii')}
-        res = app.get(url, extra_environ=environ, status=200)
-        assert (
-            'You are not authorized to download the resources from this dataset'
-            not in res.body
-        )
-
-    def test_access_visibility_private_not_admin(self, app):
-
-        dataset = factories.Dataset(
-            visibility='private',
-            owner_org=self.container['id'],
-        )
-        resource = factories.Resource(
-            package_id=dataset['id'],
-            url_type='upload',
-        )
-
-        url = toolkit.url_for(
-            controller='package',
-            action='resource_download',
+        resource_download_url = toolkit.url_for(
+            'resource.download',
             id=dataset['id'],
-            resource_id=resource['id'])
+            resource_id=resource['id']
+        )
+        dataset_read_url = toolkit.url_for('dataset.read', id=dataset['id'])
 
-        # We don't pass authorization (forbidden)
-        environ = {'REMOTE_USER': self.normal_user['name'].encode('ascii')}
-        res = app.get(url, extra_environ=environ, status=403)
+        with app.flask_app.test_request_context():
+            environ = {'REMOTE_USER': self.normal_user['name'].encode('ascii')}
+            res = app.get(dataset_read_url, extra_environ=environ, status=200)
+            assert (
+                'You are not authorized to download the resources from this dataset'
+                in res.body
+            )
+            app.get(resource_download_url, extra_environ=environ, status=403)
 
-        # We don't have data but we pass authorization
-        environ = {'REMOTE_USER': self.org_user['name'].encode('ascii')}
-        res = app.get(url, extra_environ=environ, status=404)
+        with app.flask_app.test_request_context():
+            environ = {'REMOTE_USER': self.org_user['name'].encode('ascii')}
+            res = app.get(dataset_read_url, extra_environ=environ, status=200)
+            assert (
+                'You are not authorized to download the resources from this dataset'
+                not in res.body
+            )
+            app.get(resource_download_url, extra_environ=environ, status=200)
 
-        # We don't have data but we pass authorization
-        environ = {'REMOTE_USER': self.sysadmin['name'].encode('ascii')}
-        res = app.get(url, extra_environ=environ, status=404)
+        with app.flask_app.test_request_context():
+            environ = {'REMOTE_USER': self.sysadmin['name'].encode('ascii')}
+            res = app.get(dataset_read_url, extra_environ=environ, status=200)
+            assert (
+                'You are not authorized to download the resources from this dataset'
+                not in res.body
+            )
+            app.get(resource_download_url, extra_environ=environ, status=200)
 
-    def test_access_visibility_private_admin(self, app):
+    def test_visibility_private(self, app):
         dataset = factories.Dataset(
             private=True,
             visibility='private',
             owner_org=self.container['id'],
-            user=self.sysadmin,
         )
         resource = factories.Resource(
             package_id=dataset['id'],
             url_type='upload',
+            upload=mocks.FakeFileStorage(),
         )
         # Even though we tried to save this with visibility='private'
         # this feature is disabled, so the validator has altered it for us
         # from now on the dataset should behave as 'restricted'
         assert dataset['visibility'] == 'restricted'
 
-        url = toolkit.url_for('dataset_read', id=dataset['id'])
-
-        environ = {'REMOTE_USER': self.normal_user['name'].encode('ascii')}
-        res = app.get(url, extra_environ=environ, status=200)
-        assert (
-            'You are not authorized to download the resources from this dataset'
-            in res.body
+        resource_download_url = toolkit.url_for(
+            'resource.download',
+            id=dataset['id'],
+            resource_id=resource['id']
         )
+        dataset_read_url = toolkit.url_for('dataset.read', id=dataset['id'])
 
-        environ = {'REMOTE_USER': self.org_user['name'].encode('ascii')}
-        res = app.get(url, extra_environ=environ, status=200)
-        assert (
-            'You are not authorized to download the resources from this dataset'
-            not in res.body
-        )
+        with app.flask_app.test_request_context():
+            environ = {'REMOTE_USER': self.normal_user['name'].encode('ascii')}
+            res = app.get(dataset_read_url, extra_environ=environ, status=200)
+            assert (
+                'You are not authorized to download the resources from this dataset'
+                in res.body
+            )
+            app.get(resource_download_url, extra_environ=environ, status=403)
 
-        environ = {'REMOTE_USER': self.sysadmin['name'].encode('ascii')}
-        res = app.get(url, extra_environ=environ, status=200)
-        assert (
-            'You are not authorized to download the resources from this dataset'
-            not in res.body
-        )
+        with app.flask_app.test_request_context():
+            environ = {'REMOTE_USER': self.org_user['name'].encode('ascii')}
+            res = app.get(dataset_read_url, extra_environ=environ, status=200)
+            assert (
+                'You are not authorized to download the resources from this dataset'
+                not in res.body
+            )
+            app.get(resource_download_url, extra_environ=environ, status=200)
+
+        with app.flask_app.test_request_context():
+            environ = {'REMOTE_USER': self.sysadmin['name'].encode('ascii')}
+            res = app.get(dataset_read_url, extra_environ=environ, status=200)
+            assert (
+                'You are not authorized to download the resources from this dataset'
+                not in res.body
+            )
+            app.get(resource_download_url, extra_environ=environ, status=200)
